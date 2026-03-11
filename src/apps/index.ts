@@ -1,25 +1,38 @@
-import { readFileSync, readdirSync } from "fs";
-import { join, dirname } from "path";
+import { readFileSync, readdirSync, existsSync } from "fs";
+import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import type { AppTemplate } from "../types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// JSON files are in src/apps/ but compiled JS runs from dist/apps/
+// Try multiple locations to find them
+function getAppsDir(): string {
+  // 1. Check current directory (works in dev / ts-node)
+  if (existsSync(join(__dirname, "github.json"))) return __dirname;
+  // 2. Check src/apps/ relative to package root (dist/apps/ -> ../../src/apps/)
+  const srcApps = resolve(__dirname, "../../src/apps");
+  if (existsSync(join(srcApps, "github.json"))) return srcApps;
+  // 3. Fallback
+  return __dirname;
+}
+
 let cachedApps: Map<string, AppTemplate> | null = null;
 
 /**
- * Load all app templates from the JSON files in this directory.
+ * Load all app templates from the JSON files in the apps directory.
  * Results are cached after first load.
  */
 export function loadAppTemplates(): Map<string, AppTemplate> {
   if (cachedApps) return cachedApps;
 
   cachedApps = new Map();
-  const files = readdirSync(__dirname).filter((f) => f.endsWith(".json"));
+  const appsDir = getAppsDir();
+  const files = readdirSync(appsDir).filter((f) => f.endsWith(".json"));
 
   for (const file of files) {
     try {
-      const raw = readFileSync(join(__dirname, file), "utf-8");
+      const raw = readFileSync(join(appsDir, file), "utf-8");
       const app: AppTemplate = JSON.parse(raw);
       cachedApps.set(app.slug, app);
     } catch (e) {
