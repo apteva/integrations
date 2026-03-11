@@ -4,6 +4,7 @@ export type {
   AppAuthConfig,
   AuthType,
   OAuthConfig,
+  CredentialField,
   AppToolTemplate,
   Connection,
   ConnectionCredentials,

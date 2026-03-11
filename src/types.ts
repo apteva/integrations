@@ -16,6 +16,15 @@ export interface AppAuthConfig {
   oauth2?: OAuthConfig;
   headers?: Record<string, string>; // e.g. { "Authorization": "Bearer {{token}}" }
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
+  credential_fields?: CredentialField[]; // Describes what credentials the user must provide
+}
+
+export interface CredentialField {
+  name: string; // Internal key stored in credentials.fields
+  label: string; // Display label
+  description?: string; // Help text
+  required?: boolean; // Default true
+  type?: "password" | "text"; // Default "password"
 }
 
 export type AuthType = "api_key" | "bearer" | "basic" | "oauth2";
@@ -26,6 +35,8 @@ export interface OAuthConfig {
   scopes: string[];
   client_id_required: boolean;
   pkce: boolean;
+  setup_url?: string; // URL to provider's developer console to create an OAuth app
+  setup_steps?: string[]; // Brief setup instructions shown in the UI
 }
 
 export interface AppToolTemplate {
@@ -102,6 +113,7 @@ export interface GeneratedMcpTool {
     url: string;
     headers: Record<string, string>;
     body_template?: string;
+    default_body?: Record<string, string>; // Credential-derived defaults merged into request body
   };
 }
 

@@ -7,7 +7,10 @@
   "base_url": "https://api.sendgrid.com/v3",
   "auth": {
     "types": ["bearer"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" }
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "credential_fields": [
+      { "name": "token", "label": "API Key", "description": "SendGrid API key (SG.xxx)" }
+    ]
   },
   "tools": [
     {

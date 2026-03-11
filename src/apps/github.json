@@ -13,8 +13,18 @@
       "token_url": "https://github.com/login/oauth/access_token",
       "scopes": ["repo", "read:user", "read:org"],
       "client_id_required": true,
-      "pkce": false
-    }
+      "pkce": false,
+      "setup_url": "https://github.com/settings/developers",
+      "setup_steps": [
+        "Go to GitHub Settings > Developer settings > OAuth Apps",
+        "Click 'New OAuth App'",
+        "Set the callback URL to your Apteva instance: {callback_url}",
+        "Copy the Client ID and generate a Client Secret"
+      ]
+    },
+    "credential_fields": [
+      { "name": "token", "label": "Personal Access Token", "description": "GitHub PAT with repo and user scopes (Settings > Developer settings > Tokens)" }
+    ]
   },
   "tools": [
     {

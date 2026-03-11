@@ -1,6 +1,6 @@
 {
   "name": "@apteva/integrations",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Local integrations, connections, and webhooks for Apteva. Self-contained app templates, OAuth engine, and trigger provider.",
   "author": "Apteva <hello@apteva.com>",
   "license": "Elastic-2.0",

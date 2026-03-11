@@ -13,8 +13,18 @@
       "token_url": "https://api.linear.app/oauth/token",
       "scopes": ["read", "write", "issues:create"],
       "client_id_required": true,
-      "pkce": false
-    }
+      "pkce": false,
+      "setup_url": "https://linear.app/settings/api",
+      "setup_steps": [
+        "Go to Linear Settings > API > OAuth Applications",
+        "Create a new OAuth application",
+        "Set the callback URL to: {callback_url}",
+        "Copy the Client ID and Client Secret"
+      ]
+    },
+    "credential_fields": [
+      { "name": "token", "label": "API Key", "description": "Linear personal API key (lin_api_...)" }
+    ]
   },
   "tools": [
     {

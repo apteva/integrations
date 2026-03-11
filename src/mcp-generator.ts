@@ -69,6 +69,21 @@ function generateMcpTool(
   const pathParams = extractPathParams(tool.path);
   const cleanSchema = removePathParamsFromSchema(tool.input_schema, pathParams);
 
+  // Build default_body from credential fields that map to tool input properties
+  // e.g. Pushover's user_key credential → "user" field in send_notification
+  let defaultBody: Record<string, string> | undefined;
+  if (app.auth.credential_fields && tool.method !== "GET") {
+    const props = (tool.input_schema as any)?.properties || {};
+    for (const cf of app.auth.credential_fields) {
+      // Check if the credential field name maps to a tool input (with or without _key suffix)
+      const baseName = cf.name.replace(/_key$/, "");
+      if (props[baseName] && connection.credentials.fields?.[cf.name]) {
+        if (!defaultBody) defaultBody = {};
+        defaultBody[baseName] = connection.credentials.fields[cf.name];
+      }
+    }
+  }
+
   return {
     name: `${app.slug}_${tool.name}`,
     description: `[${app.name}] ${tool.description}`,
@@ -79,6 +94,7 @@ function generateMcpTool(
       url,
       headers,
       body_template: bodyTemplate,
+      ...(defaultBody ? { default_body: defaultBody } : {}),
     },
   };
 }
@@ -90,22 +106,26 @@ function resolveCredentialTemplate(
   credentials: Connection["credentials"]
 ): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+    // Check custom fields first (most specific)
+    if (credentials.fields?.[key]) return credentials.fields[key];
+
     switch (key) {
       case "token":
         return (
+          credentials.fields?.token ||
           credentials.access_token ||
           credentials.bearer_token ||
           credentials.api_key ||
           ""
         );
       case "api_key":
-        return credentials.api_key || "";
+        return credentials.fields?.api_key || credentials.api_key || "";
       case "username":
         return credentials.username || "";
       case "password":
         return credentials.password || "";
       default:
-        return credentials.fields?.[key] || "";
+        return "";
     }
   });
 }

@@ -13,8 +13,18 @@
       "token_url": "https://slack.com/api/oauth.v2.access",
       "scopes": ["chat:write", "channels:read", "channels:history", "users:read"],
       "client_id_required": true,
-      "pkce": false
-    }
+      "pkce": false,
+      "setup_url": "https://api.slack.com/apps",
+      "setup_steps": [
+        "Go to api.slack.com/apps and click 'Create New App'",
+        "Choose 'From scratch', name your app, and select your workspace",
+        "Under OAuth & Permissions, add the redirect URL: {callback_url}",
+        "Copy the Client ID and Client Secret from Basic Information"
+      ]
+    },
+    "credential_fields": [
+      { "name": "token", "label": "Bot Token", "description": "Slack Bot User OAuth Token (xoxb-...)" }
+    ]
   },
   "tools": [
     {

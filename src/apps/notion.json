@@ -13,8 +13,18 @@
       "token_url": "https://api.notion.com/v1/oauth/token",
       "scopes": [],
       "client_id_required": true,
-      "pkce": false
-    }
+      "pkce": false,
+      "setup_url": "https://www.notion.so/my-integrations",
+      "setup_steps": [
+        "Go to notion.so/my-integrations and click 'New integration'",
+        "Select 'Public' type for OAuth (or use an Internal integration token instead)",
+        "Set the redirect URI to: {callback_url}",
+        "Copy the OAuth client ID and client secret"
+      ]
+    },
+    "credential_fields": [
+      { "name": "token", "label": "Integration Token", "description": "Notion internal integration token (secret_...)" }
+    ]
   },
   "tools": [
     {

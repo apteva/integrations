@@ -7,7 +7,10 @@
   "base_url": "https://api.stripe.com/v1",
   "auth": {
     "types": ["bearer"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/x-www-form-urlencoded" }
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/x-www-form-urlencoded" },
+    "credential_fields": [
+      { "name": "token", "label": "Secret Key", "description": "Stripe secret key (sk_live_... or sk_test_...)" }
+    ]
   },
   "tools": [
     {

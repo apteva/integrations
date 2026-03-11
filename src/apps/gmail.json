@@ -13,7 +13,15 @@
       "token_url": "https://oauth2.googleapis.com/token",
       "scopes": ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.send"],
       "client_id_required": true,
-      "pkce": false
+      "pkce": false,
+      "setup_url": "https://console.cloud.google.com/apis/credentials",
+      "setup_steps": [
+        "Go to Google Cloud Console > APIs & Services > Credentials",
+        "Create an OAuth 2.0 Client ID (Web application type)",
+        "Add the authorized redirect URI: {callback_url}",
+        "Enable the Gmail API under APIs & Services > Library",
+        "Copy the Client ID and Client Secret"
+      ]
     }
   },
   "tools": [
