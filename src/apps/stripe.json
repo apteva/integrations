@@ -1,0 +1,85 @@
+{
+  "slug": "stripe",
+  "name": "Stripe",
+  "description": "Payment processing, subscriptions, and billing management",
+  "logo": null,
+  "categories": ["payments", "finance"],
+  "base_url": "https://api.stripe.com/v1",
+  "auth": {
+    "types": ["bearer"],
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/x-www-form-urlencoded" }
+  },
+  "tools": [
+    {
+      "name": "list_customers",
+      "description": "List customers",
+      "method": "GET",
+      "path": "/customers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "description": "Max customers to return", "default": 10 },
+          "email": { "type": "string", "description": "Filter by email" }
+        }
+      }
+    },
+    {
+      "name": "create_customer",
+      "description": "Create a new customer",
+      "method": "POST",
+      "path": "/customers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "description": "Customer email" },
+          "name": { "type": "string", "description": "Customer name" },
+          "description": { "type": "string", "description": "Description" }
+        },
+        "required": ["email"]
+      }
+    },
+    {
+      "name": "list_charges",
+      "description": "List charges",
+      "method": "GET",
+      "path": "/charges",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "description": "Max charges to return", "default": 10 },
+          "customer": { "type": "string", "description": "Filter by customer ID" }
+        }
+      }
+    },
+    {
+      "name": "list_subscriptions",
+      "description": "List subscriptions",
+      "method": "GET",
+      "path": "/subscriptions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "description": "Max subscriptions", "default": 10 },
+          "customer": { "type": "string", "description": "Filter by customer ID" },
+          "status": { "type": "string", "enum": ["active", "past_due", "canceled", "all"], "default": "all" }
+        }
+      }
+    },
+    {
+      "name": "create_payment_intent",
+      "description": "Create a payment intent",
+      "method": "POST",
+      "path": "/payment_intents",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number", "description": "Amount in smallest currency unit (e.g. cents)" },
+          "currency": { "type": "string", "description": "Three-letter currency code", "default": "usd" },
+          "customer": { "type": "string", "description": "Customer ID" },
+          "description": { "type": "string", "description": "Description" }
+        },
+        "required": ["amount", "currency"]
+      }
+    }
+  ]
+}

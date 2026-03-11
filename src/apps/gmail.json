@@ -1,0 +1,62 @@
+{
+  "slug": "gmail",
+  "name": "Gmail",
+  "description": "Email sending, reading, and management via Gmail API",
+  "logo": null,
+  "categories": ["communication", "email"],
+  "base_url": "https://gmail.googleapis.com/gmail/v1",
+  "auth": {
+    "types": ["oauth2"],
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "oauth2": {
+      "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.send"],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_messages",
+      "description": "List messages in the mailbox",
+      "method": "GET",
+      "path": "/users/me/messages",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string", "description": "Gmail search query (e.g. 'from:user@example.com')" },
+          "maxResults": { "type": "number", "default": 10 },
+          "labelIds": { "type": "array", "items": { "type": "string" }, "description": "Filter by label" }
+        }
+      }
+    },
+    {
+      "name": "get_message",
+      "description": "Get a specific email message",
+      "method": "GET",
+      "path": "/users/me/messages/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Message ID" },
+          "format": { "type": "string", "enum": ["full", "metadata", "minimal"], "default": "full" }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "send_message",
+      "description": "Send an email message",
+      "method": "POST",
+      "path": "/users/me/messages/send",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "raw": { "type": "string", "description": "Base64url-encoded RFC 2822 email message" }
+        },
+        "required": ["raw"]
+      }
+    }
+  ]
+}

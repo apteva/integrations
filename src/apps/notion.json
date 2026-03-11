@@ -1,0 +1,102 @@
+{
+  "slug": "notion",
+  "name": "Notion",
+  "description": "Workspace for notes, docs, databases, and project management",
+  "logo": null,
+  "categories": ["productivity", "project-management"],
+  "base_url": "https://api.notion.com/v1",
+  "auth": {
+    "types": ["bearer", "oauth2"],
+    "headers": { "Authorization": "Bearer {{token}}", "Notion-Version": "2022-06-28", "Content-Type": "application/json" },
+    "oauth2": {
+      "authorize_url": "https://api.notion.com/v1/oauth/authorize",
+      "token_url": "https://api.notion.com/v1/oauth/token",
+      "scopes": [],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "search",
+      "description": "Search pages and databases in the workspace",
+      "method": "POST",
+      "path": "/search",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query" },
+          "filter": {
+            "type": "object",
+            "description": "Filter by object type",
+            "properties": {
+              "value": { "type": "string", "enum": ["page", "database"] },
+              "property": { "type": "string", "default": "object" }
+            }
+          },
+          "page_size": { "type": "number", "description": "Max results", "default": 10 }
+        }
+      }
+    },
+    {
+      "name": "get_page",
+      "description": "Get a page by ID",
+      "method": "GET",
+      "path": "/pages/{page_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": { "type": "string", "description": "Page ID" }
+        },
+        "required": ["page_id"]
+      }
+    },
+    {
+      "name": "create_page",
+      "description": "Create a new page in a database or as a child of another page",
+      "method": "POST",
+      "path": "/pages",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "parent": { "type": "object", "description": "Parent (database_id or page_id)" },
+          "properties": { "type": "object", "description": "Page properties" }
+        },
+        "required": ["parent", "properties"]
+      }
+    },
+    {
+      "name": "query_database",
+      "description": "Query a database with optional filters and sorts",
+      "method": "POST",
+      "path": "/databases/{database_id}/query",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "database_id": { "type": "string", "description": "Database ID" },
+          "filter": { "type": "object", "description": "Filter conditions" },
+          "sorts": { "type": "array", "description": "Sort conditions" },
+          "page_size": { "type": "number", "description": "Max results", "default": 10 }
+        },
+        "required": ["database_id"]
+      }
+    },
+    {
+      "name": "list_databases",
+      "description": "List all databases shared with the integration",
+      "method": "POST",
+      "path": "/search",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "description": "Filter to databases only",
+            "default": { "value": "database", "property": "object" }
+          },
+          "page_size": { "type": "number", "default": 50 }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@apteva/integrations",
+  "version": "0.1.0",
+  "description": "Local integrations, connections, and webhooks for Apteva. Self-contained app templates, OAuth engine, and trigger provider.",
+  "author": "Apteva <hello@apteva.com>",
+  "license": "Elastic-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apteva/integrations.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./apps": {
+      "types": "./dist/apps/index.d.ts",
+      "import": "./dist/apps/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src/apps/*.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

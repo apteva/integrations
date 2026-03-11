@@ -1,0 +1,74 @@
+{
+  "slug": "slack",
+  "name": "Slack",
+  "description": "Team messaging, channels, and workspace management",
+  "logo": null,
+  "categories": ["communication", "productivity"],
+  "base_url": "https://slack.com/api",
+  "auth": {
+    "types": ["bearer", "oauth2"],
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "oauth2": {
+      "authorize_url": "https://slack.com/oauth/v2/authorize",
+      "token_url": "https://slack.com/api/oauth.v2.access",
+      "scopes": ["chat:write", "channels:read", "channels:history", "users:read"],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "send_message",
+      "description": "Send a message to a Slack channel",
+      "method": "POST",
+      "path": "/chat.postMessage",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "channel": { "type": "string", "description": "Channel ID or name" },
+          "text": { "type": "string", "description": "Message text" }
+        },
+        "required": ["channel", "text"]
+      }
+    },
+    {
+      "name": "list_channels",
+      "description": "List public channels in the workspace",
+      "method": "GET",
+      "path": "/conversations.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "description": "Max channels to return", "default": 100 },
+          "types": { "type": "string", "description": "Channel types", "default": "public_channel" }
+        }
+      }
+    },
+    {
+      "name": "get_channel_history",
+      "description": "Get message history for a channel",
+      "method": "GET",
+      "path": "/conversations.history",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "channel": { "type": "string", "description": "Channel ID" },
+          "limit": { "type": "number", "description": "Max messages", "default": 20 }
+        },
+        "required": ["channel"]
+      }
+    },
+    {
+      "name": "list_users",
+      "description": "List users in the workspace",
+      "method": "GET",
+      "path": "/users.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "description": "Max users to return", "default": 100 }
+        }
+      }
+    }
+  ]
+}

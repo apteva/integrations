@@ -1,0 +1,96 @@
+{
+  "slug": "github",
+  "name": "GitHub",
+  "description": "Code hosting, issues, pull requests, and repository management",
+  "logo": null,
+  "categories": ["developer-tools", "version-control"],
+  "base_url": "https://api.github.com",
+  "auth": {
+    "types": ["bearer", "oauth2"],
+    "headers": { "Authorization": "Bearer {{token}}", "Accept": "application/vnd.github+json" },
+    "oauth2": {
+      "authorize_url": "https://github.com/login/oauth/authorize",
+      "token_url": "https://github.com/login/oauth/access_token",
+      "scopes": ["repo", "read:user", "read:org"],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_repos",
+      "description": "List repositories for the authenticated user",
+      "method": "GET",
+      "path": "/user/repos",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sort": { "type": "string", "enum": ["created", "updated", "pushed", "full_name"], "description": "Sort field" },
+          "per_page": { "type": "number", "description": "Results per page (max 100)", "default": 30 }
+        }
+      }
+    },
+    {
+      "name": "get_repo",
+      "description": "Get a repository by owner and name",
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" }
+        },
+        "required": ["owner", "repo"]
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues for a repository",
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}/issues",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "state": { "type": "string", "enum": ["open", "closed", "all"], "default": "open" },
+          "per_page": { "type": "number", "default": 30 }
+        },
+        "required": ["owner", "repo"]
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Create an issue in a repository",
+      "method": "POST",
+      "path": "/repos/{owner}/{repo}/issues",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "title": { "type": "string", "description": "Issue title" },
+          "body": { "type": "string", "description": "Issue body (markdown)" },
+          "labels": { "type": "array", "items": { "type": "string" }, "description": "Label names" }
+        },
+        "required": ["owner", "repo", "title"]
+      }
+    },
+    {
+      "name": "list_pull_requests",
+      "description": "List pull requests for a repository",
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}/pulls",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "state": { "type": "string", "enum": ["open", "closed", "all"], "default": "open" }
+        },
+        "required": ["owner", "repo"]
+      }
+    }
+  ]
+}

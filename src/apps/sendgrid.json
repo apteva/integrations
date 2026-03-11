@@ -1,0 +1,63 @@
+{
+  "slug": "sendgrid",
+  "name": "SendGrid",
+  "description": "Email delivery and marketing campaigns",
+  "logo": null,
+  "categories": ["communication", "email"],
+  "base_url": "https://api.sendgrid.com/v3",
+  "auth": {
+    "types": ["bearer"],
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" }
+  },
+  "tools": [
+    {
+      "name": "send_email",
+      "description": "Send an email",
+      "method": "POST",
+      "path": "/mail/send",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "personalizations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "to": { "type": "array", "items": { "type": "object", "properties": { "email": { "type": "string" }, "name": { "type": "string" } } } },
+                "subject": { "type": "string" }
+              }
+            },
+            "description": "Recipients and personalization"
+          },
+          "from": {
+            "type": "object",
+            "properties": { "email": { "type": "string" }, "name": { "type": "string" } },
+            "description": "Sender"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "text/plain" },
+                "value": { "type": "string" }
+              }
+            },
+            "description": "Email content"
+          }
+        },
+        "required": ["personalizations", "from", "content"]
+      }
+    },
+    {
+      "name": "list_contacts",
+      "description": "List marketing contacts",
+      "method": "GET",
+      "path": "/marketing/contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

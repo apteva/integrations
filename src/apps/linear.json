@@ -1,0 +1,85 @@
+{
+  "slug": "linear",
+  "name": "Linear",
+  "description": "Issue tracking and project management for software teams",
+  "logo": null,
+  "categories": ["project-management", "developer-tools"],
+  "base_url": "https://api.linear.app",
+  "auth": {
+    "types": ["bearer", "oauth2"],
+    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "oauth2": {
+      "authorize_url": "https://linear.app/oauth/authorize",
+      "token_url": "https://api.linear.app/oauth/token",
+      "scopes": ["read", "write", "issues:create"],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_issues",
+      "description": "List issues (GraphQL query)",
+      "method": "POST",
+      "path": "/graphql",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "default": "{ issues(first: 20) { nodes { id title state { name } assignee { name } priority createdAt } } }",
+            "description": "GraphQL query"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Create a new issue",
+      "method": "POST",
+      "path": "/graphql",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "default": "mutation($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id title url } } }",
+            "description": "GraphQL mutation"
+          },
+          "variables": {
+            "type": "object",
+            "description": "Variables: { input: { title, description, teamId, priority } }",
+            "properties": {
+              "input": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "teamId": { "type": "string" },
+                  "priority": { "type": "number" }
+                },
+                "required": ["title", "teamId"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "list_teams",
+      "description": "List teams",
+      "method": "POST",
+      "path": "/graphql",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "default": "{ teams { nodes { id name key } } }",
+            "description": "GraphQL query"
+          }
+        }
+      }
+    }
+  ]
+}

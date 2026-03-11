@@ -1,0 +1,56 @@
+{
+  "slug": "pushover",
+  "name": "Pushover",
+  "description": "Real-time push notifications to mobile and desktop devices",
+  "logo": null,
+  "categories": ["communication", "notifications"],
+  "base_url": "https://api.pushover.net/1",
+  "auth": {
+    "types": ["api_key"],
+    "query_params": { "token": "{{api_key}}" }
+  },
+  "tools": [
+    {
+      "name": "send_notification",
+      "description": "Send a push notification to a user or group",
+      "method": "POST",
+      "path": "/messages.json",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user": { "type": "string", "description": "User or group key to send the notification to" },
+          "message": { "type": "string", "description": "Notification message body" },
+          "title": { "type": "string", "description": "Notification title" },
+          "priority": { "type": "number", "description": "Priority: -2 (lowest) to 2 (emergency)", "default": 0 },
+          "sound": { "type": "string", "description": "Sound name (e.g. pushover, bike, bugle)" },
+          "url": { "type": "string", "description": "Supplementary URL to show with the message" },
+          "url_title": { "type": "string", "description": "Title for the supplementary URL" }
+        },
+        "required": ["user", "message"]
+      }
+    },
+    {
+      "name": "validate_user",
+      "description": "Validate a user or group key",
+      "method": "POST",
+      "path": "/users/validate.json",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user": { "type": "string", "description": "User or group key to validate" }
+        },
+        "required": ["user"]
+      }
+    },
+    {
+      "name": "list_sounds",
+      "description": "List available notification sounds",
+      "method": "GET",
+      "path": "/sounds.json",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
