@@ -1,0 +1,214 @@
+{
+  "slug": "omnikit-management",
+  "name": "OmniKit Management",
+  "description": "Project management system for OmniKit platform - handles project creation, listing, updates, and organization management",
+  "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+  "categories": [
+    "management",
+    "projects",
+    "organizations",
+    "omnikit",
+    "platform"
+  ],
+  "base_url": "https://api.omnikit.co",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_projects",
+      "description": "List projects accessible to the user with organization filtering and search",
+      "method": "GET",
+      "path": "/management/projects",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "organization_id": {
+            "type": "integer",
+            "description": "Organization ID to filter projects (defaults to 1)"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Filter by active status",
+            "default": true
+          },
+          "search": {
+            "type": "string",
+            "description": "Search projects by name (partial match)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Number of projects to return",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset",
+            "default": 0,
+            "minimum": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new project in an organization with auto-generated slug",
+      "method": "POST",
+      "path": "/management/projects",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "organization_id": {
+            "type": "integer",
+            "description": "Organization ID to create project in"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional project description",
+            "maxLength": 1000
+          },
+          "slug": {
+            "type": "string",
+            "description": "Project URL slug (auto-generated from name if not provided)",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "User ID creating the project (defaults to 1)"
+          }
+        },
+        "required": [
+          "name",
+          "organization_id"
+        ]
+      }
+    },
+    {
+      "name": "update_project",
+      "description": "Update project information including name, description, and status",
+      "method": "PUT",
+      "path": "/management/projects/%7B%7Bproject_id%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID to update"
+          },
+          "organization_id": {
+            "type": "integer",
+            "description": "Organization ID for verification"
+          },
+          "name": {
+            "type": "string",
+            "description": "Updated project name",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated project description",
+            "maxLength": 1000
+          },
+          "slug": {
+            "type": "string",
+            "description": "Updated project URL slug",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Project active status"
+          }
+        },
+        "required": [
+          "project_id",
+          "organization_id"
+        ]
+      }
+    },
+    {
+      "name": "delete_project",
+      "description": "Delete a project (soft delete to preserve historical data)",
+      "method": "DELETE",
+      "path": "/management/projects/%7B%7Bproject_id%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID to delete"
+          },
+          "organization_id": {
+            "type": "integer",
+            "description": "Organization ID for verification"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Force delete (hard delete)",
+            "default": false
+          }
+        },
+        "required": [
+          "project_id",
+          "organization_id"
+        ]
+      }
+    },
+    {
+      "name": "get_current_project",
+      "description": "Get the currently active project for the user session",
+      "method": "GET",
+      "path": "/management/projects/current",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "User ID (optional, defaults to current user)"
+          }
+        }
+      }
+    },
+    {
+      "name": "switch_project",
+      "description": "Switch the user's active project context",
+      "method": "POST",
+      "path": "/management/projects/%7B%7Bproject_id%7D%7D/switch",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID to switch to"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "User ID (optional, defaults to current user)"
+          }
+        },
+        "required": [
+          "project_id"
+        ]
+      }
+    }
+  ]
+}

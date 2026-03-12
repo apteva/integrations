@@ -1,94 +1,221 @@
 {
   "slug": "linear",
   "name": "Linear",
-  "description": "Issue tracking and project management for software teams",
-  "logo": null,
-  "categories": ["project-management", "developer-tools"],
-  "base_url": "https://api.linear.app",
+  "description": "MCP server for Linear issue tracking - issues, projects, cycles",
+  "logo": "https://www.google.com/s2/favicons?domain=linear.app&sz=128",
+  "categories": [
+    "project-management",
+    "issues",
+    "agile",
+    "development"
+  ],
+  "base_url": "https://api.linear.app/graphql",
   "auth": {
-    "types": ["bearer", "oauth2"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "access_token"
+      }
+    ],
     "oauth2": {
       "authorize_url": "https://linear.app/oauth/authorize",
       "token_url": "https://api.linear.app/oauth/token",
-      "scopes": ["read", "write", "issues:create"],
+      "scopes": [
+        "read",
+        "write",
+        "issues:create",
+        "comments:create",
+        "admin"
+      ],
       "client_id_required": true,
-      "pkce": false,
-      "setup_url": "https://linear.app/settings/api",
-      "setup_steps": [
-        "Go to Linear Settings > API > OAuth Applications",
-        "Create a new OAuth application",
-        "Set the callback URL to: {callback_url}",
-        "Copy the Client ID and Client Secret"
-      ]
-    },
-    "credential_fields": [
-      { "name": "token", "label": "API Key", "description": "Linear personal API key (lin_api_...)" }
-    ]
+      "pkce": false
+    }
   },
   "tools": [
-    {
-      "name": "list_issues",
-      "description": "List issues (GraphQL query)",
-      "method": "POST",
-      "path": "/graphql",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "default": "{ issues(first: 20) { nodes { id title state { name } assignee { name } priority createdAt } } }",
-            "description": "GraphQL query"
-          }
-        }
-      }
-    },
     {
       "name": "create_issue",
       "description": "Create a new issue",
       "method": "POST",
-      "path": "/graphql",
+      "path": "/create-issue",
       "input_schema": {
         "type": "object",
         "properties": {
-          "query": {
+          "title": {
             "type": "string",
-            "default": "mutation($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id title url } } }",
-            "description": "GraphQL mutation"
+            "description": "Issue title"
           },
-          "variables": {
-            "type": "object",
-            "description": "Variables: { input: { title, description, teamId, priority } }",
-            "properties": {
-              "input": {
-                "type": "object",
-                "properties": {
-                  "title": { "type": "string" },
-                  "description": { "type": "string" },
-                  "teamId": { "type": "string" },
-                  "priority": { "type": "number" }
-                },
-                "required": ["title", "teamId"]
-              }
-            }
+          "description": {
+            "type": "string",
+            "description": "Issue description"
+          },
+          "team_id": {
+            "type": "string",
+            "description": "Team ID"
+          },
+          "assignee_id": {
+            "type": "string",
+            "description": "Assignee ID"
+          },
+          "priority": {
+            "type": "number",
+            "description": "Priority (0-4)"
+          },
+          "state_id": {
+            "type": "string",
+            "description": "State ID"
           }
-        }
+        },
+        "required": [
+          "title",
+          "team_id"
+        ]
       }
     },
     {
-      "name": "list_teams",
-      "description": "List teams",
-      "method": "POST",
-      "path": "/graphql",
+      "name": "update_issue",
+      "description": "Update an existing issue",
+      "method": "PUT",
+      "path": "/update-issue",
       "input_schema": {
         "type": "object",
         "properties": {
-          "query": {
+          "issue_id": {
             "type": "string",
-            "default": "{ teams { nodes { id name key } } }",
-            "description": "GraphQL query"
+            "description": "Issue ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Issue title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Issue description"
+          },
+          "state_id": {
+            "type": "string",
+            "description": "State ID"
+          },
+          "priority": {
+            "type": "number",
+            "description": "Priority"
           }
-        }
+        },
+        "required": [
+          "issue_id"
+        ]
+      }
+    },
+    {
+      "name": "assign_issue",
+      "description": "Assign an issue to a user",
+      "method": "GET",
+      "path": "/assign-issue",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "description": "Issue ID"
+          },
+          "assignee_id": {
+            "type": "string",
+            "description": "Assignee user ID"
+          }
+        },
+        "required": [
+          "issue_id",
+          "assignee_id"
+        ]
+      }
+    },
+    {
+      "name": "add_comment",
+      "description": "Add a comment to an issue",
+      "method": "GET",
+      "path": "/add-comment",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "description": "Issue ID"
+          },
+          "body": {
+            "type": "string",
+            "description": "Comment body"
+          }
+        },
+        "required": [
+          "issue_id",
+          "body"
+        ]
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new project",
+      "method": "POST",
+      "path": "/create-project",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Project description"
+          },
+          "team_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Team IDs"
+          }
+        },
+        "required": [
+          "name",
+          "team_ids"
+        ]
+      }
+    },
+    {
+      "name": "manage_cycle",
+      "description": "Create or update a cycle",
+      "method": "GET",
+      "path": "/manage-cycle",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "description": "Team ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Cycle name"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Start date"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date"
+          }
+        },
+        "required": [
+          "team_id"
+        ]
       }
     }
   ]

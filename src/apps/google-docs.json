@@ -1,0 +1,278 @@
+{
+  "slug": "google-docs",
+  "name": "Google Docs",
+  "description": "MCP server for Google Docs - documents, formatting, collaboration",
+  "logo": "https://www.google.com/s2/favicons?domain=docs.google.com&sz=128",
+  "categories": [
+    "documents",
+    "writing",
+    "collaboration",
+    "productivity"
+  ],
+  "base_url": "https://docs.googleapis.com/v1",
+  "auth": {
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "accessToken",
+        "label": "accessToken"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": [
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/documents.readonly"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "create_document",
+      "description": "Create a new document",
+      "method": "POST",
+      "path": "/create-document",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      }
+    },
+    {
+      "name": "copy_document",
+      "description": "Copy an existing document",
+      "method": "GET",
+      "path": "/copy-document",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ]
+      }
+    },
+    {
+      "name": "delete_document",
+      "description": "Delete a document",
+      "method": "DELETE",
+      "path": "/delete-document",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ]
+      }
+    },
+    {
+      "name": "append_text",
+      "description": "Append text to a document",
+      "method": "GET",
+      "path": "/append-text",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "delete_text",
+      "description": "Delete text from a document",
+      "method": "DELETE",
+      "path": "/delete-text",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "start_index": {
+            "type": "number"
+          },
+          "end_index": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "document_id",
+          "start_index",
+          "end_index"
+        ]
+      }
+    },
+    {
+      "name": "format_text",
+      "description": "Format text in a document",
+      "method": "GET",
+      "path": "/format-text",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "start_index": {
+            "type": "number"
+          },
+          "end_index": {
+            "type": "number"
+          },
+          "style": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "document_id",
+          "start_index",
+          "end_index",
+          "style"
+        ]
+      }
+    },
+    {
+      "name": "format_paragraph",
+      "description": "Format paragraphs",
+      "method": "GET",
+      "path": "/format-paragraph",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "start_index": {
+            "type": "number"
+          },
+          "end_index": {
+            "type": "number"
+          },
+          "style": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "document_id",
+          "start_index",
+          "end_index",
+          "style"
+        ]
+      }
+    },
+    {
+      "name": "create_list",
+      "description": "Create a list in document",
+      "method": "POST",
+      "path": "/create-list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array"
+          },
+          "ordered": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "document_id",
+          "items"
+        ]
+      }
+    },
+    {
+      "name": "add_header_footer",
+      "description": "Add header or footer",
+      "method": "GET",
+      "path": "/add-header-footer",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "header",
+              "footer"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "type",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "export_document",
+      "description": "Export document to different format",
+      "method": "GET",
+      "path": "/export-document",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "docx",
+              "txt",
+              "html"
+            ]
+          }
+        },
+        "required": [
+          "document_id",
+          "format"
+        ]
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
   "slug": "pushover",
   "name": "Pushover",
   "description": "Real-time push notifications to mobile and desktop devices",
-  "logo": null,
+  "logo": "https://www.google.com/s2/favicons?domain=pushover.net&sz=128",
   "categories": ["communication", "notifications"],
   "base_url": "https://api.pushover.net/1",
   "auth": {

@@ -1,0 +1,673 @@
+{
+  "slug": "socialcast",
+  "name": "SocialCast",
+  "description": "Unified social media posting platform — connect accounts across 9 platforms and publish everywhere at once",
+  "logo": "https://socialcast.dev/favicon-192.png",
+  "categories": [
+    "social-media",
+    "cross-posting",
+    "twitter",
+    "instagram",
+    "facebook",
+    "linkedin",
+    "tiktok",
+    "youtube",
+    "reddit",
+    "pinterest",
+    "telegram"
+  ],
+  "base_url": "https://socialcast.dev/api/social",
+  "auth": {
+    "types": [
+      "api_key"
+    ],
+    "headers": {
+      "X-API-Key": "{{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "api_key",
+        "label": "Api_key",
+        "description": "SocialCast API Key (from your SocialCast dashboard under API Keys)"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_accounts",
+      "description": "List all connected social media accounts for the project. Optionally filter by platform or status. Accounts with status 'active' are fully configured and ready to post — do NOT suggest setup steps for active accounts. The platform_metadata field contains internal IDs used by the system (pageId, instagramAccountId, etc.) and should not be interpreted as incomplete setup.",
+      "method": "GET",
+      "path": "/accounts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "twitter",
+              "instagram",
+              "facebook",
+              "linkedin",
+              "tiktok",
+              "youtube",
+              "reddit",
+              "pinterest",
+              "telegram"
+            ],
+            "description": "Filter by platform"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "inactive",
+              "expired",
+              "error",
+              "needs_selection"
+            ],
+            "description": "Filter by account status"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return",
+            "default": 50
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset",
+            "default": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "get_account",
+      "description": "Get details of a specific connected social media account by ID.",
+      "method": "GET",
+      "path": "/accounts/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Account ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "connect_account",
+      "description": "Initiate connecting a new social media account via OAuth. Returns an auth_url to redirect the user to for authorization. Supports: Twitter, Instagram, Facebook, LinkedIn, TikTok, YouTube, Reddit, Pinterest, Telegram.",
+      "method": "POST",
+      "path": "/accounts/connect",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "twitter",
+              "instagram",
+              "facebook",
+              "linkedin",
+              "tiktok",
+              "youtube",
+              "reddit",
+              "pinterest",
+              "telegram"
+            ],
+            "description": "Platform to connect"
+          },
+          "redirect_url": {
+            "type": "string",
+            "description": "OAuth redirect URL after authorization completes"
+          },
+          "platform_metadata": {
+            "type": "object",
+            "description": "Platform-specific metadata (e.g., subreddit for Reddit, chatId for Telegram)"
+          },
+          "credential_data": {
+            "type": "object",
+            "description": "For API-key platforms like Telegram: { botToken: '...' }"
+          }
+        },
+        "required": [
+          "platform",
+          "redirect_url"
+        ]
+      }
+    },
+    {
+      "name": "disconnect_account",
+      "description": "Disconnect a social media account. The account will be marked as inactive.",
+      "method": "DELETE",
+      "path": "/accounts/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Account ID to disconnect"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "list_pages",
+      "description": "List available Facebook Pages and Instagram Business accounts for a connected Facebook/Instagram account. Used after OAuth to let the user pick which page or Instagram account to use.",
+      "method": "GET",
+      "path": "/accounts/%7B%7Bid%7D%7D/pages",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Social account ID (must be a Facebook or Instagram account in needs_selection status)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "select_page",
+      "description": "Finalize a Facebook or Instagram connection by selecting which Page or Instagram Business account to post to.",
+      "method": "POST",
+      "path": "/accounts/%7B%7Bid%7D%7D/select-page",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Social account ID"
+          },
+          "page_id": {
+            "type": "string",
+            "description": "Facebook Page ID to select (for Facebook accounts)"
+          },
+          "instagram_account_id": {
+            "type": "string",
+            "description": "Instagram Business account ID to select (for Instagram accounts)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "create_post",
+      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links. To schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). Platform-specific overrides allow customizing content per platform (e.g., Reddit title, YouTube description, TikTok privacy).",
+      "method": "POST",
+      "path": "/posts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Post text content / caption"
+          },
+          "media_urls": {
+            "type": "array",
+            "description": "Media attachments — array of objects with url, type (image/video), and optional alt_text",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "Public URL of the media file"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "image",
+                    "video"
+                  ],
+                  "description": "Media type"
+                },
+                "alt_text": {
+                  "type": "string",
+                  "description": "Alt text for accessibility"
+                }
+              },
+              "required": [
+                "url",
+                "type"
+              ]
+            }
+          },
+          "link_url": {
+            "type": "string",
+            "description": "External link to include in the post"
+          },
+          "account_ids": {
+            "type": "array",
+            "description": "Array of connected account IDs to publish to (at least 1 required)",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1
+          },
+          "scheduled_for": {
+            "type": "string",
+            "description": "ISO 8601 timestamp to schedule the post for future publishing (e.g., '2025-12-25T10:00:00Z'). If omitted, the post is published immediately."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone for the scheduled time (e.g., 'America/New_York', 'Europe/London'). Defaults to UTC if omitted. Only used when scheduled_for is set."
+          },
+          "platform_overrides": {
+            "type": "object",
+            "description": "Per-platform overrides keyed by platform name. Only include platforms you want to customize. Available fields per platform: youtube: {title, description, tags (array), privacyStatus (public/unlisted/private), categoryId (default 22=People & Blogs)}. reddit: {title, subreddit, text, nsfw}. pinterest: {title, description, board_id}. tiktok: {title, text, privacyLevel}. linkedin: {text, visibility}. facebook: {text, title (video only)}. twitter: {text}. instagram: {text}. telegram: {text, chatId, parseMode}. All fields are optional — omitted fields fall back to the main post text.",
+            "properties": {
+              "twitter": {
+                "type": "object"
+              },
+              "instagram": {
+                "type": "object"
+              },
+              "facebook": {
+                "type": "object"
+              },
+              "linkedin": {
+                "type": "object"
+              },
+              "tiktok": {
+                "type": "object"
+              },
+              "youtube": {
+                "type": "object"
+              },
+              "reddit": {
+                "type": "object"
+              },
+              "pinterest": {
+                "type": "object"
+              },
+              "telegram": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "required": [
+          "account_ids"
+        ]
+      }
+    },
+    {
+      "name": "list_posts",
+      "description": "List published social posts with filtering and pagination. Returns post content, status, and per-platform results.",
+      "method": "GET",
+      "path": "/posts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "scheduled",
+              "publishing",
+              "published",
+              "partial",
+              "failed"
+            ],
+            "description": "Filter by post status"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return",
+            "default": 20
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset",
+            "default": 0
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort field and direction",
+            "default": "created_at:desc"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_post",
+      "description": "Get a specific post with full per-platform results including platform post URLs, statuses, and errors.",
+      "method": "GET",
+      "path": "/posts/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "update_post",
+      "description": "Update a post's text and sync changes to platforms that support editing (Facebook, YouTube, Telegram). Other platforms will be skipped.",
+      "method": "PUT",
+      "path": "/posts/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to update"
+          },
+          "text": {
+            "type": "string",
+            "description": "New post text"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "delete_post",
+      "description": "Delete a post record and attempt to remove it from platforms that support deletion (Facebook, YouTube, Pinterest, Telegram). Other platforms' posts will remain live.",
+      "method": "DELETE",
+      "path": "/posts/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to delete"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "reschedule_post",
+      "description": "Reschedule a previously scheduled post to a new date/time. The post must be in 'scheduled' status. Updates the scheduled job and post record.",
+      "method": "POST",
+      "path": "/posts/%7B%7Bid%7D%7D/reschedule",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to reschedule"
+          },
+          "scheduled_for": {
+            "type": "string",
+            "description": "New ISO 8601 timestamp for the post (e.g., '2025-12-25T10:00:00Z')"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone for the scheduled time (e.g., 'America/New_York'). Defaults to UTC if omitted."
+          }
+        },
+        "required": [
+          "id",
+          "scheduled_for"
+        ]
+      }
+    },
+    {
+      "name": "cancel_scheduled_post",
+      "description": "Cancel a scheduled post. The post must be in 'scheduled' status. The post will be moved back to 'draft' status and the scheduled job will be removed.",
+      "method": "POST",
+      "path": "/posts/%7B%7Bid%7D%7D/cancel",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to cancel"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "get_post_analytics",
+      "description": "Fetch analytics and engagement metrics for a published post across all platforms. Returns impressions, reach, likes, comments, shares, views, saves, and clicks where available. Supported: Instagram, Facebook, YouTube, TikTok, Pinterest. No analytics API: Twitter, LinkedIn, Reddit, Telegram.",
+      "method": "GET",
+      "path": "/posts/%7B%7Bid%7D%7D/analytics",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to get analytics for"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "account_health",
+      "description": "Check the connection health of one or all connected social accounts. Verifies that OAuth tokens are still valid by calling each platform's profile API. Pass a specific account ID or 'all' to check all active accounts.",
+      "method": "GET",
+      "path": "/accounts/%7B%7Bid%7D%7D/health",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account ID to check, or 'all' to check all active accounts",
+            "default": "all"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_inbox",
+      "description": "List social inbox items — comments, replies, and DMs received on your connected accounts. Filter by platform, account, status, or type. Returns items sorted by most recent first with unread count.",
+      "method": "GET",
+      "path": "/inbox",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "social_account_id": {
+            "type": "integer",
+            "description": "Filter by social account ID"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "facebook",
+              "instagram"
+            ],
+            "description": "Filter by platform"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unread",
+              "read",
+              "replied",
+              "archived"
+            ],
+            "description": "Filter by status"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "comment",
+              "reply",
+              "message"
+            ],
+            "description": "Filter by item type (comment, reply to comment, or DM)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return",
+            "default": 50
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset",
+            "default": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "get_inbox_comments",
+      "description": "Fetch live comments for a specific post directly from the platform API (Facebook/Instagram). Returns threaded comments with reply counts, like counts, and reply capability flags.",
+      "method": "GET",
+      "path": "/inbox/comments",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "social_account_id": {
+            "type": "integer",
+            "description": "Social account ID that owns the post"
+          },
+          "platform_post_id": {
+            "type": "string",
+            "description": "The platform-specific post ID to fetch comments for"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor for next page of comments"
+          }
+        },
+        "required": [
+          "social_account_id",
+          "platform_post_id"
+        ]
+      }
+    },
+    {
+      "name": "reply_inbox",
+      "description": "Reply to a comment on a social post, or send a private DM to the commenter via Messenger. Set private_reply=true to send as a DM instead of a public comment reply. Private replies use the Messenger Platform and are delivered to the commenter's inbox.",
+      "method": "POST",
+      "path": "/inbox/reply",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "social_account_id": {
+            "type": "integer",
+            "description": "Social account ID to reply from"
+          },
+          "message": {
+            "type": "string",
+            "description": "Reply message text (max 5000 chars)"
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Comment ID to reply to (for public reply or private DM to commenter)"
+          },
+          "post_id": {
+            "type": "string",
+            "description": "Post ID for new top-level comment (if no comment_id)"
+          },
+          "platform_post_id": {
+            "type": "string",
+            "description": "Alias for post_id"
+          },
+          "inbox_item_id": {
+            "type": "integer",
+            "description": "Optional: inbox record ID to mark as replied"
+          },
+          "private_reply": {
+            "type": "boolean",
+            "description": "If true, send as a private DM via Messenger instead of a public comment reply",
+            "default": false
+          }
+        },
+        "required": [
+          "social_account_id",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "update_inbox",
+      "description": "Update the status of inbox items — mark as read, replied, or archived. Supports single item, bulk IDs, or mark-all-read for an account.",
+      "method": "PUT",
+      "path": "/inbox",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Single inbox item ID to update"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Array of inbox item IDs to bulk update"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unread",
+              "read",
+              "replied",
+              "archived"
+            ],
+            "description": "New status to set"
+          },
+          "mark_all_read": {
+            "type": "boolean",
+            "description": "If true, mark all items as read (optionally filtered by social_account_id)"
+          },
+          "social_account_id": {
+            "type": "integer",
+            "description": "Filter for mark_all_read — only mark items from this account"
+          }
+        }
+      }
+    },
+    {
+      "name": "delete_inbox_comment",
+      "description": "Delete a comment from a social platform (Facebook/Instagram). The comment will be removed from the platform and the inbox item marked as deleted.",
+      "method": "DELETE",
+      "path": "/inbox/comment",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "social_account_id": {
+            "type": "integer",
+            "description": "Social account ID that owns the comment"
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Platform comment ID to delete"
+          },
+          "inbox_item_id": {
+            "type": "integer",
+            "description": "Optional: inbox record ID to mark as deleted"
+          }
+        },
+        "required": [
+          "social_account_id",
+          "comment_id"
+        ]
+      }
+    }
+  ]
+}

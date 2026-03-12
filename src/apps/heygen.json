@@ -1,0 +1,184 @@
+{
+  "slug": "heygen",
+  "name": "HeyGen",
+  "description": "MCP server for HeyGen AI video generation - avatars, videos, templates",
+  "logo": "https://www.google.com/s2/favicons?domain=heygen.com&sz=128",
+  "categories": [
+    "ai",
+    "video",
+    "avatars",
+    "generation"
+  ],
+  "base_url": "https://api.heygen.com/v2",
+  "auth": {
+    "types": [
+      "api_key"
+    ],
+    "headers": {
+      "X-Api-Key": "{{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "Api Key",
+        "description": "Your HeyGen API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "create_video",
+      "description": "Create an AI video",
+      "method": "POST",
+      "path": "/create-video",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_id": {
+            "type": "string"
+          },
+          "voice_id": {
+            "type": "string"
+          },
+          "script": {
+            "type": "string"
+          },
+          "background": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "avatar_id",
+          "voice_id",
+          "script"
+        ]
+      }
+    },
+    {
+      "name": "create_from_template",
+      "description": "Create video from template",
+      "method": "POST",
+      "path": "/create-from-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "template_id"
+        ]
+      }
+    },
+    {
+      "name": "get_video",
+      "description": "Get video details",
+      "method": "GET",
+      "path": "/get-video",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "get_video_status",
+      "description": "Get video generation status",
+      "method": "GET",
+      "path": "/get-video-status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "list_avatars",
+      "description": "List available avatars",
+      "method": "GET",
+      "path": "/list-avatars",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_voices",
+      "description": "List available voices",
+      "method": "GET",
+      "path": "/list-voices",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_templates",
+      "description": "List video templates",
+      "method": "GET",
+      "path": "/list-templates",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_custom_avatar",
+      "description": "Create a custom avatar",
+      "method": "POST",
+      "path": "/create-custom-avatar",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "image_url"
+        ]
+      }
+    },
+    {
+      "name": "clone_voice",
+      "description": "Clone a voice from audio",
+      "method": "GET",
+      "path": "/clone-voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "audio_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "audio_url"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "slug": "anthropic-api",
+  "name": "Anthropic",
+  "description": "MCP server for Anthropic Claude API operations including message creation and model management",
+  "logo": "https://www.google.com/s2/favicons?domain=anthropic.com&sz=128",
+  "categories": [
+    "ai",
+    "anthropic",
+    "claude",
+    "chat",
+    "conversation"
+  ],
+  "base_url": "",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "create_message",
+      "description": "Create a message using Claude AI models",
+      "method": "POST",
+      "path": "/create-message",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "description": "Array of message objects for the conversation",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "model": {
+            "type": "string",
+            "description": "The Claude model to use",
+            "default": "claude-3-sonnet-20240229"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "Maximum number of tokens to generate",
+            "minimum": 1,
+            "maximum": 4096,
+            "default": 1000
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Sampling temperature between 0 and 1",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 1
+          },
+          "system": {
+            "type": "string",
+            "description": "System prompt to guide Claude's behavior"
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      }
+    },
+    {
+      "name": "list_models",
+      "description": "List available Anthropic Claude models",
+      "method": "GET",
+      "path": "/list-models",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

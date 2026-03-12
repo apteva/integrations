@@ -64,6 +64,7 @@ export function listApps(): Array<{
   slug: string;
   name: string;
   description: string;
+  logo: string | null;
   categories: string[];
   toolCount: number;
 }> {
@@ -71,6 +72,7 @@ export function listApps(): Array<{
     slug: app.slug,
     name: app.name,
     description: app.description,
+    logo: app.logo,
     categories: app.categories,
     toolCount: app.tools.length,
   }));

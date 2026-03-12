@@ -1,15 +1,28 @@
 {
   "slug": "sendgrid",
   "name": "SendGrid",
-  "description": "Email delivery and marketing campaigns",
-  "logo": null,
-  "categories": ["communication", "email"],
+  "description": "MCP server for SendGrid - emails, templates, campaigns, lists",
+  "logo": "https://www.google.com/s2/favicons?domain=sendgrid.com&sz=128",
+  "categories": [
+    "email",
+    "marketing",
+    "transactional",
+    "messaging"
+  ],
   "base_url": "https://api.sendgrid.com/v3",
   "auth": {
-    "types": ["bearer"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
     "credential_fields": [
-      { "name": "token", "label": "API Key", "description": "SendGrid API key (SG.xxx)" }
+      {
+        "name": "api_key",
+        "label": "Api_key",
+        "description": "Your SendGrid API Key"
+      }
     ]
   },
   "tools": [
@@ -17,49 +30,161 @@
       "name": "send_email",
       "description": "Send an email",
       "method": "POST",
-      "path": "/mail/send",
+      "path": "/send-email",
       "input_schema": {
         "type": "object",
         "properties": {
-          "personalizations": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "to": { "type": "array", "items": { "type": "object", "properties": { "email": { "type": "string" }, "name": { "type": "string" } } } },
-                "subject": { "type": "string" }
-              }
-            },
-            "description": "Recipients and personalization"
+          "to": {
+            "type": "string"
           },
           "from": {
-            "type": "object",
-            "properties": { "email": { "type": "string" }, "name": { "type": "string" } },
-            "description": "Sender"
+            "type": "string"
           },
-          "content": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": { "type": "string", "default": "text/plain" },
-                "value": { "type": "string" }
-              }
-            },
-            "description": "Email content"
+          "subject": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
           }
         },
-        "required": ["personalizations", "from", "content"]
+        "required": [
+          "to",
+          "from",
+          "subject"
+        ]
       }
     },
     {
-      "name": "list_contacts",
-      "description": "List marketing contacts",
-      "method": "GET",
-      "path": "/marketing/contacts",
+      "name": "send_template",
+      "description": "Send using a template",
+      "method": "POST",
+      "path": "/send-template",
       "input_schema": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "to": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "template_id": {
+            "type": "string"
+          },
+          "dynamic_template_data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "template_id"
+        ]
+      }
+    },
+    {
+      "name": "create_campaign",
+      "description": "Create a marketing campaign",
+      "method": "POST",
+      "path": "/create-campaign",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "sender_id": {
+            "type": "number"
+          },
+          "list_ids": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "title",
+          "subject",
+          "sender_id"
+        ]
+      }
+    },
+    {
+      "name": "manage_list",
+      "description": "Manage contact lists",
+      "method": "GET",
+      "path": "/manage-list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "list_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "get_stats",
+      "description": "Get email statistics",
+      "method": "GET",
+      "path": "/get-stats",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "aggregated_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date"
+        ]
+      }
+    },
+    {
+      "name": "verify_sender",
+      "description": "Verify sender identity",
+      "method": "GET",
+      "path": "/verify-sender",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string"
+          },
+          "from_email": {
+            "type": "string"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "reply_to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname",
+          "from_email",
+          "from_name"
+        ]
       }
     }
   ]

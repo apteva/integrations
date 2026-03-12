@@ -1,0 +1,417 @@
+{
+  "slug": "porkbun",
+  "name": "Porkbun",
+  "description": "Porkbun domain registrar - register domains, manage DNS records, SSL certificates, and domain forwarding",
+  "logo": "https://www.google.com/s2/favicons?domain=porkbun.com&sz=128",
+  "categories": [
+    "dns",
+    "domains",
+    "registrar",
+    "porkbun"
+  ],
+  "base_url": "https://api.porkbun.com/api",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "apikey",
+        "label": "Apikey",
+        "description": "Porkbun API key (generate at porkbun.com/account/api)"
+      },
+      {
+        "name": "secretapikey",
+        "label": "Secretapikey",
+        "description": "Porkbun secret API key (generated alongside the API key)"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "ping",
+      "description": "Test your Porkbun API credentials. Returns your public IP if authentication succeeds.",
+      "method": "POST",
+      "path": "/json/v3/ping",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "check_availability",
+      "description": "Check if a domain name is available for registration. Returns pricing and availability status.",
+      "method": "POST",
+      "path": "/json/v3/domain/checkDomain/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to check (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "list_domains",
+      "description": "List all domains in your Porkbun account with their status, expiration dates, and settings.",
+      "method": "POST",
+      "path": "/json/v3/domain/listAll",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_domain",
+      "description": "Retrieve detailed information about a specific domain including status, expiration, auto-renew, and WHOIS privacy settings.",
+      "method": "POST",
+      "path": "/json/v3/domain/retrieve/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to retrieve (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "register_domain",
+      "description": "Register a new domain name. IMPORTANT: You MUST first call porkbun-check-availability to get the domain's price, then pass that price as the 'cost' parameter (in pennies). Example flow: 1) check availability → get pricing, 2) register with cost. agreeToTerms must be 'yes'.",
+      "method": "POST",
+      "path": "/json/v3/domain/create/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to register (e.g. 'example.com')"
+          },
+          "cost": {
+            "type": "integer",
+            "description": "REQUIRED. Cost in pennies as an integer. Get this from porkbun-check-availability response. Example: 958 for $9.58. The cost MUST exactly match what Porkbun expects for the domain's minimum duration."
+          },
+          "agreeToTerms": {
+            "type": "string",
+            "description": "REQUIRED. Must be 'yes' to agree to Porkbun's terms of service, privacy policy, and auto-renewal conditions.",
+            "default": "yes"
+          },
+          "years": {
+            "type": "integer",
+            "description": "Number of years to register the domain for (1-10)",
+            "default": 1
+          },
+          "autorenew": {
+            "type": "integer",
+            "description": "Enable auto-renewal: 1 for yes, 0 for no",
+            "default": 1
+          }
+        },
+        "required": [
+          "domain",
+          "cost"
+        ]
+      }
+    },
+    {
+      "name": "renew_domain",
+      "description": "Renew an existing domain registration for additional years.",
+      "method": "POST",
+      "path": "/json/v3/domain/renew/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to renew (e.g. 'example.com')"
+          },
+          "years": {
+            "type": "integer",
+            "description": "Number of years to renew for (1-10)",
+            "default": 1
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "get_nameservers",
+      "description": "Retrieve the nameservers currently configured for a domain.",
+      "method": "POST",
+      "path": "/json/v3/domain/getNs/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to get nameservers for (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "update_nameservers",
+      "description": "Update the nameservers for a domain. Provide an array of nameserver hostnames.",
+      "method": "POST",
+      "path": "/json/v3/domain/updateNs/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to update nameservers for (e.g. 'example.com')"
+          },
+          "ns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of nameserver hostnames (e.g. ['ns1.example.com', 'ns2.example.com'])"
+          }
+        },
+        "required": [
+          "domain",
+          "ns"
+        ]
+      }
+    },
+    {
+      "name": "list_dns_records",
+      "description": "Retrieve all DNS records for a domain. Returns record IDs, types, names, content, TTL, and priorities.",
+      "method": "POST",
+      "path": "/json/v3/dns/retrieve/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to list DNS records for (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "create_dns_record",
+      "description": "Create a new DNS record for a domain. Supports A, AAAA, CNAME, MX, TXT, SRV, NS, ALIAS, CAA, HTTPS, SVCB, and TLSA record types.",
+      "method": "POST",
+      "path": "/json/v3/dns/create/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to create the record for (e.g. 'example.com')"
+          },
+          "name": {
+            "type": "string",
+            "description": "The subdomain for the record (e.g. 'www', 'mail'). Leave empty or use '' for the root domain."
+          },
+          "type": {
+            "type": "string",
+            "description": "DNS record type",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "SRV",
+              "NS",
+              "ALIAS",
+              "CAA",
+              "HTTPS",
+              "SVCB",
+              "TLSA"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "The value/content of the DNS record (e.g. IP address, hostname, text value)"
+          },
+          "ttl": {
+            "type": "integer",
+            "description": "Time to live in seconds (default: 600)",
+            "default": 600
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority for MX and SRV records (lower = higher priority)"
+          }
+        },
+        "required": [
+          "domain",
+          "type",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "update_dns_record",
+      "description": "Update an existing DNS record by its record ID. Use porkbun-list-dns-records to find record IDs.",
+      "method": "POST",
+      "path": "/json/v3/dns/edit/%7B%7Bdomain%7D%7D/%7B%7BrecordId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name the record belongs to (e.g. 'example.com')"
+          },
+          "recordId": {
+            "type": "string",
+            "description": "The ID of the DNS record to update (from list-dns-records)"
+          },
+          "name": {
+            "type": "string",
+            "description": "The subdomain for the record (e.g. 'www', 'mail'). Leave empty for root domain."
+          },
+          "type": {
+            "type": "string",
+            "description": "DNS record type",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "SRV",
+              "NS",
+              "ALIAS",
+              "CAA",
+              "HTTPS",
+              "SVCB",
+              "TLSA"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "The value/content of the DNS record"
+          },
+          "ttl": {
+            "type": "integer",
+            "description": "Time to live in seconds",
+            "default": 600
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority for MX and SRV records"
+          }
+        },
+        "required": [
+          "domain",
+          "recordId",
+          "type",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "delete_dns_record",
+      "description": "Delete a DNS record by its record ID. Use porkbun-list-dns-records to find record IDs.",
+      "method": "POST",
+      "path": "/json/v3/dns/delete/%7B%7Bdomain%7D%7D/%7B%7BrecordId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name the record belongs to (e.g. 'example.com')"
+          },
+          "recordId": {
+            "type": "string",
+            "description": "The ID of the DNS record to delete (from list-dns-records)"
+          }
+        },
+        "required": [
+          "domain",
+          "recordId"
+        ]
+      }
+    },
+    {
+      "name": "get_pricing",
+      "description": "Get pricing information for all available TLDs. No authentication required. Returns registration, renewal, and transfer prices.",
+      "method": "POST",
+      "path": "/json/v3/pricing/get",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "enable_whois_privacy",
+      "description": "Enable WHOIS privacy protection for a domain to hide personal information from public WHOIS lookups.",
+      "method": "POST",
+      "path": "/json/v3/domain/enableWhoisPrivacy/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to enable WHOIS privacy for (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "add_url_forward",
+      "description": "Add URL forwarding for a domain or subdomain. Supports temporary (302) and permanent (301) redirects, as well as masked forwarding.",
+      "method": "POST",
+      "path": "/json/v3/domain/addUrlForward/%7B%7Bdomain%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "The domain name to add forwarding to (e.g. 'example.com')"
+          },
+          "subdomain": {
+            "type": "string",
+            "description": "The subdomain to forward (e.g. 'www'). Leave empty for the root domain."
+          },
+          "forwardUrl": {
+            "type": "string",
+            "description": "The destination URL to forward to (e.g. 'https://destination.com')"
+          },
+          "forwardType": {
+            "type": "string",
+            "description": "Type of forwarding: 'temporary' (302), 'permanent' (301), or 'masked' (iframe)",
+            "enum": [
+              "temporary",
+              "permanent",
+              "masked"
+            ]
+          }
+        },
+        "required": [
+          "domain",
+          "forwardUrl",
+          "forwardType"
+        ]
+      }
+    }
+  ]
+}

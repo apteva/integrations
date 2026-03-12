@@ -1,0 +1,374 @@
+{
+  "slug": "omnikit-analytics",
+  "name": "OmniKit Analytics",
+  "description": "Analytics and metrics system for OmniKit platform - import platform-specific metrics (YouTube, Patreon, etc.), query aggregated data, manage metric configurations and dimensions",
+  "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+  "categories": [
+    "analytics",
+    "metrics",
+    "tracking",
+    "reporting",
+    "youtube",
+    "patreon",
+    "web-analytics",
+    "omnikit",
+    "data"
+  ],
+  "base_url": "https://api.omnikit.co",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_sources",
+      "description": "Get available analytics sources (web, patreon, youtube, stripe, etc.) and their metrics. Shows which sources have data and summary statistics.",
+      "method": "GET",
+      "path": "/analytics/sources",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "include_empty": {
+            "type": "boolean",
+            "description": "Include sources without data (shows all configured sources)",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "name": "import_metrics",
+      "description": "Import external/platform-specific metrics directly. Supports single metric or bulk import. Use for YouTube views, Patreon patrons, social media stats, etc.",
+      "method": "POST",
+      "path": "/analytics/metrics/import",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "description": "Metric name for single import (e.g., 'youtube_views', 'patreon_patrons')"
+          },
+          "value": {
+            "type": "number",
+            "description": "Metric value for single import"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Timestamp for the metric (ISO 8601 format)"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour",
+              "day",
+              "week",
+              "month",
+              "quarter",
+              "year"
+            ],
+            "description": "Time granularity",
+            "default": "day"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source platform (e.g., 'youtube', 'patreon', 'twitter', 'instagram', 'stripe')"
+          },
+          "dimensions": {
+            "type": "object",
+            "description": "Optional dimensions for the metric (e.g., {\"channel\": \"main\", \"country\": \"US\"})"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata to store with the metric"
+          },
+          "metrics": {
+            "type": "array",
+            "description": "Array of metrics for bulk import",
+            "items": {
+              "type": "object",
+              "properties": {
+                "metric_name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "granularity": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "dimensions": {
+                  "type": "object"
+                },
+                "metadata": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "metric_name",
+                "value",
+                "timestamp"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "query_metrics",
+      "description": "Query pre-aggregated metrics data with flexible filtering, grouping, and date ranges. Returns time-series data for charts and reports.",
+      "method": "GET",
+      "path": "/analytics/metrics/%7B%7Bmetric_name%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "description": "Name of the metric to query"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Start date for query (ISO 8601)"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date for query (ISO 8601)"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour",
+              "day",
+              "week",
+              "month",
+              "quarter",
+              "year"
+            ],
+            "description": "Time granularity to filter by"
+          },
+          "group_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dimensions to group by"
+          },
+          "filters": {
+            "type": "object",
+            "description": "Dimension filters (e.g., {\"source\": \"youtube\"})"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 1000
+          },
+          "include_comparison": {
+            "type": "boolean",
+            "description": "Include comparison data from previous period"
+          }
+        },
+        "required": [
+          "metric_name"
+        ]
+      }
+    },
+    {
+      "name": "calculate_metrics",
+      "description": "Calculate and aggregate metrics based on configuration. Processes raw events into aggregated metric data points.",
+      "method": "POST",
+      "path": "/analytics/metrics/calculate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "description": "Name of the metric to calculate"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Start date for calculation (ISO 8601)"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date for calculation (ISO 8601)"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour",
+              "day",
+              "week",
+              "month",
+              "quarter",
+              "year"
+            ],
+            "description": "Time granularity for aggregation"
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of dimension names to include in calculation"
+          },
+          "force_recalculate": {
+            "type": "boolean",
+            "description": "Force recalculation even if data exists",
+            "default": false
+          }
+        },
+        "required": [
+          "metric_name"
+        ]
+      }
+    },
+    {
+      "name": "manage_metrics",
+      "description": "Create, update, list, or delete metric configurations. Define how metrics are calculated, their data types, and display properties.",
+      "method": "POST",
+      "path": "/analytics/metrics",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "delete",
+              "list",
+              "get"
+            ],
+            "description": "Action to perform"
+          },
+          "metric_id": {
+            "type": "integer",
+            "description": "Metric config ID (for update/delete/get)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Metric name (e.g., 'youtube_views')"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Display name for UI"
+          },
+          "description": {
+            "type": "string",
+            "description": "Metric description"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source platform (youtube, patreon, web, etc.)"
+          },
+          "metric_type": {
+            "type": "string",
+            "enum": [
+              "aggregated",
+              "calculated",
+              "imported"
+            ],
+            "description": "How the metric is generated"
+          },
+          "aggregation_type": {
+            "type": "string",
+            "enum": [
+              "sum",
+              "avg",
+              "count",
+              "min",
+              "max",
+              "first",
+              "last"
+            ],
+            "description": "Aggregation method"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category for grouping (traffic, engagement, conversion, etc.)"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the metric is active"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "manage_dimensions",
+      "description": "Create, update, list, or delete analytics dimensions. Dimensions are used to slice and filter metric data (e.g., by country, channel, device).",
+      "method": "POST",
+      "path": "/analytics/dimensions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "delete",
+              "list",
+              "get"
+            ],
+            "description": "Action to perform"
+          },
+          "dimension_id": {
+            "type": "integer",
+            "description": "Dimension ID (for update/delete/get)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Dimension name (e.g., 'country', 'channel')"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Display name for UI"
+          },
+          "description": {
+            "type": "string",
+            "description": "Dimension description"
+          },
+          "data_type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "number",
+              "boolean",
+              "date"
+            ],
+            "description": "Data type of dimension values"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the dimension is active"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    }
+  ]
+}

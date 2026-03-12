@@ -1,0 +1,556 @@
+{
+  "slug": "aws-ses",
+  "name": "AWS SES",
+  "description": "MCP server for Amazon SES - email sending, templates, identities, configuration",
+  "logo": "https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128",
+  "categories": [
+    "aws",
+    "ses",
+    "email",
+    "messaging"
+  ],
+  "base_url": "https://email.{region}.amazonaws.com",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "send_email",
+      "description": "Send an email",
+      "method": "POST",
+      "path": "/send-email",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array"
+          },
+          "from": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body_text": {
+            "type": "string"
+          },
+          "body_html": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "subject"
+        ]
+      }
+    },
+    {
+      "name": "send_templated",
+      "description": "Send email using template",
+      "method": "POST",
+      "path": "/send-templated",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array"
+          },
+          "from": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "template_data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "template"
+        ]
+      }
+    },
+    {
+      "name": "send_bulk_templated",
+      "description": "Send bulk templated emails",
+      "method": "POST",
+      "path": "/send-bulk-templated",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "destinations": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "from",
+          "template",
+          "destinations"
+        ]
+      }
+    },
+    {
+      "name": "send_raw_email",
+      "description": "Send raw MIME email",
+      "method": "POST",
+      "path": "/send-raw-email",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "raw_message": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "raw_message"
+        ]
+      }
+    },
+    {
+      "name": "create_template",
+      "description": "Create email template",
+      "method": "POST",
+      "path": "/create-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "subject"
+        ]
+      }
+    },
+    {
+      "name": "get_template",
+      "description": "Get email template",
+      "method": "GET",
+      "path": "/get-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "update_template",
+      "description": "Update email template",
+      "method": "PUT",
+      "path": "/update-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "delete_template",
+      "description": "Delete email template",
+      "method": "DELETE",
+      "path": "/delete-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "list_templates",
+      "description": "List email templates",
+      "method": "GET",
+      "path": "/list-templates",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "max_items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "clone_template",
+      "description": "Clone an email template",
+      "method": "GET",
+      "path": "/clone-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_name": {
+            "type": "string"
+          },
+          "new_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_name",
+          "new_name"
+        ]
+      }
+    },
+    {
+      "name": "validate_template",
+      "description": "Validate template syntax",
+      "method": "GET",
+      "path": "/validate-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "test_render_template",
+      "description": "Test render template with data",
+      "method": "GET",
+      "path": "/test-render-template",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "template_data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "verify_email",
+      "description": "Verify email identity",
+      "method": "GET",
+      "path": "/verify-email",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "name": "verify_domain",
+      "description": "Verify domain identity",
+      "method": "GET",
+      "path": "/verify-domain",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "list_identities",
+      "description": "List verified identities",
+      "method": "GET",
+      "path": "/list-identities",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identity_type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "delete_identity",
+      "description": "Delete verified identity",
+      "method": "DELETE",
+      "path": "/delete-identity",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identity": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      }
+    },
+    {
+      "name": "get_identity_verification",
+      "description": "Get identity verification status",
+      "method": "GET",
+      "path": "/get-identity-verification",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identities": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "identities"
+        ]
+      }
+    },
+    {
+      "name": "set_identity_dkim",
+      "description": "Enable/disable DKIM",
+      "method": "GET",
+      "path": "/set-identity-dkim",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identity": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "identity",
+          "enabled"
+        ]
+      }
+    },
+    {
+      "name": "set_identity_feedback",
+      "description": "Configure feedback forwarding",
+      "method": "GET",
+      "path": "/set-identity-feedback",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identity": {
+            "type": "string"
+          },
+          "forwarding_enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "identity",
+          "forwarding_enabled"
+        ]
+      }
+    },
+    {
+      "name": "set_identity_notifications",
+      "description": "Configure notification topics",
+      "method": "GET",
+      "path": "/set-identity-notifications",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identity": {
+            "type": "string"
+          },
+          "notification_type": {
+            "type": "string"
+          },
+          "sns_topic": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "identity",
+          "notification_type"
+        ]
+      }
+    },
+    {
+      "name": "create_config_set",
+      "description": "Create configuration set",
+      "method": "POST",
+      "path": "/create-config-set",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "delete_config_set",
+      "description": "Delete configuration set",
+      "method": "DELETE",
+      "path": "/delete-config-set",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "list_config_sets",
+      "description": "List configuration sets",
+      "method": "GET",
+      "path": "/list-config-sets",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "add_event_destination",
+      "description": "Add event destination to config set",
+      "method": "GET",
+      "path": "/add-event-destination",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "config_set_name": {
+            "type": "string"
+          },
+          "event_destination": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "config_set_name",
+          "event_destination"
+        ]
+      }
+    },
+    {
+      "name": "update_event_destination",
+      "description": "Update event destination",
+      "method": "PUT",
+      "path": "/update-event-destination",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "config_set_name": {
+            "type": "string"
+          },
+          "event_destination": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "config_set_name",
+          "event_destination"
+        ]
+      }
+    },
+    {
+      "name": "set_reputation_tracking",
+      "description": "Configure reputation tracking",
+      "method": "GET",
+      "path": "/set-reputation-tracking",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "config_set_name": {
+            "type": "string"
+          },
+          "reputation_metrics_enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "config_set_name"
+        ]
+      }
+    },
+    {
+      "name": "get_quota",
+      "description": "Get sending quota",
+      "method": "GET",
+      "path": "/get-quota",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

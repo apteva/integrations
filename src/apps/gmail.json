@@ -1,69 +1,880 @@
 {
   "slug": "gmail",
   "name": "Gmail",
-  "description": "Email sending, reading, and management via Gmail API",
-  "logo": null,
-  "categories": ["communication", "email"],
+  "description": "MCP server for Gmail - send, read, search emails, manage labels, drafts, threads, filters, and attachments via the Gmail REST API",
+  "logo": "https://www.google.com/s2/favicons?domain=gmail.com&sz=128",
+  "categories": [
+    "email",
+    "google",
+    "communication",
+    "productivity",
+    "gmail"
+  ],
   "base_url": "https://gmail.googleapis.com/gmail/v1",
   "auth": {
-    "types": ["oauth2"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/json" },
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "access_token"
+      }
+    ],
     "oauth2": {
       "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
       "token_url": "https://oauth2.googleapis.com/token",
-      "scopes": ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.send"],
+      "scopes": [
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.modify",
+        "https://www.googleapis.com/auth/gmail.compose",
+        "https://www.googleapis.com/auth/gmail.labels",
+        "https://www.googleapis.com/auth/gmail.settings.basic"
+      ],
       "client_id_required": true,
-      "pkce": false,
-      "setup_url": "https://console.cloud.google.com/apis/credentials",
-      "setup_steps": [
-        "Go to Google Cloud Console > APIs & Services > Credentials",
-        "Create an OAuth 2.0 Client ID (Web application type)",
-        "Add the authorized redirect URI: {callback_url}",
-        "Enable the Gmail API under APIs & Services > Library",
-        "Copy the Client ID and Client Secret"
-      ]
+      "pkce": false
     }
   },
   "tools": [
     {
-      "name": "list_messages",
-      "description": "List messages in the mailbox",
-      "method": "GET",
-      "path": "/users/me/messages",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "q": { "type": "string", "description": "Gmail search query (e.g. 'from:user@example.com')" },
-          "maxResults": { "type": "number", "default": 10 },
-          "labelIds": { "type": "array", "items": { "type": "string" }, "description": "Filter by label" }
-        }
-      }
-    },
-    {
-      "name": "get_message",
-      "description": "Get a specific email message",
-      "method": "GET",
-      "path": "/users/me/messages/{id}",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "description": "Message ID" },
-          "format": { "type": "string", "enum": ["full", "metadata", "minimal"], "default": "full" }
-        },
-        "required": ["id"]
-      }
-    },
-    {
-      "name": "send_message",
-      "description": "Send an email message",
+      "name": "send_email",
+      "description": "Send an email message. Provide plain-text fields (to, subject, body) — the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML emails, use htmlBody instead of or alongside body.",
       "method": "POST",
       "path": "/users/me/messages/send",
       "input_schema": {
         "type": "object",
         "properties": {
-          "raw": { "type": "string", "description": "Base64url-encoded RFC 2822 email message" }
+          "to": {
+            "type": "string",
+            "description": "Recipient email address(es). Comma-separate for multiple (e.g., 'user@example.com' or 'a@example.com, b@example.com')"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Email subject line (supports all languages and special characters)"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text email body (supports all languages and special characters including accents, CJK, emoji)"
+          },
+          "htmlBody": {
+            "type": "string",
+            "description": "HTML email body (optional, use instead of or alongside plain text body)"
+          },
+          "cc": {
+            "type": "string",
+            "description": "CC recipients (comma-separated)"
+          },
+          "bcc": {
+            "type": "string",
+            "description": "BCC recipients (comma-separated)"
+          },
+          "replyTo": {
+            "type": "string",
+            "description": "Reply-To address"
+          },
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to reply to (makes this a reply within an existing thread)"
+          },
+          "inReplyTo": {
+            "type": "string",
+            "description": "Message-ID of the message being replied to (for proper threading)"
+          },
+          "references": {
+            "type": "string",
+            "description": "Space-separated Message-IDs for threading context"
+          }
         },
-        "required": ["raw"]
+        "required": [
+          "to",
+          "subject",
+          "body"
+        ]
+      }
+    },
+    {
+      "name": "list_messages",
+      "description": "List email message IDs matching a query. Returns only message IDs and thread IDs — use gmail-get-message to fetch full content (subject, body, headers). Supports Gmail search syntax (e.g. 'from:user@example.com', 'is:unread', 'subject:hello', 'newer_than:2d', 'has:attachment')",
+      "method": "GET",
+      "path": "/users/me/messages",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Gmail search query (e.g. 'from:user@example.com is:unread', 'subject:invoice newer_than:7d', 'has:attachment')"
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum number of messages to return",
+            "default": 20,
+            "maximum": 500
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token from previous response for pagination"
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to filter by — only messages matching ALL specified labels are returned (e.g. ['INBOX'], ['INBOX', 'UNREAD'], ['STARRED'])"
+          },
+          "includeSpamTrash": {
+            "type": "boolean",
+            "description": "Include messages from SPAM and TRASH",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "get_message",
+      "description": "Get full email message details including headers, body, and attachment metadata",
+      "method": "GET",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID to retrieve"
+          },
+          "format": {
+            "type": "string",
+            "description": "Response format",
+            "enum": [
+              "minimal",
+              "full",
+              "raw",
+              "metadata"
+            ],
+            "default": "full"
+          },
+          "metadataHeaders": {
+            "type": "string",
+            "description": "Headers to include when format is 'metadata' (comma-separated, e.g. 'From,To,Subject,Date')"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "modify_message",
+      "description": "Add or remove labels from a message (e.g. mark as read/unread, star, archive, categorize)",
+      "method": "POST",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/modify",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID to modify"
+          },
+          "addLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to add (e.g. ['STARRED', 'UNREAD', 'IMPORTANT'])"
+          },
+          "removeLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to remove (e.g. ['UNREAD'] to mark as read, ['INBOX'] to archive)"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "trash_message",
+      "description": "Move a message to the trash",
+      "method": "POST",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/trash",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID to trash"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "untrash_message",
+      "description": "Remove a message from trash and restore it",
+      "method": "POST",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/untrash",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID to restore from trash"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "delete_message",
+      "description": "Permanently delete a message (bypasses trash). This action is irreversible",
+      "method": "DELETE",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID to permanently delete"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "batch_modify_messages",
+      "description": "Add or remove labels from multiple messages at once",
+      "method": "POST",
+      "path": "/users/me/messages/batchModify",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of message IDs to modify (max 1000)"
+          },
+          "addLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to add to all messages"
+          },
+          "removeLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to remove from all messages"
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      }
+    },
+    {
+      "name": "list_threads",
+      "description": "List email thread IDs with optional search. Returns thread IDs and snippets — use gmail-get-thread to fetch full conversation messages",
+      "method": "GET",
+      "path": "/users/me/threads",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Gmail search query to filter threads"
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum threads to return",
+            "default": 20,
+            "maximum": 500
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token for pagination"
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to filter by — only threads matching ALL specified labels (e.g. ['INBOX'], ['INBOX', 'UNREAD'])"
+          },
+          "includeSpamTrash": {
+            "type": "boolean",
+            "description": "Include SPAM and TRASH threads",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "get_thread",
+      "description": "Get all messages in an email thread (conversation)",
+      "method": "GET",
+      "path": "/users/me/threads/%7B%7BthreadId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to retrieve"
+          },
+          "format": {
+            "type": "string",
+            "description": "Message format in the thread",
+            "enum": [
+              "minimal",
+              "full",
+              "raw",
+              "metadata"
+            ],
+            "default": "full"
+          }
+        },
+        "required": [
+          "threadId"
+        ]
+      }
+    },
+    {
+      "name": "modify_thread",
+      "description": "Add or remove labels from all messages in a thread",
+      "method": "POST",
+      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/modify",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to modify"
+          },
+          "addLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to add"
+          },
+          "removeLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to remove"
+          }
+        },
+        "required": [
+          "threadId"
+        ]
+      }
+    },
+    {
+      "name": "trash_thread",
+      "description": "Move an entire thread to trash",
+      "method": "POST",
+      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/trash",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to trash"
+          }
+        },
+        "required": [
+          "threadId"
+        ]
+      }
+    },
+    {
+      "name": "untrash_thread",
+      "description": "Restore a thread from trash",
+      "method": "POST",
+      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/untrash",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to restore"
+          }
+        },
+        "required": [
+          "threadId"
+        ]
+      }
+    },
+    {
+      "name": "list_labels",
+      "description": "List all labels in the mailbox including system labels (INBOX, SENT, TRASH, etc.) and user-created labels",
+      "method": "GET",
+      "path": "/users/me/labels",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_label",
+      "description": "Get details for a specific label including message and thread counts",
+      "method": "GET",
+      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "labelId": {
+            "type": "string",
+            "description": "Label ID (e.g. 'INBOX', 'Label_123')"
+          }
+        },
+        "required": [
+          "labelId"
+        ]
+      }
+    },
+    {
+      "name": "create_label",
+      "description": "Create a new email label for organizing messages",
+      "method": "POST",
+      "path": "/users/me/labels",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Label name (use '/' for nested labels, e.g. 'Projects/Work')"
+          },
+          "labelListVisibility": {
+            "type": "string",
+            "description": "Visibility in the label list",
+            "enum": [
+              "labelShow",
+              "labelShowIfUnread",
+              "labelHide"
+            ],
+            "default": "labelShow"
+          },
+          "messageListVisibility": {
+            "type": "string",
+            "description": "Visibility in the message list",
+            "enum": [
+              "show",
+              "hide"
+            ],
+            "default": "show"
+          },
+          "color": {
+            "type": "object",
+            "description": "Label color",
+            "properties": {
+              "textColor": {
+                "type": "string",
+                "description": "Text color hex (e.g. '#ffffff')"
+              },
+              "backgroundColor": {
+                "type": "string",
+                "description": "Background color hex (e.g. '#4986e7')"
+              }
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "update_label",
+      "description": "Update a label's name, visibility, or color",
+      "method": "PATCH",
+      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "labelId": {
+            "type": "string",
+            "description": "Label ID to update"
+          },
+          "name": {
+            "type": "string",
+            "description": "New label name"
+          },
+          "labelListVisibility": {
+            "type": "string",
+            "enum": [
+              "labelShow",
+              "labelShowIfUnread",
+              "labelHide"
+            ]
+          },
+          "messageListVisibility": {
+            "type": "string",
+            "enum": [
+              "show",
+              "hide"
+            ]
+          },
+          "color": {
+            "type": "object",
+            "properties": {
+              "textColor": {
+                "type": "string"
+              },
+              "backgroundColor": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "labelId"
+        ]
+      }
+    },
+    {
+      "name": "delete_label",
+      "description": "Permanently delete a label. Messages with this label are not deleted, only the label is removed",
+      "method": "DELETE",
+      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "labelId": {
+            "type": "string",
+            "description": "Label ID to delete"
+          }
+        },
+        "required": [
+          "labelId"
+        ]
+      }
+    },
+    {
+      "name": "list_drafts",
+      "description": "List email drafts with optional search query",
+      "method": "GET",
+      "path": "/users/me/drafts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Search query to filter drafts"
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum drafts to return",
+            "default": 20,
+            "maximum": 500
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token for pagination"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_draft",
+      "description": "Get a specific draft's content and metadata",
+      "method": "GET",
+      "path": "/users/me/drafts/%7B%7BdraftId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "description": "Draft ID to retrieve"
+          },
+          "format": {
+            "type": "string",
+            "description": "Message format",
+            "enum": [
+              "minimal",
+              "full",
+              "raw",
+              "metadata"
+            ],
+            "default": "full"
+          }
+        },
+        "required": [
+          "draftId"
+        ]
+      }
+    },
+    {
+      "name": "create_draft",
+      "description": "Create a new email draft. Provide plain-text fields (to, subject, body) — the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML drafts, use htmlBody.",
+      "method": "POST",
+      "path": "/users/me/drafts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Email subject line (supports all languages and special characters)"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text email body (supports all languages and special characters)"
+          },
+          "htmlBody": {
+            "type": "string",
+            "description": "HTML email body (optional)"
+          },
+          "cc": {
+            "type": "string",
+            "description": "CC recipients (comma-separated)"
+          },
+          "bcc": {
+            "type": "string",
+            "description": "BCC recipients (comma-separated)"
+          },
+          "replyTo": {
+            "type": "string",
+            "description": "Reply-To address"
+          },
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID if this draft is a reply"
+          }
+        },
+        "required": [
+          "to",
+          "subject",
+          "body"
+        ]
+      }
+    },
+    {
+      "name": "delete_draft",
+      "description": "Permanently delete a draft",
+      "method": "DELETE",
+      "path": "/users/me/drafts/%7B%7BdraftId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "description": "Draft ID to delete"
+          }
+        },
+        "required": [
+          "draftId"
+        ]
+      }
+    },
+    {
+      "name": "send_draft",
+      "description": "Send an existing draft",
+      "method": "POST",
+      "path": "/users/me/drafts/send",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Draft ID to send"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "get_attachment",
+      "description": "Download an email attachment by message ID and attachment ID. Returns base64-encoded attachment data",
+      "method": "GET",
+      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/attachments/%7B%7BattachmentId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID containing the attachment"
+          },
+          "attachmentId": {
+            "type": "string",
+            "description": "Attachment ID (found in message payload parts)"
+          }
+        },
+        "required": [
+          "messageId",
+          "attachmentId"
+        ]
+      }
+    },
+    {
+      "name": "list_filters",
+      "description": "List all email filters (automatic rules) in the account",
+      "method": "GET",
+      "path": "/users/me/settings/filters",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_filter",
+      "description": "Create an email filter rule to automatically label, archive, star, or forward matching messages",
+      "method": "POST",
+      "path": "/users/me/settings/filters",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "criteria": {
+            "type": "object",
+            "description": "Filter matching criteria",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Sender email address or pattern"
+              },
+              "to": {
+                "type": "string",
+                "description": "Recipient email address or pattern"
+              },
+              "subject": {
+                "type": "string",
+                "description": "Subject line contains"
+              },
+              "query": {
+                "type": "string",
+                "description": "Gmail search query for matching"
+              },
+              "hasAttachment": {
+                "type": "boolean",
+                "description": "Must have attachment"
+              },
+              "size": {
+                "type": "integer",
+                "description": "Message size in bytes"
+              },
+              "sizeComparison": {
+                "type": "string",
+                "enum": [
+                  "larger",
+                  "smaller"
+                ],
+                "description": "Size comparison operator"
+              }
+            }
+          },
+          "action": {
+            "type": "object",
+            "description": "Actions to apply to matching messages",
+            "properties": {
+              "addLabelIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Labels to add"
+              },
+              "removeLabelIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Labels to remove (e.g. ['INBOX'] to skip inbox)"
+              },
+              "forward": {
+                "type": "string",
+                "description": "Email address to forward to"
+              }
+            }
+          }
+        },
+        "required": [
+          "criteria",
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "delete_filter",
+      "description": "Delete an email filter rule",
+      "method": "DELETE",
+      "path": "/users/me/settings/filters/%7B%7BfilterId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "filterId": {
+            "type": "string",
+            "description": "Filter ID to delete"
+          }
+        },
+        "required": [
+          "filterId"
+        ]
+      }
+    },
+    {
+      "name": "watch_mailbox",
+      "description": "Set up push notifications for mailbox changes via Google Cloud Pub/Sub. Notifications are sent when new messages arrive or labels change",
+      "method": "POST",
+      "path": "/users/me/watch",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "topicName": {
+            "type": "string",
+            "description": "Google Cloud Pub/Sub topic name (format: projects/PROJECT_ID/topics/TOPIC_NAME)"
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Label IDs to watch (e.g. ['INBOX']). If empty, watches all labels"
+          },
+          "labelFilterBehavior": {
+            "type": "string",
+            "description": "Filter behavior for labelIds",
+            "enum": [
+              "include",
+              "exclude"
+            ],
+            "default": "include"
+          }
+        },
+        "required": [
+          "topicName"
+        ]
+      }
+    },
+    {
+      "name": "stop_watch",
+      "description": "Stop receiving push notifications for mailbox changes",
+      "method": "POST",
+      "path": "/users/me/stop",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
       }
     }
   ]

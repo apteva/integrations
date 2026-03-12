@@ -1,0 +1,252 @@
+{
+  "slug": "namecheap",
+  "name": "Namecheap",
+  "description": "Namecheap domain registrar - register domains, manage DNS, check availability, and handle domain contacts",
+  "logo": "https://www.google.com/s2/favicons?domain=namecheap.com&sz=128",
+  "categories": [
+    "dns",
+    "domains",
+    "registrar",
+    "namecheap"
+  ],
+  "base_url": "",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "apiUser",
+        "label": "Api User",
+        "description": "Namecheap API username (usually your account username)"
+      },
+      {
+        "name": "token",
+        "label": "Api Key",
+        "description": "Namecheap API key (generate from Account > Profile > Tools > API Access)"
+      },
+      {
+        "name": "userName",
+        "label": "User Name",
+        "description": "Namecheap account username"
+      },
+      {
+        "name": "clientIp",
+        "label": "Client Ip",
+        "description": "Your whitelisted IP address (must be whitelisted in Namecheap account)"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_domains",
+      "description": "List all domains in your Namecheap account with pagination. Returns domain names, expiration dates, and status. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/list-domains",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Page number to return (default: 1)",
+            "default": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of domains per page (default: 20, max: 100)",
+            "default": 20
+          }
+        }
+      }
+    },
+    {
+      "name": "check_availability",
+      "description": "Check if one or more domain names are available for registration. Pass a comma-separated list of domains. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/check-availability",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domainList": {
+            "type": "string",
+            "description": "Comma-separated list of domains to check (e.g. 'example.com,example.net,example.org')"
+          }
+        },
+        "required": [
+          "domainList"
+        ]
+      }
+    },
+    {
+      "name": "get_domain_info",
+      "description": "Get detailed information about a specific domain including status, dates, nameservers, and WHOIS guard status. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/get-domain-info",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domainName": {
+            "type": "string",
+            "description": "The domain name to get info for (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domainName"
+        ]
+      }
+    },
+    {
+      "name": "register_domain",
+      "description": "Register a new domain name. Requires domain name, years, and contact information fields passed in the request body. Note: Namecheap returns XML responses.",
+      "method": "POST",
+      "path": "/register-domain",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domainName": {
+            "type": "string",
+            "description": "The domain name to register (e.g. 'example.com')"
+          },
+          "years": {
+            "type": "integer",
+            "description": "Number of years to register for (1-10)",
+            "default": 1
+          }
+        },
+        "required": [
+          "domainName",
+          "years"
+        ]
+      }
+    },
+    {
+      "name": "renew_domain",
+      "description": "Renew an existing domain registration for additional years. Note: Namecheap returns XML responses.",
+      "method": "POST",
+      "path": "/renew-domain",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domainName": {
+            "type": "string",
+            "description": "The domain name to renew (e.g. 'example.com')"
+          },
+          "years": {
+            "type": "integer",
+            "description": "Number of years to renew for (1-10)",
+            "default": 1
+          }
+        },
+        "required": [
+          "domainName",
+          "years"
+        ]
+      }
+    },
+    {
+      "name": "get_dns_hosts",
+      "description": "Retrieve all DNS host records for a domain. Requires the second-level domain (SLD) and top-level domain (TLD) as separate parameters. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/get-dns-hosts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sld": {
+            "type": "string",
+            "description": "Second-level domain (e.g. 'example' from 'example.com')"
+          },
+          "tld": {
+            "type": "string",
+            "description": "Top-level domain (e.g. 'com' from 'example.com')"
+          }
+        },
+        "required": [
+          "sld",
+          "tld"
+        ]
+      }
+    },
+    {
+      "name": "set_dns_hosts",
+      "description": "Set DNS host records for a domain. Replaces all existing records. Pass host record fields (HostName1, RecordType1, Address1, etc.) in the request body. Note: Namecheap returns XML responses.",
+      "method": "POST",
+      "path": "/set-dns-hosts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sld": {
+            "type": "string",
+            "description": "Second-level domain (e.g. 'example' from 'example.com')"
+          },
+          "tld": {
+            "type": "string",
+            "description": "Top-level domain (e.g. 'com' from 'example.com')"
+          }
+        },
+        "required": [
+          "sld",
+          "tld"
+        ]
+      }
+    },
+    {
+      "name": "get_contacts",
+      "description": "Retrieve the contact information (registrant, tech, admin, aux billing) for a domain. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/get-contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domainName": {
+            "type": "string",
+            "description": "The domain name to get contacts for (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "domainName"
+        ]
+      }
+    },
+    {
+      "name": "get_tld_list",
+      "description": "Get pricing information for all available TLDs including registration, renewal, and transfer prices. Note: Namecheap returns XML responses.",
+      "method": "GET",
+      "path": "/get-tld-list",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "set_nameservers",
+      "description": "Set custom nameservers for a domain. Provide the nameservers as a comma-separated string. Note: Namecheap returns XML responses.",
+      "method": "POST",
+      "path": "/set-nameservers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sld": {
+            "type": "string",
+            "description": "Second-level domain (e.g. 'example' from 'example.com')"
+          },
+          "tld": {
+            "type": "string",
+            "description": "Top-level domain (e.g. 'com' from 'example.com')"
+          },
+          "nameservers": {
+            "type": "string",
+            "description": "Comma-separated list of nameservers (e.g. 'ns1.example.com,ns2.example.com')"
+          }
+        },
+        "required": [
+          "sld",
+          "tld",
+          "nameservers"
+        ]
+      }
+    }
+  ]
+}

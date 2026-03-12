@@ -1,0 +1,113 @@
+{
+  "slug": "pushover-notifications",
+  "name": "Pushover",
+  "description": "MCP server for sending push notifications via Pushover",
+  "logo": "https://www.google.com/s2/favicons?domain=pushover.net&sz=128",
+  "categories": [
+    "notifications",
+    "pushover",
+    "messaging"
+  ],
+  "base_url": "",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "send_notification",
+      "description": "Send a push notification to a user or device via Pushover",
+      "method": "POST",
+      "path": "/send-notification",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The notification message to send"
+          },
+          "title": {
+            "type": "string",
+            "description": "Optional title for the notification",
+            "default": "Notification"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Message priority (-2 to 2)",
+            "enum": [
+              -2,
+              -1,
+              0,
+              1,
+              2
+            ],
+            "default": 0
+          },
+          "sound": {
+            "type": "string",
+            "description": "Notification sound",
+            "default": "pushover"
+          },
+          "url": {
+            "type": "string",
+            "description": "Optional URL to include"
+          },
+          "url_title": {
+            "type": "string",
+            "description": "Title for the URL"
+          },
+          "device": {
+            "type": "string",
+            "description": "Target device name"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "send_priority_alert",
+      "description": "Send a high-priority alert that requires acknowledgment",
+      "method": "POST",
+      "path": "/send-priority-alert",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The alert message"
+          },
+          "title": {
+            "type": "string",
+            "description": "Alert title",
+            "default": "PRIORITY ALERT"
+          },
+          "expire": {
+            "type": "integer",
+            "description": "How long to keep sending alerts (seconds)",
+            "default": 3600
+          },
+          "retry": {
+            "type": "integer",
+            "description": "How often to retry (seconds)",
+            "default": 60
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  ]
+}

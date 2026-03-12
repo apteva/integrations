@@ -1,0 +1,278 @@
+{
+  "slug": "firecrawl",
+  "name": "Firecrawl",
+  "description": "Web scraping and crawling API that transforms websites into LLM-ready markdown or structured data. Perfect for AI applications, research, and data extraction.",
+  "logo": "https://www.google.com/s2/favicons?domain=firecrawl.dev&sz=128",
+  "categories": [
+    "scraping",
+    "crawling",
+    "web",
+    "markdown",
+    "ai",
+    "llm",
+    "search"
+  ],
+  "base_url": "",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "scrape",
+      "description": "Scrape a single URL and get its content in LLM-ready format (markdown, HTML, or structured data). Handles JavaScript rendering, anti-bot bypass, and content extraction.",
+      "method": "GET",
+      "path": "/scrape",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to scrape"
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "markdown",
+                "html",
+                "rawHtml",
+                "links",
+                "screenshot",
+                "screenshot@fullPage"
+              ]
+            },
+            "default": [
+              "markdown"
+            ],
+            "description": "Output formats to return"
+          },
+          "onlyMainContent": {
+            "type": "boolean",
+            "default": true,
+            "description": "Only return the main content, excluding headers, footers, nav, etc."
+          },
+          "includeTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "HTML tags to include (e.g., ['article', 'main'])"
+          },
+          "excludeTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "HTML tags to exclude (e.g., ['nav', 'footer'])"
+          },
+          "waitFor": {
+            "type": "integer",
+            "default": 0,
+            "description": "Milliseconds to wait for JavaScript to execute"
+          },
+          "mobile": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use mobile user agent"
+          },
+          "timeout": {
+            "type": "integer",
+            "default": 30000,
+            "description": "Timeout in milliseconds"
+          },
+          "removeBase64Images": {
+            "type": "boolean",
+            "default": true,
+            "description": "Remove base64 encoded images from output"
+          },
+          "blockAds": {
+            "type": "boolean",
+            "default": true,
+            "description": "Block ads and trackers"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "crawl",
+      "description": "Start crawling a website to scrape all pages. Returns a job ID to check status. Use firecrawl-crawl-status to get results.",
+      "method": "GET",
+      "path": "/crawl",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The starting URL to crawl"
+          },
+          "maxDepth": {
+            "type": "integer",
+            "default": 2,
+            "description": "Maximum link depth to crawl"
+          },
+          "maxDiscoveryDepth": {
+            "type": "integer",
+            "description": "Maximum depth for URL discovery (separate from content depth)"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Maximum number of pages to crawl"
+          },
+          "includePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URL patterns to include (e.g., ['/blog/*', '/docs/*'])"
+          },
+          "excludePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URL patterns to exclude (e.g., ['/admin/*'])"
+          },
+          "ignoreSitemap": {
+            "type": "boolean",
+            "default": false,
+            "description": "Ignore the site's sitemap.xml"
+          },
+          "allowBackwardLinks": {
+            "type": "boolean",
+            "default": false,
+            "description": "Allow crawling links that go up in the URL hierarchy"
+          },
+          "allowExternalLinks": {
+            "type": "boolean",
+            "default": false,
+            "description": "Allow crawling external links"
+          },
+          "webhook": {
+            "type": "string",
+            "description": "Webhook URL to receive results when crawl completes"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "crawl_status",
+      "description": "Get the status and results of a crawl job. Returns scraped pages when complete.",
+      "method": "GET",
+      "path": "/crawl-status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "description": "The crawl job ID returned from firecrawl-crawl"
+          }
+        },
+        "required": [
+          "jobId"
+        ]
+      }
+    },
+    {
+      "name": "map",
+      "description": "Get all URLs from a website (sitemap discovery). Returns a list of URLs without scraping content. Uses 1 credit per website.",
+      "method": "GET",
+      "path": "/map",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The website URL to map"
+          },
+          "search": {
+            "type": "string",
+            "description": "Filter URLs containing this search term"
+          },
+          "ignoreSitemap": {
+            "type": "boolean",
+            "default": false,
+            "description": "Ignore the site's sitemap.xml and discover URLs by crawling"
+          },
+          "sitemapOnly": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only use sitemap.xml, don't discover URLs by crawling"
+          },
+          "includeSubdomains": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include URLs from subdomains"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 5000,
+            "description": "Maximum number of URLs to return"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search the web and scrape results in one API call. Perfect for research, finding leads, competitive analysis, or SEO. Each result is scraped and returned as markdown.",
+      "method": "GET",
+      "path": "/search",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 5,
+            "description": "Number of search results to scrape (1 credit per result)"
+          },
+          "lang": {
+            "type": "string",
+            "default": "en",
+            "description": "Language code (e.g., 'en', 'es', 'fr')"
+          },
+          "country": {
+            "type": "string",
+            "default": "us",
+            "description": "Country code for localized results (e.g., 'us', 'uk', 'de')"
+          },
+          "location": {
+            "type": "string",
+            "description": "Specific location for local search results"
+          },
+          "tbs": {
+            "type": "string",
+            "description": "Time-based search filter (e.g., 'qdr:d' for past day, 'qdr:w' for past week)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  ]
+}

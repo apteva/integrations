@@ -1,0 +1,303 @@
+{
+  "slug": "aws-s3",
+  "name": "AWS S3",
+  "description": "MCP server for AWS S3 - buckets, objects, presigned URLs",
+  "logo": "https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128",
+  "categories": [
+    "aws",
+    "s3",
+    "storage",
+    "objects",
+    "buckets"
+  ],
+  "base_url": "https://s3.{region}.amazonaws.com",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_buckets",
+      "description": "List all S3 buckets",
+      "method": "GET",
+      "path": "/list-buckets",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "aws_region": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_bucket",
+      "description": "Create an S3 bucket",
+      "method": "POST",
+      "path": "/create-bucket",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "acl": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ]
+      }
+    },
+    {
+      "name": "delete_bucket",
+      "description": "Delete an S3 bucket",
+      "method": "DELETE",
+      "path": "/delete-bucket",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ]
+      }
+    },
+    {
+      "name": "list_objects",
+      "description": "List objects in a bucket",
+      "method": "GET",
+      "path": "/list-objects",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "delimiter": {
+            "type": "string"
+          },
+          "max_keys": {
+            "type": "number"
+          },
+          "continuation_token": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ]
+      }
+    },
+    {
+      "name": "get_object",
+      "description": "Get an object from S3",
+      "method": "GET",
+      "path": "/get-object",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          },
+          "return_body": {
+            "type": "boolean"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "put_object",
+      "description": "Upload an object to S3",
+      "method": "GET",
+      "path": "/put-object",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "acl": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "delete_object",
+      "description": "Delete an object from S3",
+      "method": "DELETE",
+      "path": "/delete-object",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "copy_object",
+      "description": "Copy an object within S3",
+      "method": "GET",
+      "path": "/copy-object",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_bucket": {
+            "type": "string"
+          },
+          "source_key": {
+            "type": "string"
+          },
+          "destination_bucket": {
+            "type": "string"
+          },
+          "destination_key": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_bucket",
+          "source_key",
+          "destination_bucket",
+          "destination_key"
+        ]
+      }
+    },
+    {
+      "name": "get_presigned_url",
+      "description": "Generate a presigned URL",
+      "method": "GET",
+      "path": "/get-presigned-url",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "number"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "set_bucket_policy",
+      "description": "Get, set, or delete bucket policy",
+      "method": "GET",
+      "path": "/set-bucket-policy",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "policy": {
+            "type": "object"
+          },
+          "action": {
+            "type": "string"
+          },
+          "aws_region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ]
+      }
+    }
+  ]
+}

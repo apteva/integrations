@@ -1,0 +1,899 @@
+{
+  "slug": "omnikit-cms",
+  "name": "OmniKit CMS",
+  "description": "OmniKit headless CMS with dynamic content types, version control, multi-channel delivery, and advanced editorial workflows",
+  "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+  "categories": [
+    "omnikit",
+    "cms",
+    "content",
+    "headless",
+    "api",
+    "editorial",
+    "publishing",
+    "versioning"
+  ],
+  "base_url": "https://api.omnikit.co",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "create_content_type",
+      "description": "Define a new content type with custom fields and validation rules. Requires project_id to scope the type to a project.",
+      "method": "POST",
+      "path": "/cms/content-types",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required - content types are project-scoped)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Content type name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-friendly identifier"
+          },
+          "description": {
+            "type": "string",
+            "description": "Content type description"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Content type icon"
+          },
+          "is_single": {
+            "type": "boolean",
+            "default": false,
+            "description": "Is this a singleton content type"
+          },
+          "settings": {
+            "type": "object",
+            "default": {},
+            "description": "Content type settings"
+          },
+          "fields": {
+            "type": "array",
+            "default": [],
+            "description": "Content type fields"
+          },
+          "created_by": {
+            "type": "integer",
+            "description": "Creator user ID"
+          }
+        },
+        "required": [
+          "project_id",
+          "name",
+          "slug"
+        ]
+      }
+    },
+    {
+      "name": "list_content_types",
+      "description": "Retrieve all content types for a project with their field definitions. Requires project_id.",
+      "method": "GET",
+      "path": "/cms/content-types",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required - content types are project-scoped)"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Number of records to return"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          }
+        },
+        "required": [
+          "project_id"
+        ]
+      }
+    },
+    {
+      "name": "create_content_entry",
+      "description": "Create a new content entry of a specific type. Requires project_id.",
+      "method": "POST",
+      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug (used in URL path)"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Entry URL slug"
+          },
+          "data": {
+            "type": "object",
+            "description": "Content data matching the content type fields"
+          },
+          "meta": {
+            "type": "object",
+            "default": {},
+            "description": "Content metadata"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "default": "draft",
+            "description": "Publication status"
+          },
+          "created_by": {
+            "type": "integer",
+            "description": "Creator user ID"
+          }
+        },
+        "required": [
+          "project_id",
+          "content_type_slug",
+          "slug",
+          "data"
+        ]
+      }
+    },
+    {
+      "name": "list_content_entries",
+      "description": "Retrieve content entries for a specific content type with filtering and pagination. Requires project_id and content_type_slug.",
+      "method": "GET",
+      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug (used in URL path)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by status"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Number of entries to return"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          },
+          "sort": {
+            "type": "string",
+            "default": "created_at:desc",
+            "description": "Sort field and order (e.g. 'created_at:desc')"
+          }
+        },
+        "required": [
+          "project_id",
+          "content_type_slug"
+        ]
+      }
+    },
+    {
+      "name": "get_content_entry",
+      "description": "Retrieve a specific content entry by ID or slug",
+      "method": "GET",
+      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Entry slug (alternative to ID)"
+          },
+          "content_type_id": {
+            "type": "integer",
+            "description": "Content type ID (for slug lookup)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug (for slug lookup)"
+          },
+          "include_versions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include version history"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_content_entry",
+      "description": "Update an existing content entry",
+      "method": "PUT",
+      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID to update"
+          },
+          "data": {
+            "type": "object",
+            "description": "Updated content data"
+          },
+          "meta": {
+            "type": "object",
+            "description": "Updated metadata"
+          },
+          "status": {
+            "type": "string",
+            "description": "New status"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "User ID performing the update"
+          },
+          "change_description": {
+            "type": "string",
+            "default": "Content updated",
+            "description": "Description of changes"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "publish_content_entry",
+      "description": "Publish a content entry making it live",
+      "method": "POST",
+      "path": "/cms/entries/%7B%7Bid%7D%7D/publish",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID to publish"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "User ID performing the publish"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "delete_content_entry",
+      "description": "Delete a content entry and all its versions (cannot be undone)",
+      "method": "DELETE",
+      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID to delete (required)"
+          },
+          "deleted_by": {
+            "type": "integer",
+            "description": "User ID performing the deletion"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "delete_content_type",
+      "description": "Delete a content type and all associated entries (cannot be undone)",
+      "method": "DELETE",
+      "path": "/cms/content-types/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Content type ID to delete (required)"
+          },
+          "deleted_by": {
+            "type": "integer",
+            "description": "User ID performing the deletion"
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Confirmation flag (must be true to delete)"
+          }
+        },
+        "required": [
+          "id",
+          "confirm"
+        ]
+      }
+    },
+    {
+      "name": "preview_content_entry",
+      "description": "Generate preview URL for unpublished content",
+      "method": "GET",
+      "path": "/cms/preview/%7B%7Bcontent_type_slug%7D%7D/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID to preview"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Specific version to preview"
+          },
+          "template": {
+            "type": "string",
+            "default": "default",
+            "description": "Preview template to use"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "search_content",
+      "description": "Full-text search across all content with advanced filtering. Requires project_id and a search query.",
+      "method": "GET",
+      "path": "/cms/search",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Search query (required - what to search for)"
+          },
+          "content_type_id": {
+            "type": "integer",
+            "description": "Filter by content type ID"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Filter by content type slug"
+          },
+          "status": {
+            "type": "string",
+            "default": "published",
+            "description": "Filter by content status"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Number of results to return"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          }
+        },
+        "required": [
+          "project_id",
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "get_delivery_content",
+      "description": "Retrieve published content optimized for API delivery. Requires project_id.",
+      "method": "GET",
+      "path": "/cms/delivery/%7B%7Bcontent_type_slug%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug (required)"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Number of entries to return"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          },
+          "sort_by": {
+            "type": "string",
+            "default": "published_at",
+            "description": "Sort field"
+          },
+          "sort_order": {
+            "type": "string",
+            "default": "desc",
+            "description": "Sort order"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by tags"
+          }
+        },
+        "required": [
+          "project_id",
+          "content_type_slug"
+        ]
+      }
+    },
+    {
+      "name": "get_content_type",
+      "description": "Get a specific content type by ID or slug with its field definitions. project_id is required when looking up by slug.",
+      "method": "GET",
+      "path": "/cms/content-types/%7B%7Bidentifier%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "Content type ID (UUID) or slug"
+          },
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required when looking up by slug)"
+          }
+        },
+        "required": [
+          "identifier"
+        ]
+      }
+    },
+    {
+      "name": "update_content_type",
+      "description": "Update an existing content type's name, description, icon, or settings",
+      "method": "PUT",
+      "path": "/cms/content-types/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Content type ID to update"
+          },
+          "name": {
+            "type": "string",
+            "description": "Updated content type name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated description"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Updated icon identifier"
+          },
+          "is_single": {
+            "type": "boolean",
+            "description": "Whether this content type allows only one entry"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Updated settings"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "get_content_entry_by_slug",
+      "description": "Retrieve a content entry by content type and entry slug. Requires project_id.",
+      "method": "GET",
+      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D/by-slug/%7B%7Bslug%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content entry slug"
+          },
+          "include_versions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include version history"
+          }
+        },
+        "required": [
+          "project_id",
+          "content_type_slug",
+          "slug"
+        ]
+      }
+    },
+    {
+      "name": "unpublish_content_entry",
+      "description": "Unpublish a content entry (revert to draft status)",
+      "method": "POST",
+      "path": "/cms/entries/%7B%7Bid%7D%7D/unpublish",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Entry ID to unpublish"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "User ID performing the unpublish"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "create_content_field",
+      "description": "Add a new field to a content type (text, number, image, select, etc.)",
+      "method": "POST",
+      "path": "/cms/content-types/%7B%7Bcontent_type_id%7D%7D/fields",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content_type_id": {
+            "type": "integer",
+            "description": "Content type ID to add the field to"
+          },
+          "name": {
+            "type": "string",
+            "description": "Field name (used in data storage)"
+          },
+          "field_type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "textarea",
+              "rich_text",
+              "markdown",
+              "number",
+              "boolean",
+              "date",
+              "datetime",
+              "email",
+              "url",
+              "select",
+              "multiselect",
+              "image",
+              "file",
+              "gallery",
+              "json",
+              "slug"
+            ],
+            "description": "Type of field"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label for the field"
+          },
+          "required": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this field is required"
+          },
+          "options": {
+            "type": "object",
+            "default": {},
+            "description": "Field-specific options and configuration"
+          },
+          "order_index": {
+            "type": "number",
+            "description": "Order position of the field"
+          },
+          "help_text": {
+            "type": "string",
+            "description": "Help text for the field"
+          }
+        },
+        "required": [
+          "content_type_id",
+          "name",
+          "field_type",
+          "label"
+        ]
+      }
+    },
+    {
+      "name": "update_content_field",
+      "description": "Update an existing content field's label, options, or requirements",
+      "method": "PUT",
+      "path": "/cms/content-fields/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Content field ID to update"
+          },
+          "label": {
+            "type": "string",
+            "description": "Updated human-readable label"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this field is required"
+          },
+          "options": {
+            "type": "object",
+            "description": "Updated field-specific options"
+          },
+          "order_index": {
+            "type": "number",
+            "description": "Updated order position"
+          },
+          "help_text": {
+            "type": "string",
+            "description": "Updated help text"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "delete_content_field",
+      "description": "Delete a content field from a content type",
+      "method": "DELETE",
+      "path": "/cms/content-fields/%7B%7Bid%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Content field ID to delete"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "reorder_content_fields",
+      "description": "Reorder the fields of a content type",
+      "method": "POST",
+      "path": "/cms/content-types/%7B%7Bcontent_type_id%7D%7D/fields/reorder",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content_type_id": {
+            "type": "integer",
+            "description": "Content type ID"
+          },
+          "field_orders": {
+            "type": "array",
+            "description": "Array of field ID and new order index pairs",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Field ID"
+                },
+                "order_index": {
+                  "type": "number",
+                  "description": "New order index"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "content_type_id",
+          "field_orders"
+        ]
+      }
+    },
+    {
+      "name": "get_delivery_content_by_slug",
+      "description": "Retrieve a single published content entry by slug, optimized for API delivery. Requires project_id.",
+      "method": "GET",
+      "path": "/cms/delivery/%7B%7Bcontent_type_slug%7D%7D/%7B%7Bslug%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID (required)"
+          },
+          "content_type_slug": {
+            "type": "string",
+            "description": "Content type slug"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content entry slug"
+          }
+        },
+        "required": [
+          "project_id",
+          "content_type_slug",
+          "slug"
+        ]
+      }
+    },
+    {
+      "name": "list_content_versions",
+      "description": "List all versions of a content entry with pagination",
+      "method": "GET",
+      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content_entry_id": {
+            "type": "integer",
+            "description": "Content entry ID"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Number of versions to return"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          },
+          "sort": {
+            "type": "string",
+            "default": "version_number:desc",
+            "description": "Sort order"
+          }
+        },
+        "required": [
+          "content_entry_id"
+        ]
+      }
+    },
+    {
+      "name": "get_content_version",
+      "description": "Get a specific content version by version ID",
+      "method": "GET",
+      "path": "/cms/versions/%7B%7Bversion_id%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "version_id": {
+            "type": "integer",
+            "description": "Content version ID"
+          }
+        },
+        "required": [
+          "version_id"
+        ]
+      }
+    },
+    {
+      "name": "get_content_version_by_number",
+      "description": "Get a specific version of a content entry by version number",
+      "method": "GET",
+      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions/%7B%7Bversion_number%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content_entry_id": {
+            "type": "integer",
+            "description": "Content entry ID"
+          },
+          "version_number": {
+            "type": "integer",
+            "description": "Version number to retrieve"
+          }
+        },
+        "required": [
+          "content_entry_id",
+          "version_number"
+        ]
+      }
+    },
+    {
+      "name": "restore_content_version",
+      "description": "Restore a content entry to a previous version by version ID",
+      "method": "POST",
+      "path": "/cms/versions/%7B%7Bversion_id%7D%7D/restore",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "version_id": {
+            "type": "integer",
+            "description": "Version ID to restore to"
+          }
+        },
+        "required": [
+          "version_id"
+        ]
+      }
+    },
+    {
+      "name": "restore_content_version_by_number",
+      "description": "Restore a content entry to a previous version by entry ID and version number",
+      "method": "POST",
+      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions/%7B%7Bversion_number%7D%7D/restore",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content_entry_id": {
+            "type": "integer",
+            "description": "Content entry ID"
+          },
+          "version_number": {
+            "type": "integer",
+            "description": "Version number to restore to"
+          }
+        },
+        "required": [
+          "content_entry_id",
+          "version_number"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "slug": "airtable",
+  "name": "Airtable",
+  "description": "MCP server for Airtable database operations and record management",
+  "logo": "https://www.google.com/s2/favicons?domain=airtable.com&sz=128",
+  "categories": [
+    "database",
+    "airtable",
+    "records",
+    "tables",
+    "data"
+  ],
+  "base_url": "https://api.airtable.com/v0",
+  "auth": {
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "access_token"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://airtable.com/oauth2/v1/authorize",
+      "token_url": "https://airtable.com/oauth2/v1/token",
+      "scopes": [
+        "data.records:read",
+        "data.records:write",
+        "schema.bases:read",
+        "schema.bases:write",
+        "webhook:manage",
+        "user.email:read"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_bases",
+      "description": "List all available Airtable bases",
+      "method": "GET",
+      "path": "/list-bases",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List all tables in an Airtable base",
+      "method": "GET",
+      "path": "/list-tables",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          }
+        },
+        "required": [
+          "base_id"
+        ]
+      }
+    },
+    {
+      "name": "get_records",
+      "description": "Retrieve records from an Airtable table",
+      "method": "GET",
+      "path": "/get-records",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          },
+          "table_id": {
+            "type": "string",
+            "description": "The ID or name of the table"
+          },
+          "max_records": {
+            "type": "number",
+            "description": "Maximum number of records to return",
+            "default": 100
+          },
+          "filter_by_formula": {
+            "type": "string",
+            "description": "Airtable formula to filter records"
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "base_id",
+          "table_id"
+        ]
+      }
+    },
+    {
+      "name": "create_record",
+      "description": "Create a new record in an Airtable table",
+      "method": "POST",
+      "path": "/create-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          },
+          "table_id": {
+            "type": "string",
+            "description": "The ID or name of the table"
+          },
+          "fields": {
+            "type": "object",
+            "description": "Field values for the new record"
+          }
+        },
+        "required": [
+          "base_id",
+          "table_id",
+          "fields"
+        ]
+      }
+    },
+    {
+      "name": "update_record",
+      "description": "Update an existing record in an Airtable table",
+      "method": "PUT",
+      "path": "/update-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          },
+          "table_id": {
+            "type": "string",
+            "description": "The ID or name of the table"
+          },
+          "record_id": {
+            "type": "string",
+            "description": "The ID of the record to update"
+          },
+          "fields": {
+            "type": "object",
+            "description": "Field values to update"
+          }
+        },
+        "required": [
+          "base_id",
+          "table_id",
+          "record_id",
+          "fields"
+        ]
+      }
+    },
+    {
+      "name": "delete_record",
+      "description": "Delete a record from an Airtable table",
+      "method": "DELETE",
+      "path": "/delete-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          },
+          "table_id": {
+            "type": "string",
+            "description": "The ID or name of the table"
+          },
+          "record_id": {
+            "type": "string",
+            "description": "The ID of the record to delete"
+          }
+        },
+        "required": [
+          "base_id",
+          "table_id",
+          "record_id"
+        ]
+      }
+    },
+    {
+      "name": "search_records",
+      "description": "Search for records across tables",
+      "method": "GET",
+      "path": "/search-records",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "description": "The ID of the Airtable base"
+          },
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          }
+        },
+        "required": [
+          "base_id",
+          "query"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,360 @@
+{
+  "slug": "google-drive",
+  "name": "Google Drive",
+  "description": "MCP server for Google Drive file storage and management operations",
+  "logo": "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png",
+  "categories": [
+    "google-drive",
+    "file-storage",
+    "cloud-storage",
+    "documents",
+    "sharing"
+  ],
+  "base_url": "https://www.googleapis.com",
+  "auth": {
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "accessToken",
+        "label": "accessToken"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive.readonly",
+        "https://www.googleapis.com/auth/drive.metadata.readonly"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_files",
+      "description": "List files in Google Drive with optional folder filter and sorting",
+      "method": "GET",
+      "path": "/drive/v3/files",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Search query using Drive query syntax. Examples: \"'FOLDER_ID' in parents\" to list folder contents, \"mimeType='application/vnd.google-apps.spreadsheet'\" to find sheets, \"name contains 'report'\" to search by name, \"modifiedTime > '2025-01-01'\" for recent files"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Maximum number of files to return (1-1000)",
+            "default": 100,
+            "maximum": 1000
+          },
+          "orderBy": {
+            "type": "string",
+            "description": "Sort order. Options: createdTime, folder, modifiedByMeTime, modifiedTime, name, quotaBytesUsed, recency, sharedWithMeTime, starred, viewedByMeTime. Append ' desc' for descending.",
+            "default": "modifiedTime desc"
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token for pagination from a previous response"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to include in response",
+            "default": "nextPageToken,files(id,name,mimeType,size,modifiedTime,parents,webViewLink,createdTime)"
+          },
+          "spaces": {
+            "type": "string",
+            "description": "Spaces to search: drive, appDataFolder",
+            "default": "drive"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_file",
+      "description": "Get metadata for a specific file by ID",
+      "method": "GET",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "id,name,mimeType,size,modifiedTime,parents,webViewLink,createdTime,owners,permissions,description"
+          },
+          "supportsAllDrives": {
+            "type": "boolean",
+            "description": "Support shared drives",
+            "default": true
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "search_files",
+      "description": "Search for files in Google Drive by name, content, type, or other criteria",
+      "method": "GET",
+      "path": "/drive/v3/files",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Drive search query. Examples: \"name contains 'budget'\", \"fullText contains 'quarterly'\", \"mimeType='application/vnd.google-apps.spreadsheet'\", \"modifiedTime > '2025-01-01T00:00:00'\", \"'me' in owners\". Combine with 'and'/'or'."
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Max results (1-1000)",
+            "default": 50,
+            "maximum": 1000
+          },
+          "orderBy": {
+            "type": "string",
+            "description": "Sort order",
+            "default": "modifiedTime desc"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "files(id,name,mimeType,size,modifiedTime,webViewLink,parents)"
+          }
+        },
+        "required": [
+          "q"
+        ]
+      }
+    },
+    {
+      "name": "create_folder",
+      "description": "Create a new folder in Google Drive",
+      "method": "POST",
+      "path": "/drive/v3/files",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the folder"
+          },
+          "parents": {
+            "type": "array",
+            "description": "Parent folder IDs",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "Must be application/vnd.google-apps.folder",
+            "default": "application/vnd.google-apps.folder"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "share_file",
+      "description": "Share a file or folder by creating a permission. Use type='anyone' for public link sharing.",
+      "method": "POST",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/permissions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder to share"
+          },
+          "type": {
+            "type": "string",
+            "description": "Permission type",
+            "enum": [
+              "user",
+              "group",
+              "domain",
+              "anyone"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "description": "Permission role",
+            "enum": [
+              "reader",
+              "writer",
+              "commenter",
+              "owner"
+            ]
+          },
+          "emailAddress": {
+            "type": "string",
+            "description": "Email for user/group type"
+          },
+          "sendNotificationEmail": {
+            "type": "boolean",
+            "description": "Send notification email",
+            "default": true
+          }
+        },
+        "required": [
+          "fileId",
+          "type",
+          "role"
+        ]
+      }
+    },
+    {
+      "name": "delete_file",
+      "description": "Permanently delete a file or folder from Google Drive (skips trash)",
+      "method": "DELETE",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder to delete"
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "copy_file",
+      "description": "Create a copy of a file in Google Drive",
+      "method": "POST",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/copy",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to copy"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for the copy"
+          },
+          "parents": {
+            "type": "array",
+            "description": "Parent folder IDs for the copy",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "move_file",
+      "description": "Move a file to a different folder by updating its parents",
+      "method": "PATCH",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to move"
+          },
+          "addParents": {
+            "type": "string",
+            "description": "Comma-separated list of parent folder IDs to add"
+          },
+          "removeParents": {
+            "type": "string",
+            "description": "Comma-separated list of parent folder IDs to remove"
+          }
+        },
+        "required": [
+          "fileId",
+          "addParents"
+        ]
+      }
+    },
+    {
+      "name": "rename_file",
+      "description": "Rename a file or folder in Google Drive",
+      "method": "PATCH",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to rename"
+          },
+          "name": {
+            "type": "string",
+            "description": "New name for the file"
+          }
+        },
+        "required": [
+          "fileId",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "export_file",
+      "description": "Export a Google Workspace file (Doc, Sheet, Slides) to a different format like PDF, CSV, plain text, etc.",
+      "method": "GET",
+      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/export",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the Google Workspace file to export"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "Target MIME type. For Docs: text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document. For Sheets: text/csv, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet. For Slides: application/pdf, application/vnd.openxmlformats-officedocument.presentationml.presentation"
+          }
+        },
+        "required": [
+          "fileId",
+          "mimeType"
+        ]
+      }
+    },
+    {
+      "name": "get_about",
+      "description": "Get information about the user's Google Drive (storage quota, user info)",
+      "method": "GET",
+      "path": "/drive/v3/about",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "string",
+            "description": "Fields to include",
+            "default": "user,storageQuota,maxUploadSize"
+          }
+        }
+      }
+    }
+  ]
+}

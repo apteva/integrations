@@ -1,0 +1,329 @@
+{
+  "slug": "cloudflare",
+  "name": "Cloudflare",
+  "description": "Cloudflare domain management, DNS records, and registrar settings",
+  "logo": "https://www.cloudflare.com/favicon.ico",
+  "categories": [
+    "dns",
+    "domains",
+    "registrar",
+    "cloudflare",
+    "cdn"
+  ],
+  "base_url": "",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "apiToken",
+        "label": "Api Token",
+        "description": "Cloudflare API token (create at dash.cloudflare.com/profile/api-tokens)"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "list_domains",
+      "description": "List all domains registered with Cloudflare Registrar for a given account. Returns domain names, expiration dates, auto-renew status, and registration details.",
+      "method": "GET",
+      "path": "/list-domains",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Cloudflare account ID"
+          }
+        },
+        "required": [
+          "accountId"
+        ]
+      }
+    },
+    {
+      "name": "get_domain",
+      "description": "Get detailed information about a specific domain registered with Cloudflare Registrar, including registration status, expiration, name servers, privacy, and lock settings.",
+      "method": "GET",
+      "path": "/get-domain",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Cloudflare account ID"
+          },
+          "domainName": {
+            "type": "string",
+            "description": "Domain name to look up (e.g. 'example.com')"
+          }
+        },
+        "required": [
+          "accountId",
+          "domainName"
+        ]
+      }
+    },
+    {
+      "name": "update_domain",
+      "description": "Update registrar settings for a domain, including auto-renew, WHOIS privacy, registrar lock, and name servers.",
+      "method": "PUT",
+      "path": "/update-domain",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Cloudflare account ID"
+          },
+          "domainName": {
+            "type": "string",
+            "description": "Domain name to update (e.g. 'example.com')"
+          },
+          "auto_renew": {
+            "type": "boolean",
+            "description": "Whether the domain should auto-renew"
+          },
+          "privacy": {
+            "type": "boolean",
+            "description": "Whether WHOIS privacy is enabled"
+          },
+          "locked": {
+            "type": "boolean",
+            "description": "Whether the domain registrar lock is enabled"
+          },
+          "name_servers": {
+            "type": "array",
+            "description": "Custom name servers for the domain",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accountId",
+          "domainName"
+        ]
+      }
+    },
+    {
+      "name": "list_zones",
+      "description": "List Cloudflare zones (sites) with optional filtering by name and status. Use this to find the zone_id needed for DNS record operations.",
+      "method": "GET",
+      "path": "/list-zones",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Domain name to filter by (e.g. 'example.com')"
+          },
+          "status": {
+            "type": "string",
+            "description": "Zone status filter",
+            "enum": [
+              "active",
+              "pending",
+              "initializing",
+              "moved",
+              "deleted",
+              "deactivated"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "list_dns_records",
+      "description": "List DNS records for a zone with optional filtering by record type and name. Returns record IDs, types, names, content, TTL, and proxy status.",
+      "method": "GET",
+      "path": "/list-dns-records",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "Cloudflare zone ID (get from list-zones)"
+          },
+          "type": {
+            "type": "string",
+            "description": "DNS record type filter",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SRV",
+              "CAA",
+              "PTR",
+              "SPF",
+              "LOC",
+              "NAPTR",
+              "CERT",
+              "DNSKEY",
+              "DS",
+              "SSHFP",
+              "TLSA",
+              "URI"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "DNS record name filter (e.g. 'sub.example.com')"
+          }
+        },
+        "required": [
+          "zoneId"
+        ]
+      }
+    },
+    {
+      "name": "create_dns_record",
+      "description": "Create a new DNS record in a Cloudflare zone. Supports A, AAAA, CNAME, MX, TXT, and other record types with optional Cloudflare proxy and TTL settings.",
+      "method": "POST",
+      "path": "/create-dns-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "Cloudflare zone ID (get from list-zones)"
+          },
+          "type": {
+            "type": "string",
+            "description": "DNS record type",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SRV",
+              "CAA"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "DNS record name (e.g. 'sub.example.com' or '@' for root)"
+          },
+          "content": {
+            "type": "string",
+            "description": "DNS record content (e.g. IP address for A records, hostname for CNAME)"
+          },
+          "ttl": {
+            "type": "integer",
+            "description": "Time to live in seconds. Use 1 for automatic TTL.",
+            "default": 1
+          },
+          "proxied": {
+            "type": "boolean",
+            "description": "Whether the record is proxied through Cloudflare (orange cloud). Only applies to A, AAAA, and CNAME records.",
+            "default": false
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority for MX and SRV records (lower = higher priority)"
+          }
+        },
+        "required": [
+          "zoneId",
+          "type",
+          "name",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "update_dns_record",
+      "description": "Update an existing DNS record in a Cloudflare zone. Replaces the entire record - all fields (type, name, content) must be provided.",
+      "method": "PUT",
+      "path": "/update-dns-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "Cloudflare zone ID (get from list-zones)"
+          },
+          "recordId": {
+            "type": "string",
+            "description": "DNS record ID to update (get from list-dns-records)"
+          },
+          "type": {
+            "type": "string",
+            "description": "DNS record type",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SRV",
+              "CAA"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "DNS record name (e.g. 'sub.example.com' or '@' for root)"
+          },
+          "content": {
+            "type": "string",
+            "description": "DNS record content (e.g. IP address for A records, hostname for CNAME)"
+          },
+          "ttl": {
+            "type": "integer",
+            "description": "Time to live in seconds. Use 1 for automatic TTL.",
+            "default": 1
+          },
+          "proxied": {
+            "type": "boolean",
+            "description": "Whether the record is proxied through Cloudflare (orange cloud)",
+            "default": false
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority for MX and SRV records (lower = higher priority)"
+          }
+        },
+        "required": [
+          "zoneId",
+          "recordId",
+          "type",
+          "name",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "delete_dns_record",
+      "description": "Delete a DNS record from a Cloudflare zone. This action is permanent and cannot be undone.",
+      "method": "DELETE",
+      "path": "/delete-dns-record",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "Cloudflare zone ID (get from list-zones)"
+          },
+          "recordId": {
+            "type": "string",
+            "description": "DNS record ID to delete (get from list-dns-records)"
+          }
+        },
+        "required": [
+          "zoneId",
+          "recordId"
+        ]
+      }
+    }
+  ]
+}

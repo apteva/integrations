@@ -1,0 +1,682 @@
+{
+  "slug": "hubspot",
+  "name": "HubSpot",
+  "description": "MCP server for HubSpot CRM operations - deals, contacts, companies, and pipelines",
+  "logo": "https://www.google.com/s2/favicons?domain=hubspot.com&sz=128",
+  "categories": [
+    "crm",
+    "hubspot",
+    "deals",
+    "contacts",
+    "sales"
+  ],
+  "base_url": "https://api.hubapi.com",
+  "auth": {
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "access_token"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://app.hubspot.com/oauth/authorize",
+      "token_url": "https://api.hubapi.com/oauth/v1/token",
+      "scopes": [
+        "contacts",
+        "content",
+        "reports",
+        "social",
+        "automation",
+        "timeline",
+        "forms",
+        "files",
+        "hubdb",
+        "integration-sync",
+        "tickets",
+        "e-commerce",
+        "accounting",
+        "sales-email-read",
+        "forms-uploaded-files",
+        "media_bridge.read",
+        "media_bridge.write",
+        "oauth",
+        "crm.objects.companies.read",
+        "crm.objects.companies.write",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.objects.deals.write",
+        "crm.schemas.companies.read",
+        "crm.schemas.companies.write",
+        "crm.schemas.contacts.read",
+        "crm.schemas.contacts.write",
+        "crm.schemas.deals.read",
+        "crm.schemas.deals.write"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_deals",
+      "description": "List deals from HubSpot CRM",
+      "method": "GET",
+      "path": "/list-deals",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of deals to return",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associations to include"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_deal",
+      "description": "Create a new deal in HubSpot",
+      "method": "POST",
+      "path": "/create-deal",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "dealname": {
+            "type": "string",
+            "description": "Name of the deal"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Deal amount"
+          },
+          "dealstage": {
+            "type": "string",
+            "description": "Deal stage ID"
+          },
+          "pipeline": {
+            "type": "string",
+            "description": "Pipeline ID"
+          },
+          "closedate": {
+            "type": "string",
+            "description": "Expected close date"
+          },
+          "hubspot_owner_id": {
+            "type": "string",
+            "description": "Owner ID"
+          }
+        },
+        "required": [
+          "dealname"
+        ]
+      }
+    },
+    {
+      "name": "update_deal",
+      "description": "Update an existing deal",
+      "method": "PUT",
+      "path": "/update-deal",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "deal_id": {
+            "type": "string",
+            "description": "ID of the deal to update"
+          },
+          "dealname": {
+            "type": "string",
+            "description": "Name of the deal"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Deal amount"
+          },
+          "dealstage": {
+            "type": "string",
+            "description": "Deal stage ID"
+          },
+          "closedate": {
+            "type": "string",
+            "description": "Expected close date"
+          }
+        },
+        "required": [
+          "deal_id"
+        ]
+      }
+    },
+    {
+      "name": "get_deal",
+      "description": "Get a specific deal from HubSpot",
+      "method": "GET",
+      "path": "/get-deal",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "description": "ID of the deal"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associations to include"
+          }
+        },
+        "required": [
+          "dealId"
+        ]
+      }
+    },
+    {
+      "name": "list_contacts",
+      "description": "List contacts from HubSpot",
+      "method": "GET",
+      "path": "/list-contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of contacts to return",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_contact",
+      "description": "Get a specific contact from HubSpot",
+      "method": "GET",
+      "path": "/get-contact",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "description": "ID of the contact"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associations to include"
+          }
+        },
+        "required": [
+          "contactId"
+        ]
+      }
+    },
+    {
+      "name": "create_contact",
+      "description": "Create a new contact in HubSpot",
+      "method": "POST",
+      "path": "/create-contact",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Contact email"
+          },
+          "firstname": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "company": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "jobtitle": {
+            "type": "string",
+            "description": "Job title"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "name": "update_contact",
+      "description": "Update an existing contact in HubSpot",
+      "method": "PUT",
+      "path": "/update-contact",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "description": "ID of the contact to update"
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact email"
+          },
+          "firstname": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "company": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "jobtitle": {
+            "type": "string",
+            "description": "Job title"
+          }
+        },
+        "required": [
+          "contactId"
+        ]
+      }
+    },
+    {
+      "name": "search_contacts",
+      "description": "Search for contacts in HubSpot",
+      "method": "GET",
+      "path": "/search-contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "filterGroups": {
+            "type": "array",
+            "description": "Filter groups for advanced search"
+          },
+          "sorts": {
+            "type": "array",
+            "description": "Sort options"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to return"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_companies",
+      "description": "List companies from HubSpot",
+      "method": "GET",
+      "path": "/list-companies",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of companies to return",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_company",
+      "description": "Get a specific company from HubSpot",
+      "method": "GET",
+      "path": "/get-company",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "description": "ID of the company"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to include"
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associations to include"
+          }
+        },
+        "required": [
+          "companyId"
+        ]
+      }
+    },
+    {
+      "name": "create_company",
+      "description": "Create a new company in HubSpot",
+      "method": "POST",
+      "path": "/create-company",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Company domain"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Company phone"
+          },
+          "industry": {
+            "type": "string",
+            "description": "Industry"
+          },
+          "city": {
+            "type": "string",
+            "description": "City"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "search_companies",
+      "description": "Search for companies in HubSpot",
+      "method": "GET",
+      "path": "/search-companies",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "filterGroups": {
+            "type": "array",
+            "description": "Filter groups for advanced search"
+          },
+          "sorts": {
+            "type": "array",
+            "description": "Sort options"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to return"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        }
+      }
+    },
+    {
+      "name": "search_deals",
+      "description": "Search for deals in HubSpot",
+      "method": "GET",
+      "path": "/search-deals",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "filterGroups": {
+            "type": "array",
+            "description": "Filter groups for advanced search"
+          },
+          "sorts": {
+            "type": "array",
+            "description": "Sort options"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Properties to return"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_pipelines",
+      "description": "List deal pipelines from HubSpot",
+      "method": "GET",
+      "path": "/list-pipelines",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_owners",
+      "description": "List owners from HubSpot",
+      "method": "GET",
+      "path": "/list-owners",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Filter by email"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_ticket",
+      "description": "Create a support ticket in HubSpot CRM",
+      "method": "POST",
+      "path": "/create-ticket",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Ticket subject"
+          },
+          "description": {
+            "type": "string",
+            "description": "Ticket description"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "description": "Ticket priority"
+          },
+          "pipeline": {
+            "type": "string",
+            "description": "Pipeline ID"
+          },
+          "status": {
+            "type": "string",
+            "description": "Ticket status"
+          },
+          "contact_id": {
+            "type": "string",
+            "description": "Associated contact ID"
+          },
+          "company_id": {
+            "type": "string",
+            "description": "Associated company ID"
+          }
+        },
+        "required": [
+          "subject",
+          "description"
+        ]
+      }
+    },
+    {
+      "name": "create_workflow",
+      "description": "Create an automation workflow in HubSpot",
+      "method": "POST",
+      "path": "/create-workflow",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Workflow name"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CONTACT",
+              "COMPANY",
+              "DEAL",
+              "TICKET"
+            ],
+            "description": "Workflow object type"
+          },
+          "actions": {
+            "type": "array",
+            "description": "Workflow actions to perform",
+            "items": {
+              "type": "object"
+            }
+          },
+          "enrollment_criteria": {
+            "type": "object",
+            "description": "Criteria for enrollment in workflow"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      }
+    }
+  ]
+}

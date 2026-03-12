@@ -1,0 +1,330 @@
+{
+  "slug": "google-sheets",
+  "name": "Google Sheets",
+  "description": "MCP server for Google Sheets - spreadsheets, cells, formulas, and data management via the Sheets REST API",
+  "logo": "https://www.google.com/s2/favicons?domain=sheets.google.com&sz=128",
+  "categories": [
+    "spreadsheets",
+    "data",
+    "formulas",
+    "productivity",
+    "google"
+  ],
+  "base_url": "https://sheets.googleapis.com/v4",
+  "auth": {
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "accessToken",
+        "label": "accessToken"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/spreadsheets.readonly"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
+  },
+  "tools": [
+    {
+      "name": "create_spreadsheet",
+      "description": "Create a new Google Sheets spreadsheet with optional initial sheet names",
+      "method": "POST",
+      "path": "/spreadsheets",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "description": "Spreadsheet properties",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Title of the spreadsheet"
+              }
+            },
+            "required": [
+              "title"
+            ]
+          },
+          "sheets": {
+            "type": "array",
+            "description": "Initial sheets to create",
+            "items": {
+              "type": "object",
+              "properties": {
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "properties"
+        ]
+      }
+    },
+    {
+      "name": "get_spreadsheet",
+      "description": "Get spreadsheet metadata including sheet names, properties, and named ranges",
+      "method": "GET",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "spreadsheetId,properties,sheets.properties,namedRanges"
+          }
+        },
+        "required": [
+          "spreadsheetId"
+        ]
+      }
+    },
+    {
+      "name": "read_range",
+      "description": "Read values from a range in a spreadsheet using A1 notation (e.g. 'Sheet1!A1:D10')",
+      "method": "GET",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation range (e.g. 'Sheet1!A1:D10', 'Sheet1', 'A1:B5')"
+          },
+          "valueRenderOption": {
+            "type": "string",
+            "description": "How values should be rendered",
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ],
+            "default": "FORMATTED_VALUE"
+          },
+          "dateTimeRenderOption": {
+            "type": "string",
+            "description": "How dates should be rendered",
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ],
+            "default": "FORMATTED_STRING"
+          },
+          "majorDimension": {
+            "type": "string",
+            "description": "Major dimension of results",
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
+            "default": "ROWS"
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "range"
+        ]
+      }
+    },
+    {
+      "name": "write_range",
+      "description": "Write values to a range in a spreadsheet. Overwrites existing data in the range.",
+      "method": "PUT",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation range to write to (e.g. 'Sheet1!A1:D5')"
+          },
+          "valueInputOption": {
+            "type": "string",
+            "description": "How input data should be interpreted",
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
+            "default": "USER_ENTERED"
+          },
+          "values": {
+            "type": "array",
+            "description": "2D array of values to write. Each inner array is a row.",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "range",
+          "values"
+        ]
+      }
+    },
+    {
+      "name": "append_rows",
+      "description": "Append rows of data after the last row with data in a sheet",
+      "method": "POST",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D:append",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation of the table range to append to (e.g. 'Sheet1!A:D' or 'Sheet1')"
+          },
+          "valueInputOption": {
+            "type": "string",
+            "description": "How input data should be interpreted",
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
+            "default": "USER_ENTERED"
+          },
+          "insertDataOption": {
+            "type": "string",
+            "description": "How data should be inserted",
+            "enum": [
+              "OVERWRITE",
+              "INSERT_ROWS"
+            ],
+            "default": "INSERT_ROWS"
+          },
+          "values": {
+            "type": "array",
+            "description": "2D array of rows to append",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "range",
+          "values"
+        ]
+      }
+    },
+    {
+      "name": "clear_range",
+      "description": "Clear values from a range in a spreadsheet (keeps formatting)",
+      "method": "POST",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D:clear",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation range to clear (e.g. 'Sheet1!A1:D10')"
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "range"
+        ]
+      }
+    },
+    {
+      "name": "batch_get",
+      "description": "Read multiple ranges from a spreadsheet in a single request",
+      "method": "GET",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values:batchGet",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "ranges": {
+            "type": "string",
+            "description": "Comma-separated A1 notation ranges (e.g. 'Sheet1!A1:B5,Sheet2!A1:C10')"
+          },
+          "valueRenderOption": {
+            "type": "string",
+            "description": "How values should be rendered",
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ],
+            "default": "FORMATTED_VALUE"
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "ranges"
+        ]
+      }
+    },
+    {
+      "name": "add_sheet",
+      "description": "Add a new sheet (tab) to an existing spreadsheet",
+      "method": "POST",
+      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "spreadsheetId": {
+            "type": "string",
+            "description": "ID of the spreadsheet"
+          },
+          "requests": {
+            "type": "array",
+            "description": "Batch update requests. For adding a sheet: [{\"addSheet\": {\"properties\": {\"title\": \"New Sheet\"}}}]",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "spreadsheetId",
+          "requests"
+        ]
+      }
+    }
+  ]
+}

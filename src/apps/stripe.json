@@ -1,87 +1,524 @@
 {
   "slug": "stripe",
   "name": "Stripe",
-  "description": "Payment processing, subscriptions, and billing management",
-  "logo": null,
-  "categories": ["payments", "finance"],
+  "description": "MCP server for Stripe payments - customers, payments, subscriptions, invoices",
+  "logo": "https://www.google.com/s2/favicons?domain=stripe.com&sz=128",
+  "categories": [
+    "payments",
+    "finance",
+    "subscriptions",
+    "billing"
+  ],
   "base_url": "https://api.stripe.com/v1",
   "auth": {
-    "types": ["bearer"],
-    "headers": { "Authorization": "Bearer {{token}}", "Content-Type": "application/x-www-form-urlencoded" },
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
     "credential_fields": [
-      { "name": "token", "label": "Secret Key", "description": "Stripe secret key (sk_live_... or sk_test_...)" }
+      {
+        "name": "token",
+        "label": "Secret Key",
+        "description": "Your Stripe Secret Key (sk_live_ or sk_test_)"
+      }
     ]
   },
   "tools": [
     {
-      "name": "list_customers",
-      "description": "List customers",
-      "method": "GET",
-      "path": "/customers",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "limit": { "type": "number", "description": "Max customers to return", "default": 10 },
-          "email": { "type": "string", "description": "Filter by email" }
-        }
-      }
-    },
-    {
       "name": "create_customer",
       "description": "Create a new customer",
       "method": "POST",
-      "path": "/customers",
+      "path": "/create-customer",
       "input_schema": {
         "type": "object",
         "properties": {
-          "email": { "type": "string", "description": "Customer email" },
-          "name": { "type": "string", "description": "Customer name" },
-          "description": { "type": "string", "description": "Description" }
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          }
         },
-        "required": ["email"]
+        "required": [
+          "email"
+        ]
       }
     },
     {
-      "name": "list_charges",
-      "description": "List charges",
+      "name": "get_customer",
+      "description": "Get customer details",
       "method": "GET",
-      "path": "/charges",
+      "path": "/get-customer",
       "input_schema": {
         "type": "object",
         "properties": {
-          "limit": { "type": "number", "description": "Max charges to return", "default": 10 },
-          "customer": { "type": "string", "description": "Filter by customer ID" }
-        }
+          "customer_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ]
       }
     },
     {
-      "name": "list_subscriptions",
-      "description": "List subscriptions",
-      "method": "GET",
-      "path": "/subscriptions",
+      "name": "update_customer",
+      "description": "Update customer details",
+      "method": "PUT",
+      "path": "/update-customer",
       "input_schema": {
         "type": "object",
         "properties": {
-          "limit": { "type": "number", "description": "Max subscriptions", "default": 10 },
-          "customer": { "type": "string", "description": "Filter by customer ID" },
-          "status": { "type": "string", "enum": ["active", "past_due", "canceled", "all"], "default": "all" }
-        }
+          "customer_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ]
+      }
+    },
+    {
+      "name": "delete_customer",
+      "description": "Delete a customer",
+      "method": "DELETE",
+      "path": "/delete-customer",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ]
+      }
+    },
+    {
+      "name": "search_customers",
+      "description": "Search for customers",
+      "method": "GET",
+      "path": "/search-customers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "query"
+        ]
       }
     },
     {
       "name": "create_payment_intent",
       "description": "Create a payment intent",
       "method": "POST",
-      "path": "/payment_intents",
+      "path": "/create-payment-intent",
       "input_schema": {
         "type": "object",
         "properties": {
-          "amount": { "type": "number", "description": "Amount in smallest currency unit (e.g. cents)" },
-          "currency": { "type": "string", "description": "Three-letter currency code", "default": "usd" },
-          "customer": { "type": "string", "description": "Customer ID" },
-          "description": { "type": "string", "description": "Description" }
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "customer": {
+            "type": "string"
+          }
         },
-        "required": ["amount", "currency"]
+        "required": [
+          "amount",
+          "currency"
+        ]
+      }
+    },
+    {
+      "name": "get_payment_intent",
+      "description": "Get payment intent details",
+      "method": "GET",
+      "path": "/get-payment-intent",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payment_intent_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_intent_id"
+        ]
+      }
+    },
+    {
+      "name": "cancel_payment_intent",
+      "description": "Cancel a payment intent",
+      "method": "GET",
+      "path": "/cancel-payment-intent",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payment_intent_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_intent_id"
+        ]
+      }
+    },
+    {
+      "name": "list_payment_intents",
+      "description": "List payment intents",
+      "method": "GET",
+      "path": "/list-payment-intents",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_subscription",
+      "description": "Create a subscription",
+      "method": "POST",
+      "path": "/create-subscription",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "customer",
+          "items"
+        ]
+      }
+    },
+    {
+      "name": "cancel_subscription",
+      "description": "Cancel a subscription",
+      "method": "GET",
+      "path": "/cancel-subscription",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "subscription_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subscription_id"
+        ]
+      }
+    },
+    {
+      "name": "create_product",
+      "description": "Create a product",
+      "method": "POST",
+      "path": "/create-product",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "delete_product",
+      "description": "Delete a product",
+      "method": "DELETE",
+      "path": "/delete-product",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    },
+    {
+      "name": "create_price",
+      "description": "Create a price",
+      "method": "POST",
+      "path": "/create-price",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "string"
+          },
+          "unit_amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product",
+          "unit_amount",
+          "currency"
+        ]
+      }
+    },
+    {
+      "name": "get_invoice",
+      "description": "Get invoice details",
+      "method": "GET",
+      "path": "/get-invoice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ]
+      }
+    },
+    {
+      "name": "list_invoices",
+      "description": "List invoices",
+      "method": "GET",
+      "path": "/list-invoices",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_charges",
+      "description": "List charges",
+      "method": "GET",
+      "path": "/list-charges",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_refund",
+      "description": "Create a refund",
+      "method": "POST",
+      "path": "/create-refund",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "charge": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "charge"
+        ]
+      }
+    },
+    {
+      "name": "create_payment_method",
+      "description": "Create a payment method",
+      "method": "POST",
+      "path": "/create-payment-method",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "card": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "get_payment_method",
+      "description": "Get payment method details",
+      "method": "GET",
+      "path": "/get-payment-method",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payment_method_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_method_id"
+        ]
+      }
+    },
+    {
+      "name": "list_payment_methods",
+      "description": "List payment methods",
+      "method": "GET",
+      "path": "/list-payment-methods",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer"
+        ]
+      }
+    },
+    {
+      "name": "attach_payment_method",
+      "description": "Attach payment method to customer",
+      "method": "GET",
+      "path": "/attach-payment-method",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payment_method_id": {
+            "type": "string"
+          },
+          "customer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_method_id",
+          "customer"
+        ]
+      }
+    },
+    {
+      "name": "detach_payment_method",
+      "description": "Detach payment method from customer",
+      "method": "GET",
+      "path": "/detach-payment-method",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payment_method_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_method_id"
+        ]
+      }
+    },
+    {
+      "name": "create_setup_intent",
+      "description": "Create a setup intent",
+      "method": "POST",
+      "path": "/create-setup-intent",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "payment_method_types": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_setup_intent",
+      "description": "Get setup intent details",
+      "method": "GET",
+      "path": "/get-setup-intent",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "setup_intent_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "setup_intent_id"
+        ]
+      }
+    },
+    {
+      "name": "process_webhook",
+      "description": "Process Stripe webhook",
+      "method": "GET",
+      "path": "/process-webhook",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          },
+          "signature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payload"
+        ]
       }
     }
   ]
