@@ -1,25 +1,27 @@
 {
   "slug": "heygen",
   "name": "HeyGen",
-  "description": "MCP server for HeyGen AI video generation - avatars, videos, templates",
+  "description": "MCP server for HeyGen AI video generation - avatars, videos, templates, streaming interactive avatars, video translation, talking photos, personalized video, and webhooks",
   "logo": "https://www.google.com/s2/favicons?domain=heygen.com&sz=128",
   "categories": [
     "ai",
     "video",
     "avatars",
-    "generation"
+    "generation",
+    "streaming",
+    "translation"
   ],
-  "base_url": "https://api.heygen.com/v2",
+  "base_url": "https://api.heygen.com",
   "auth": {
     "types": [
       "api_key"
     ],
     "headers": {
-      "X-Api-Key": "{{token}}"
+      "X-Api-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Your HeyGen API Key"
       }
@@ -27,46 +29,210 @@
   },
   "tools": [
     {
-      "name": "create_video",
-      "description": "Create an AI video",
-      "method": "POST",
-      "path": "/create-video",
+      "name": "list_avatars",
+      "description": "List all available avatars (v2) including public and custom avatars with details like avatar_id, name, gender, and preview URLs",
+      "method": "GET",
+      "path": "/v2/avatars",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_avatar_details",
+      "description": "Get detailed information about a specific avatar by its ID including supported poses, expressions, and capabilities",
+      "method": "GET",
+      "path": "/v2/avatar/{avatar_id}/details",
       "input_schema": {
         "type": "object",
         "properties": {
           "avatar_id": {
-            "type": "string"
-          },
-          "voice_id": {
-            "type": "string"
-          },
-          "script": {
-            "type": "string"
-          },
-          "background": {
-            "type": "object"
+            "type": "string",
+            "description": "The avatar ID to get details for"
           }
         },
         "required": [
-          "avatar_id",
-          "voice_id",
-          "script"
+          "avatar_id"
         ]
       }
     },
     {
-      "name": "create_from_template",
-      "description": "Create video from template",
+      "name": "list_voices",
+      "description": "List all available AI voices (v2) with details like voice_id, language, gender, name, and preview URL",
+      "method": "GET",
+      "path": "/v2/voices",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "generate_voice_preview",
+      "description": "Generate a short audio preview with a specified voice and text to hear how it sounds before creating a video",
       "method": "POST",
-      "path": "/create-from-template",
+      "path": "/v2/voices/{voice_id}/preview",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "voice_id": {
+            "type": "string",
+            "description": "The voice ID to preview"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text to generate audio preview for"
+          }
+        },
+        "required": [
+          "voice_id",
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "generate_video",
+      "description": "Generate an AI avatar video using the Studio backend. Supports avatars, voices, dynamic backgrounds, and multiple scenes. Returns a video_id to poll for status.",
+      "method": "POST",
+      "path": "/v2/video/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_inputs": {
+            "type": "array",
+            "description": "Array of scene inputs, each with character (avatar + voice), voice (script), and optional background",
+            "items": {
+              "type": "object"
+            }
+          },
+          "dimension": {
+            "type": "object",
+            "description": "Video dimensions, e.g. {\"width\": 1920, \"height\": 1080}"
+          },
+          "test": {
+            "type": "boolean",
+            "description": "Set true to generate a free test video (watermarked)"
+          },
+          "caption": {
+            "type": "boolean",
+            "description": "Enable auto-captions"
+          },
+          "title": {
+            "type": "string",
+            "description": "Video title"
+          },
+          "callback_id": {
+            "type": "string",
+            "description": "Custom callback ID for webhook notifications"
+          }
+        },
+        "required": [
+          "video_inputs"
+        ]
+      }
+    },
+    {
+      "name": "create_avatar_iv_video",
+      "description": "Generate an Avatar IV video from a photo with advanced AI-powered motion and expressions. Uses next-gen photorealistic avatar technology.",
+      "method": "POST",
+      "path": "/v2/video/av4/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "description": "Avatar IV avatar ID"
+          },
+          "voice": {
+            "type": "object",
+            "description": "Voice configuration with voice_id and input_text or input_audio"
+          },
+          "dimension": {
+            "type": "object",
+            "description": "Video dimensions"
+          },
+          "test": {
+            "type": "boolean",
+            "description": "Generate test video (watermarked)"
+          }
+        },
+        "required": [
+          "avatar_id",
+          "voice"
+        ]
+      }
+    },
+    {
+      "name": "get_video_status",
+      "description": "Check the status of a video generation job. Returns status (processing, completed, failed), video_url when done, and duration.",
+      "method": "GET",
+      "path": "/v1/video_status.get",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "description": "The video ID to check status for"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "list_videos",
+      "description": "List all generated videos with their status, URLs, and metadata",
+      "method": "GET",
+      "path": "/v1/video.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Number of videos to return (max 100)"
+          }
+        }
+      }
+    },
+    {
+      "name": "delete_video",
+      "description": "Delete a generated video by its ID",
+      "method": "DELETE",
+      "path": "/v1/video.delete",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "description": "The video ID to delete"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "list_templates",
+      "description": "List all available video templates with their variable definitions for dynamic content",
+      "method": "GET",
+      "path": "/v2/templates",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_template",
+      "description": "Get a specific template by ID with all its variable definitions that can be dynamically populated during video generation",
+      "method": "GET",
+      "path": "/v2/template/{template_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "template_id": {
-            "type": "string"
-          },
-          "variables": {
-            "type": "object"
+            "type": "string",
+            "description": "The template ID"
           }
         },
         "required": [
@@ -75,110 +241,767 @@
       }
     },
     {
-      "name": "get_video",
-      "description": "Get video details",
-      "method": "GET",
-      "path": "/get-video",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "video_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "video_id"
-        ]
-      }
-    },
-    {
-      "name": "get_video_status",
-      "description": "Get video generation status",
-      "method": "GET",
-      "path": "/get-video-status",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "video_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "video_id"
-        ]
-      }
-    },
-    {
-      "name": "list_avatars",
-      "description": "List available avatars",
-      "method": "GET",
-      "path": "/list-avatars",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    {
-      "name": "list_voices",
-      "description": "List available voices",
-      "method": "GET",
-      "path": "/list-voices",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    {
-      "name": "list_templates",
-      "description": "List video templates",
-      "method": "GET",
-      "path": "/list-templates",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    {
-      "name": "create_custom_avatar",
-      "description": "Create a custom avatar",
+      "name": "generate_from_template",
+      "description": "Generate a video from a template with dynamic variable substitution. Provide template variables to customize the video content.",
       "method": "POST",
-      "path": "/create-custom-avatar",
+      "path": "/v2/template/{template_id}/generate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
+          "template_id": {
+            "type": "string",
+            "description": "The template ID to generate from"
           },
-          "image_url": {
-            "type": "string"
+          "title": {
+            "type": "string",
+            "description": "Video title"
+          },
+          "variables": {
+            "type": "object",
+            "description": "Template variables to substitute (keys are variable names from the template)"
+          },
+          "test": {
+            "type": "boolean",
+            "description": "Generate test video (watermarked)"
+          },
+          "caption": {
+            "type": "boolean",
+            "description": "Enable captions"
+          },
+          "callback_id": {
+            "type": "string",
+            "description": "Custom callback ID for webhook"
           }
         },
         "required": [
-          "name",
+          "template_id"
+        ]
+      }
+    },
+    {
+      "name": "translate_video",
+      "description": "Translate a video into 175+ languages with natural-sounding voice and accurate lip-sync. Returns a video_translate_id to poll for status.",
+      "method": "POST",
+      "path": "/v2/video_translate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_url": {
+            "type": "string",
+            "description": "URL of the source video to translate"
+          },
+          "output_language": {
+            "type": "string",
+            "description": "Target language code (e.g., 'es', 'fr', 'de', 'ja', 'zh')"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title for the translated video"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Translation quality mode: 'fast' or 'quality'",
+            "default": "fast"
+          },
+          "callback_id": {
+            "type": "string",
+            "description": "Custom callback ID for webhook"
+          }
+        },
+        "required": [
+          "video_url",
+          "output_language"
+        ]
+      }
+    },
+    {
+      "name": "get_translation_status",
+      "description": "Check the status of a video translation job",
+      "method": "GET",
+      "path": "/v2/video_translate/{video_translate_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_translate_id": {
+            "type": "string",
+            "description": "The translation job ID"
+          }
+        },
+        "required": [
+          "video_translate_id"
+        ]
+      }
+    },
+    {
+      "name": "list_target_languages",
+      "description": "Get list of all supported target languages for video translation",
+      "method": "GET",
+      "path": "/v2/video_translate/target_languages",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "streaming_new",
+      "description": "Create a new interactive avatar streaming session. Returns session_id and ICE server configuration for WebRTC.",
+      "method": "POST",
+      "path": "/v1/streaming.new",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "description": "Streaming avatar ID"
+          },
+          "voice": {
+            "type": "object",
+            "description": "Voice config: {\"voice_id\": \"...\", \"rate\": 1.0}"
+          },
+          "quality": {
+            "type": "string",
+            "description": "Video quality: 'low', 'medium', 'high'",
+            "default": "medium"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version: 'v1' or 'v2'",
+            "default": "v2"
+          },
+          "knowledge_base_id": {
+            "type": "string",
+            "description": "Optional knowledge base ID for Q&A capabilities"
+          }
+        },
+        "required": [
+          "avatar_id"
+        ]
+      }
+    },
+    {
+      "name": "streaming_start",
+      "description": "Start an interactive avatar streaming session with WebRTC SDP exchange",
+      "method": "POST",
+      "path": "/v1/streaming.start",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID from streaming.new"
+          },
+          "sdp": {
+            "type": "object",
+            "description": "WebRTC SDP offer"
+          }
+        },
+        "required": [
+          "session_id",
+          "sdp"
+        ]
+      }
+    },
+    {
+      "name": "streaming_ice",
+      "description": "Send a WebRTC ICE candidate to the streaming session",
+      "method": "POST",
+      "path": "/v1/streaming.ice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID"
+          },
+          "candidate": {
+            "type": "object",
+            "description": "ICE candidate object"
+          }
+        },
+        "required": [
+          "session_id",
+          "candidate"
+        ]
+      }
+    },
+    {
+      "name": "streaming_task",
+      "description": "Send text to an interactive avatar, prompting it to speak. Can also send task_type 'repeat' to repeat or 'talk' (default).",
+      "method": "POST",
+      "path": "/v1/streaming.task",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text for the avatar to speak"
+          },
+          "task_type": {
+            "type": "string",
+            "description": "Task type: 'talk' or 'repeat'",
+            "default": "talk"
+          },
+          "task_mode": {
+            "type": "string",
+            "description": "Task mode: 'async' or 'sync'",
+            "default": "async"
+          }
+        },
+        "required": [
+          "session_id",
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "streaming_interrupt",
+      "description": "Interrupt the avatar while it is speaking in a streaming session",
+      "method": "POST",
+      "path": "/v1/streaming.interrupt",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID"
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      }
+    },
+    {
+      "name": "streaming_stop",
+      "description": "Stop and close an interactive avatar streaming session",
+      "method": "POST",
+      "path": "/v1/streaming.stop",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID"
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      }
+    },
+    {
+      "name": "streaming_list_sessions",
+      "description": "List all streaming session history with pagination, optional date range and status filtering",
+      "method": "GET",
+      "path": "/v2/streaming.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Number of sessions to return"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset"
+          }
+        }
+      }
+    },
+    {
+      "name": "streaming_create_token",
+      "description": "Create a temporary access token for client-side streaming SDK integration",
+      "method": "POST",
+      "path": "/v1/streaming.create_token",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_streaming_avatars",
+      "description": "List all public and custom avatars available for interactive streaming sessions",
+      "method": "GET",
+      "path": "/v1/streaming/avatar.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_talking_photos",
+      "description": "List all talking photos that can be animated with voice to create short videos",
+      "method": "GET",
+      "path": "/v1/talking_photo.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "upload_talking_photo",
+      "description": "Upload a new talking photo that can be animated with voice",
+      "method": "POST",
+      "path": "/v1/talking_photo",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "description": "URL of the photo to upload"
+          }
+        },
+        "required": [
           "image_url"
         ]
       }
     },
     {
-      "name": "clone_voice",
-      "description": "Clone a voice from audio",
-      "method": "GET",
-      "path": "/clone-voice",
+      "name": "delete_talking_photo",
+      "description": "Delete a talking photo by its ID",
+      "method": "DELETE",
+      "path": "/v2/talking_photo/{talking_photo_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "audio_url": {
-            "type": "string"
+          "talking_photo_id": {
+            "type": "string",
+            "description": "The talking photo ID to delete"
           }
         },
         "required": [
-          "name",
-          "audio_url"
+          "talking_photo_id"
         ]
       }
+    },
+    {
+      "name": "upload_asset",
+      "description": "Upload an asset (image, audio, video) to use in video generation",
+      "method": "POST",
+      "path": "/v1/asset",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the asset to upload"
+          },
+          "type": {
+            "type": "string",
+            "description": "Asset type: 'image', 'audio', 'video'"
+          }
+        },
+        "required": [
+          "url",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "get_remaining_quota",
+      "description": "Get your account's remaining API quota/credits",
+      "method": "GET",
+      "path": "/v2/user/remaining_quota",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "add_webhook",
+      "description": "Register a webhook endpoint to receive real-time event notifications (video.completed, video.failed, etc.)",
+      "method": "POST",
+      "path": "/v1/webhook/endpoint.add",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Webhook endpoint URL"
+          },
+          "events": {
+            "type": "array",
+            "description": "Event types to subscribe to, e.g. ['avatar_video.success', 'avatar_video.fail']",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "url",
+          "events"
+        ]
+      }
+    },
+    {
+      "name": "list_webhook_endpoints",
+      "description": "List all registered webhook endpoints",
+      "method": "GET",
+      "path": "/v1/webhook/endpoint.list",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "delete_webhook",
+      "description": "Delete a registered webhook endpoint",
+      "method": "DELETE",
+      "path": "/v1/webhook/endpoint.delete",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "The webhook endpoint ID to delete"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "name": "video_agent_generate",
+      "description": "One-shot video generation from a natural language prompt. The Video Agent automatically selects the best avatar, voice, background, and script to produce a complete video. No need to specify individual parameters.",
+      "method": "POST",
+      "path": "/v1/video_agent/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Natural language description of the video you want to create, e.g. 'Create a 30-second product demo for a fitness app'"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model to use for generation"
+          },
+          "avatar_id": {
+            "type": "string",
+            "description": "Optional: specify an avatar ID instead of letting the agent choose"
+          },
+          "voice_id": {
+            "type": "string",
+            "description": "Optional: specify a voice ID instead of letting the agent choose"
+          },
+          "test": {
+            "type": "boolean",
+            "description": "Generate a free test video (watermarked)"
+          },
+          "callback_id": {
+            "type": "string",
+            "description": "Custom callback ID for webhook notifications"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      }
+    },
+    {
+      "name": "create_webm_video",
+      "description": "Generate a WebM format avatar video with transparent background support. Ideal for overlays and web embedding.",
+      "method": "POST",
+      "path": "/v1/video.webm",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_pose_id": {
+            "type": "string",
+            "description": "ID of the avatar's pose (from List All Avatars)"
+          },
+          "avatar_style": {
+            "type": "string",
+            "description": "Visual style: 'normal' or 'closeUp'",
+            "default": "normal"
+          },
+          "input_text": {
+            "type": "string",
+            "description": "Text for the avatar to speak (provide this OR input_audio)"
+          },
+          "voice_id": {
+            "type": "string",
+            "description": "Voice ID (required with input_text)"
+          },
+          "input_audio": {
+            "type": "string",
+            "description": "URL/ID of uploaded audio (alternative to input_text+voice_id)"
+          },
+          "dimension": {
+            "type": "object",
+            "description": "Custom output dimensions: {\"width\": 512, \"height\": 512}"
+          }
+        },
+        "required": [
+          "avatar_pose_id"
+        ]
+      }
+    },
+    {
+      "name": "get_sharable_url",
+      "description": "Get a shareable URL for a completed video that doesn't expire",
+      "method": "POST",
+      "path": "/v1/video/sharable-url",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "description": "The video ID to get a sharable URL for"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "list_avatar_groups",
+      "description": "List all avatar groups (collections of related avatars)",
+      "method": "GET",
+      "path": "/v2/avatar-groups",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_avatars_in_group",
+      "description": "List all avatars belonging to a specific avatar group",
+      "method": "GET",
+      "path": "/v2/avatar-groups/{group_id}/avatars",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "The avatar group ID"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      }
+    },
+    {
+      "name": "create_photo_avatar",
+      "description": "Create a new photo avatar from an uploaded image for live-looking video generation",
+      "method": "POST",
+      "path": "/v1/photo_avatar/photo/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "description": "URL of the photo to use for avatar creation"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for the photo avatar"
+          }
+        },
+        "required": [
+          "image_url"
+        ]
+      }
+    },
+    {
+      "name": "train_photo_avatar",
+      "description": "Train a photo avatar group to improve quality and consistency across looks",
+      "method": "POST",
+      "path": "/v1/photo_avatar/train",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Photo avatar group ID to train"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      }
+    },
+    {
+      "name": "generate_photo_avatar_look",
+      "description": "Generate new looks/styles for an existing photo avatar",
+      "method": "POST",
+      "path": "/v1/photo_avatar/look/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "description": "Photo avatar ID"
+          },
+          "look_config": {
+            "type": "object",
+            "description": "Look configuration options"
+          }
+        },
+        "required": [
+          "avatar_id"
+        ]
+      }
+    },
+    {
+      "name": "add_photo_avatar_motion",
+      "description": "Add motion/animation to a photo avatar for more natural video output",
+      "method": "POST",
+      "path": "/v1/photo_avatar/add_motion",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "description": "Photo avatar ID"
+          },
+          "motion_config": {
+            "type": "object",
+            "description": "Motion configuration"
+          }
+        },
+        "required": [
+          "avatar_id"
+        ]
+      }
+    },
+    {
+      "name": "create_digital_twin",
+      "description": "Create a digital twin avatar from training footage video. Submit training footage and consent video to start the avatar creation process.",
+      "method": "POST",
+      "path": "/v1/digital-twin/create",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "training_footage_url": {
+            "type": "string",
+            "description": "URL of the training footage video"
+          },
+          "video_consent_url": {
+            "type": "string",
+            "description": "URL of the consent video"
+          },
+          "avatar_name": {
+            "type": "string",
+            "description": "Name for the digital twin avatar"
+          }
+        },
+        "required": [
+          "training_footage_url",
+          "video_consent_url",
+          "avatar_name"
+        ]
+      }
+    },
+    {
+      "name": "get_digital_twin_status",
+      "description": "Check the training/generation status of a digital twin avatar",
+      "method": "GET",
+      "path": "/v1/digital-twin/{digital_twin_id}/status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "digital_twin_id": {
+            "type": "string",
+            "description": "The digital twin ID"
+          }
+        },
+        "required": [
+          "digital_twin_id"
+        ]
+      }
+    },
+    {
+      "name": "delete_digital_twin",
+      "description": "Delete a digital twin avatar",
+      "method": "DELETE",
+      "path": "/v1/digital-twin/{digital_twin_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "digital_twin_id": {
+            "type": "string",
+            "description": "The digital twin ID to delete"
+          }
+        },
+        "required": [
+          "digital_twin_id"
+        ]
+      }
+    },
+    {
+      "name": "text_to_speech",
+      "description": "Generate audio from text using HeyGen's AI voices (Starfish TTS engine)",
+      "method": "POST",
+      "path": "/v1/tts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to convert to speech"
+          },
+          "voice_id": {
+            "type": "string",
+            "description": "Voice ID to use"
+          },
+          "speed": {
+            "type": "number",
+            "description": "Speech speed multiplier (0.5-2.0)",
+            "default": 1
+          }
+        },
+        "required": [
+          "text",
+          "voice_id"
+        ]
+      }
+    },
+    {
+      "name": "list_tts_voices",
+      "description": "List voices compatible with the Starfish text-to-speech engine",
+      "method": "GET",
+      "path": "/v1/tts/voices",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-webhook-signature",
+    "events": [
+      {
+        "name": "avatar_video.success",
+        "description": "Video generation completed successfully"
+      },
+      {
+        "name": "avatar_video.fail",
+        "description": "Video generation failed"
+      },
+      {
+        "name": "video_translate.success",
+        "description": "Video translation completed"
+      },
+      {
+        "name": "video_translate.fail",
+        "description": "Video translation failed"
+      },
+      {
+        "name": "streaming.session_started",
+        "description": "Streaming session started"
+      },
+      {
+        "name": "streaming.session_ended",
+        "description": "Streaming session ended"
+      }
+    ]
+  }
 }

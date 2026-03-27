@@ -13,15 +13,16 @@
   "base_url": "https://api.bunny.net",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "AccessKey": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your Bunny.net Account API Key (found in Account Settings > API)"
       }
     ]
   },
@@ -56,7 +57,7 @@
       "name": "get_pullzone",
       "description": "Get detailed information about a specific pull zone including hostnames, cache settings, and security options",
       "method": "GET",
-      "path": "/pullzone/%7B%7BpullZoneId%7D%7D",
+      "path": "/pullzone/{pullZoneId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -139,7 +140,7 @@
       "name": "update_pullzone",
       "description": "Update pull zone configuration including origin, geo zones, caching, and security settings",
       "method": "POST",
-      "path": "/pullzone/%7B%7BpullZoneId%7D%7D",
+      "path": "/pullzone/{pullZoneId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -201,7 +202,7 @@
       "name": "delete_pullzone",
       "description": "Delete a CDN pull zone permanently",
       "method": "DELETE",
-      "path": "/pullzone/%7B%7BpullZoneId%7D%7D",
+      "path": "/pullzone/{pullZoneId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -219,7 +220,7 @@
       "name": "purge_cache",
       "description": "Purge all cached content from a pull zone's CDN edge servers",
       "method": "POST",
-      "path": "/pullzone/%7B%7BpullZoneId%7D%7D/purgeCache",
+      "path": "/pullzone/{pullZoneId}/purgeCache",
       "input_schema": {
         "type": "object",
         "properties": {

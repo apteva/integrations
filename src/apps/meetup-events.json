@@ -14,7 +14,8 @@
   "base_url": "https://api.meetup.com",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
@@ -22,9 +23,34 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "apiKey"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://secure.meetup.com/oauth2/authorize",
+      "token_url": "https://secure.meetup.com/oauth2/access",
+      "scopes": [
+        "basic",
+        "rsvp",
+        "event_management",
+        "group_edit",
+        "messaging"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {

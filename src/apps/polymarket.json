@@ -43,6 +43,16 @@
         "name": "address",
         "label": "Address",
         "description": "Polygon wallet address (0x...)"
+      },
+      {
+        "name": "signature_type",
+        "label": "Signature_type",
+        "description": "0 = EOA wallet (default), 1 = Polymarket proxy, 2 = Gnosis Safe"
+      },
+      {
+        "name": "funder_address",
+        "label": "Funder_address",
+        "description": "Address that funds trades (defaults to wallet address)"
       }
     ]
   },
@@ -77,7 +87,7 @@
       "name": "get_event",
       "description": "Get a specific event by its URL slug. Returns full event details including all associated markets with their condition_ids and token_ids.",
       "method": "GET",
-      "path": "/events/slug/%7B%7Bslug%7D%7D",
+      "path": "/events/slug/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -121,7 +131,7 @@
       "name": "get_market",
       "description": "Get a specific market by slug. Returns prices, volume, condition_id, and clobTokenIds needed for trading.",
       "method": "GET",
-      "path": "/markets/slug/%7B%7Bslug%7D%7D",
+      "path": "/markets/slug/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -309,7 +319,7 @@
       "name": "get_clob_market",
       "description": "Get CLOB market details by condition ID. Returns token IDs, tick size, min order size, and neg_risk flag needed for trading.",
       "method": "GET",
-      "path": "/market/%7B%7Bcondition_id%7D%7D",
+      "path": "/market/{condition_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -471,7 +481,7 @@
       "name": "get_order",
       "description": "Get details of a specific order by its ID. Returns status, fill amount, and trade details. Requires authentication.",
       "method": "GET",
-      "path": "/data/order/%7B%7Border_id%7D%7D",
+      "path": "/data/order/{order_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -512,7 +522,7 @@
       "name": "cancel_order",
       "description": "Cancel a specific open order by its ID. Requires authentication.",
       "method": "DELETE",
-      "path": "/order/%7B%7Border_id%7D%7D",
+      "path": "/order/{order_id}",
       "input_schema": {
         "type": "object",
         "properties": {

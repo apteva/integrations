@@ -18,7 +18,7 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "{{token}}"
     },
     "credential_fields": [
       {
@@ -222,5 +222,42 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-chargebee-signature",
+    "events": [
+      {
+        "name": "subscription_created",
+        "description": "New subscription created"
+      },
+      {
+        "name": "subscription_renewed",
+        "description": "Subscription renewed"
+      },
+      {
+        "name": "subscription_cancelled",
+        "description": "Subscription cancelled"
+      },
+      {
+        "name": "subscription_changed",
+        "description": "Subscription plan changed"
+      },
+      {
+        "name": "payment_succeeded",
+        "description": "Payment successfully processed"
+      },
+      {
+        "name": "payment_failed",
+        "description": "Payment attempt failed"
+      },
+      {
+        "name": "invoice_generated",
+        "description": "New invoice generated"
+      },
+      {
+        "name": "customer_created",
+        "description": "New customer created"
+      }
+    ]
+  }
 }

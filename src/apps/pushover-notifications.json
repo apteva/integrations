@@ -18,8 +18,14 @@
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "appToken",
+        "label": "App Token",
+        "description": "Application API Token from your Pushover app"
+      },
+      {
+        "name": "userKey",
+        "label": "User Key",
+        "description": "Your Pushover User Key or Group Key"
       }
     ]
   },

@@ -25,6 +25,14 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
+      },
+      {
+        "name": "associated_user",
+        "label": "associated_user"
       }
     ],
     "oauth2": {
@@ -1213,5 +1221,74 @@
         }
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-shopify-hmac-sha256",
+    "events": [
+      {
+        "name": "orders/create",
+        "description": "New order placed"
+      },
+      {
+        "name": "orders/updated",
+        "description": "Order details changed"
+      },
+      {
+        "name": "orders/paid",
+        "description": "Order payment received"
+      },
+      {
+        "name": "orders/fulfilled",
+        "description": "Order shipped/fulfilled"
+      },
+      {
+        "name": "orders/cancelled",
+        "description": "Order cancelled"
+      },
+      {
+        "name": "products/create",
+        "description": "New product created"
+      },
+      {
+        "name": "products/update",
+        "description": "Product details changed"
+      },
+      {
+        "name": "products/delete",
+        "description": "Product removed"
+      },
+      {
+        "name": "customers/create",
+        "description": "New customer registered"
+      },
+      {
+        "name": "customers/update",
+        "description": "Customer info changed"
+      },
+      {
+        "name": "carts/create",
+        "description": "New cart created"
+      },
+      {
+        "name": "carts/update",
+        "description": "Cart updated"
+      },
+      {
+        "name": "checkouts/create",
+        "description": "Checkout initiated"
+      },
+      {
+        "name": "refunds/create",
+        "description": "Refund issued"
+      },
+      {
+        "name": "inventory_levels/update",
+        "description": "Inventory changed"
+      },
+      {
+        "name": "app/uninstalled",
+        "description": "App uninstalled from store"
+      }
+    ]
+  }
 }

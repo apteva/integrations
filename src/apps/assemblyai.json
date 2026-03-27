@@ -16,7 +16,7 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "authorization": "{{token}}"
     },
     "credential_fields": [
       {
@@ -85,7 +85,7 @@
       "name": "get_transcript",
       "description": "Retrieve the status and results of a transcript by its ID. The transcript is ready when the 'status' field is 'completed'. While processing, the status will be 'queued' or 'processing'. If transcription fails, the status will be 'error' with an error message.",
       "method": "GET",
-      "path": "/transcript/%7B%7Bparam.transcript_id%7D%7D",
+      "path": "/transcript/{{param.transcript_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -140,7 +140,7 @@
       "name": "word_search",
       "description": "Search for specific words or phrases within a completed transcript. Returns match counts, positions in the word array, and associated timestamps for each match. Supports individual words, numbers, or phrases containing up to five words.",
       "method": "GET",
-      "path": "/transcript/%7B%7Bparam.transcript_id%7D%7D/word-search",
+      "path": "/transcript/{{param.transcript_id}}/word-search",
       "input_schema": {
         "type": "object",
         "properties": {

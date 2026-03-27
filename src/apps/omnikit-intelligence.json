@@ -26,15 +26,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -393,7 +394,7 @@
     },
     {
       "name": "generate_speech",
-      "description": "Generate speech/voiceover from text using ElevenLabs. Select a voice from the library by name or ID. Use list-voices to find available voices first.",
+      "description": "Generate speech/voiceover from text using ElevenLabs. Select a voice from list-voices (sync-voices first if empty).\n\nResponse includes: audio.url, audio.durationMs (milliseconds — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it is not accurate.",
       "method": "POST",
       "path": "/ai/generate/speech",
       "input_schema": {
@@ -445,7 +446,7 @@
     },
     {
       "name": "list_voices",
-      "description": "List available voices from the organization's voice library. Filter by gender, language, accent, or category. Use sync-voices first to populate the library from ElevenLabs.",
+      "description": "List available voices from the voice library. If empty, run sync-voices first to populate with ElevenLabs premade voices. Returns voice ID, name, category, language, and preview URL.",
       "method": "GET",
       "path": "/ai/voices",
       "input_schema": {
@@ -489,7 +490,7 @@
       "name": "get_job_status",
       "description": "Check the status of an async AI generation job (video, image, or 3D). Returns current status, progress, and result when complete.",
       "method": "GET",
-      "path": "/ai/jobs/%7B%7BrequestId%7D%7D",
+      "path": "/ai/jobs/{requestId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -643,6 +644,240 @@
         },
         "required": [
           "messages"
+        ]
+      }
+    },
+    {
+      "name": "create_script",
+      "description": "Create a new script for audio/speech generation. Write text content, assign a voice, and configure output settings. Use generate-script to produce the audio.",
+      "method": "POST",
+      "path": "/ai/scripts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Script title"
+          },
+          "content": {
+            "type": "string",
+            "description": "The text content to be converted to speech"
+          },
+          "voiceId": {
+            "type": "string",
+            "description": "Voice ID from list-voices (optional, can set later)"
+          },
+          "voiceSettings": {
+            "type": "object",
+            "description": "Voice settings: stability, similarity_boost, etc. (optional)"
+          },
+          "outputType": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "video"
+            ],
+            "default": "audio",
+            "description": "Output type"
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "list_scripts",
+      "description": "List all scripts with optional filtering by status. Returns title, content preview, voice assignment, and generation status.",
+      "method": "GET",
+      "path": "/ai/scripts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Max results"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_script",
+      "description": "Get a script by ID with full content, voice settings, and generation history.",
+      "method": "GET",
+      "path": "/ai/scripts/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Script ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "update_script",
+      "description": "Update a script's title, content, voice, or settings. Only provided fields are changed.",
+      "method": "PUT",
+      "path": "/ai/scripts/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Script ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "New title"
+          },
+          "content": {
+            "type": "string",
+            "description": "New text content"
+          },
+          "voiceId": {
+            "type": "string",
+            "description": "New voice ID"
+          },
+          "voiceSettings": {
+            "type": "object",
+            "description": "New voice settings"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "delete_script",
+      "description": "Delete a script and its generated audio.",
+      "method": "DELETE",
+      "path": "/ai/scripts/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Script ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "generate_script",
+      "description": "Generate audio from a script using text-to-speech. Uses the script's assigned voice or an override.\n\nResponse includes: audio.url, audio.durationMs (milliseconds — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it is not accurate.",
+      "method": "POST",
+      "path": "/ai/scripts/{id}/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Script ID to generate audio for"
+          },
+          "voiceId": {
+            "type": "string",
+            "description": "Override voice ID (optional, uses script's voice if not set)"
+          },
+          "model": {
+            "type": "string",
+            "description": "TTS model (optional)"
+          },
+          "outputFormat": {
+            "type": "string",
+            "enum": [
+              "mp3",
+              "wav",
+              "ogg"
+            ],
+            "default": "mp3",
+            "description": "Audio format"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "sync_voices",
+      "description": "Sync premade voices from ElevenLabs into the local voice library. Run this first before listing voices — it populates the library with all available ElevenLabs voices. Only needs to be done once (or periodically to pick up new voices).",
+      "method": "POST",
+      "path": "/ai/voices/sync",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "premade",
+              "cloned"
+            ],
+            "description": "Filter by voice category (optional, syncs all by default)"
+          }
+        }
+      }
+    },
+    {
+      "name": "clone_voice",
+      "description": "Clone a voice from audio samples using ElevenLabs. Provide a name, description, and base64-encoded audio files. The cloned voice is added to the library and can be used in scripts and speech generation.",
+      "method": "POST",
+      "path": "/ai/voices/clone",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name for the cloned voice"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the voice"
+          },
+          "audioFiles": {
+            "type": "array",
+            "description": "Audio samples for cloning (base64-encoded)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Base64-encoded audio data"
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "Filename (e.g., sample.mp3)"
+                },
+                "contentType": {
+                  "type": "string",
+                  "description": "MIME type (e.g., audio/mpeg)"
+                }
+              },
+              "required": [
+                "data",
+                "filename"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "audioFiles"
         ]
       }
     }

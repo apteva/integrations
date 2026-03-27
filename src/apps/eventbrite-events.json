@@ -14,7 +14,8 @@
   "base_url": "https://www.eventbriteapi.com/v3",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
@@ -22,9 +23,34 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "apiKey"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://www.eventbrite.com/oauth/authorize",
+      "token_url": "https://www.eventbrite.com/oauth/token",
+      "scopes": [
+        "event:read",
+        "event:write",
+        "user:read",
+        "organization:read",
+        "organization:write",
+        "attendee:read",
+        "order:read",
+        "venue:read",
+        "venue:write"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {
@@ -51,7 +77,7 @@
       "name": "list_events",
       "description": "List events for an organization. Use list-organizations first to get the organization_id. Filter by status and control ordering.",
       "method": "GET",
-      "path": "/organizations/%7B%7Borganization_id%7D%7D/events/",
+      "path": "/organizations/{organization_id}/events/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -131,7 +157,7 @@
       "name": "get_event",
       "description": "Get detailed information about a specific Eventbrite event. Use expand to include related data like venue, ticket_classes, organizer.",
       "method": "GET",
-      "path": "/events/%7B%7Bevent_id%7D%7D/",
+      "path": "/events/{event_id}/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -153,7 +179,7 @@
       "name": "create_event",
       "description": "Create a new Eventbrite event under an organization. Pass an event object with nested structure: name.html (string), description.html (string), start.utc (ISO8601), start.timezone (e.g., 'America/New_York'), end.utc (ISO8601), end.timezone, currency (e.g., 'USD'). Optional: online_event (bool), listed (bool), capacity (int), venue_id, category_id, format_id.",
       "method": "POST",
-      "path": "/organizations/%7B%7Borganization_id%7D%7D/events/",
+      "path": "/organizations/{organization_id}/events/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -231,7 +257,7 @@
       "name": "update_event",
       "description": "Update an existing Eventbrite event. Pass an event object with only the fields to change. Uses same nested structure as create: name.html, description.html, start.utc, start.timezone, end.utc, end.timezone, currency, online_event, listed, capacity, venue_id.",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/",
+      "path": "/events/{event_id}/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -254,7 +280,7 @@
       "name": "publish_event",
       "description": "Publish a draft Eventbrite event, making it live and visible to the public. Event must have all required fields (name, dates, at least one ticket class).",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/publish/",
+      "path": "/events/{event_id}/publish/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -272,7 +298,7 @@
       "name": "unpublish_event",
       "description": "Unpublish a live Eventbrite event, reverting it to draft status. The event will no longer be publicly visible.",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/unpublish/",
+      "path": "/events/{event_id}/unpublish/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -290,7 +316,7 @@
       "name": "cancel_event",
       "description": "Cancel an Eventbrite event. This notifies attendees and initiates refund processing. Cannot be undone.",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/cancel/",
+      "path": "/events/{event_id}/cancel/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -308,7 +334,7 @@
       "name": "delete_event",
       "description": "Permanently delete an Eventbrite event. Only works on draft or canceled events. This action cannot be undone.",
       "method": "DELETE",
-      "path": "/events/%7B%7Bevent_id%7D%7D/",
+      "path": "/events/{event_id}/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -326,7 +352,7 @@
       "name": "list_attendees",
       "description": "List attendees for an Eventbrite event. Optionally filter by status (attending, not_attending, unpaid).",
       "method": "GET",
-      "path": "/events/%7B%7Bevent_id%7D%7D/attendees/",
+      "path": "/events/{event_id}/attendees/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -353,7 +379,7 @@
       "name": "list_orders",
       "description": "List orders (ticket purchases) for an Eventbrite event. Filter by status and changed_since date.",
       "method": "GET",
-      "path": "/events/%7B%7Bevent_id%7D%7D/orders/",
+      "path": "/events/{event_id}/orders/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -384,7 +410,7 @@
       "name": "get_order",
       "description": "Get details of a specific order including buyer info, ticket details, and payment status.",
       "method": "GET",
-      "path": "/orders/%7B%7Border_id%7D%7D/",
+      "path": "/orders/{order_id}/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -406,7 +432,7 @@
       "name": "list_ticket_classes",
       "description": "List all ticket types/classes for an event. Returns ticket names, prices, quantities, and sales status.",
       "method": "GET",
-      "path": "/events/%7B%7Bevent_id%7D%7D/ticket_classes/",
+      "path": "/events/{event_id}/ticket_classes/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -424,7 +450,7 @@
       "name": "create_ticket_class",
       "description": "Create a ticket type for an event. Pass a ticket_class object with: name (required), quantity_total (required, integer), free (bool) OR cost (string like 'USD,1500' for $15.00), donation (bool), description, sales_start (ISO8601), sales_end (ISO8601), minimum_quantity, maximum_quantity.",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/ticket_classes/",
+      "path": "/events/{event_id}/ticket_classes/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -484,7 +510,7 @@
       "name": "update_ticket_class",
       "description": "Update a ticket type for an event. Pass only the fields to change in the ticket_class object.",
       "method": "POST",
-      "path": "/events/%7B%7Bevent_id%7D%7D/ticket_classes/%7B%7Bticket_class_id%7D%7D/",
+      "path": "/events/{event_id}/ticket_classes/{ticket_class_id}/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -512,7 +538,7 @@
       "name": "list_venues",
       "description": "List venues for an organization. Returns venue IDs, names, addresses, and capacity info.",
       "method": "GET",
-      "path": "/organizations/%7B%7Borganization_id%7D%7D/venues/",
+      "path": "/organizations/{organization_id}/venues/",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -530,7 +556,7 @@
       "name": "create_venue",
       "description": "Create a new venue under an organization. Pass a venue object with: name (required), address.address_1 (required), address.city, address.region, address.postal_code, address.country (2-letter code), capacity (int).",
       "method": "POST",
-      "path": "/organizations/%7B%7Borganization_id%7D%7D/venues/",
+      "path": "/organizations/{organization_id}/venues/",
       "input_schema": {
         "type": "object",
         "properties": {

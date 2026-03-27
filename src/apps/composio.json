@@ -13,15 +13,20 @@
   "base_url": "https://backend.composio.dev/api/v3",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}",
+      "X-User-Id": "{{user_id}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "API Key"
+      },
+      {
+        "name": "user_id",
+        "label": "User Id"
       }
     ]
   },
@@ -30,7 +35,7 @@
       "name": "execute_tool",
       "description": "Execute any Composio tool/action. Specify the tool name (e.g., 'GMAIL_SEND_EMAIL', 'SLACK_POST_MESSAGE') and provide the required arguments.",
       "method": "POST",
-      "path": "/tools/%7B%7Btool_name%7D%7D/execute",
+      "path": "/tools/{tool_name}/execute",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -73,7 +78,7 @@
       "name": "get_tool",
       "description": "Get detailed information about a specific Composio tool including its input schema.",
       "method": "GET",
-      "path": "/tools/%7B%7Btool_name%7D%7D",
+      "path": "/tools/{tool_name}",
       "input_schema": {
         "type": "object",
         "properties": {

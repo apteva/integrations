@@ -65,9 +65,9 @@ function generateMcpTool(
     bodyTemplate = "{{json_body}}";
   }
 
-  // Build clean input schema without path params (those get resolved in URL)
-  const pathParams = extractPathParams(tool.path);
-  const cleanSchema = removePathParamsFromSchema(tool.input_schema, pathParams);
+  // Keep path params in schema — the agent needs to provide them as arguments
+  // and the HTTP handler resolves {param} placeholders from args at runtime
+  const cleanSchema = JSON.parse(JSON.stringify(tool.input_schema));
 
   // Build default_body from credential fields that map to tool input properties
   // e.g. Pushover's user_key credential → "user" field in send_notification

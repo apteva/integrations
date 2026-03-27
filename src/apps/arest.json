@@ -23,7 +23,7 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Token"
       }
     ]
   },
@@ -36,10 +36,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "status": {
             "type": "string",
             "description": "Filter by status (online/offline)"
@@ -60,10 +56,7 @@
             "type": "number",
             "description": "Offset for pagination"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -92,10 +85,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "device_id": {
             "type": "string",
             "description": "Unique device identifier"
@@ -118,7 +107,6 @@
           }
         },
         "required": [
-          "project_id",
           "device_id",
           "name",
           "hardware_type"
@@ -133,17 +121,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "id": {
             "type": "number",
             "description": "Device database ID"
           }
         },
         "required": [
-          "project_id",
           "id"
         ]
       }
@@ -347,10 +330,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "limit": {
             "type": "number",
             "description": "Max results (default: 50)"
@@ -359,10 +338,7 @@
             "type": "number",
             "description": "Offset for pagination"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -373,17 +349,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "id": {
             "type": "number",
             "description": "Dashboard ID"
           }
         },
         "required": [
-          "project_id",
           "id"
         ]
       }
@@ -396,10 +367,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "name": {
             "type": "string",
             "description": "Dashboard name"
@@ -415,7 +382,6 @@
           }
         },
         "required": [
-          "project_id",
           "name"
         ]
       }
@@ -428,17 +394,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "id": {
             "type": "number",
             "description": "Dashboard ID"
           }
         },
         "required": [
-          "project_id",
           "id"
         ]
       }
@@ -451,10 +412,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "dashboard_id": {
             "type": "number",
             "description": "Dashboard ID"
@@ -481,7 +438,6 @@
           }
         },
         "required": [
-          "project_id",
           "dashboard_id",
           "widget_type",
           "device_id"

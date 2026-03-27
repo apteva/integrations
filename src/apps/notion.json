@@ -23,6 +23,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "bot_id",
+        "label": "bot_id"
+      },
+      {
+        "name": "workspace_id",
+        "label": "workspace_id"
+      },
+      {
+        "name": "workspace_name",
+        "label": "workspace_name"
       }
     ],
     "oauth2": {
@@ -88,7 +100,7 @@
       "name": "get_database",
       "description": "Retrieve a database schema and properties by ID",
       "method": "GET",
-      "path": "/databases/%7B%7Bdatabase_id%7D%7D",
+      "path": "/databases/{database_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -106,7 +118,7 @@
       "name": "query_database",
       "description": "Query a Notion database with filters and sorts. Returns pages matching the criteria.",
       "method": "POST",
-      "path": "/databases/%7B%7Bdatabase_id%7D%7D/query",
+      "path": "/databases/{database_id}/query",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -179,7 +191,7 @@
       "name": "update_database",
       "description": "Update a database schema, title, or properties",
       "method": "PATCH",
-      "path": "/databases/%7B%7Bdatabase_id%7D%7D",
+      "path": "/databases/{database_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -259,7 +271,7 @@
       "name": "get_page",
       "description": "Retrieve a page and its properties from Notion",
       "method": "GET",
-      "path": "/pages/%7B%7Bpage_id%7D%7D",
+      "path": "/pages/{page_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -277,7 +289,7 @@
       "name": "update_page",
       "description": "Update an existing page's properties, icon, cover, or archive status",
       "method": "PATCH",
-      "path": "/pages/%7B%7Bpage_id%7D%7D",
+      "path": "/pages/{page_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -311,7 +323,7 @@
       "name": "get_page_property",
       "description": "Retrieve a specific property value from a page. Useful for paginated properties like relations, rollups, and rich text with many items.",
       "method": "GET",
-      "path": "/pages/%7B%7Bpage_id%7D%7D/properties/%7B%7Bproperty_id%7D%7D",
+      "path": "/pages/{page_id}/properties/{property_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -342,7 +354,7 @@
       "name": "list_blocks",
       "description": "List child blocks of a block or page. Use to read page content.",
       "method": "GET",
-      "path": "/blocks/%7B%7Bblock_id%7D%7D/children",
+      "path": "/blocks/{block_id}/children",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -368,7 +380,7 @@
       "name": "get_block",
       "description": "Retrieve a single block from Notion by ID",
       "method": "GET",
-      "path": "/blocks/%7B%7Bblock_id%7D%7D",
+      "path": "/blocks/{block_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -386,7 +398,7 @@
       "name": "append_blocks",
       "description": "Append child blocks to a page or block. Use to add content to pages.",
       "method": "PATCH",
-      "path": "/blocks/%7B%7Bblock_id%7D%7D/children",
+      "path": "/blocks/{block_id}/children",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -409,7 +421,7 @@
       "name": "update_block",
       "description": "Update a block's content or archive status. Pass the block type key with its content.",
       "method": "PATCH",
-      "path": "/blocks/%7B%7Bblock_id%7D%7D",
+      "path": "/blocks/{block_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -475,7 +487,7 @@
       "name": "delete_block",
       "description": "Delete (archive) a block in Notion",
       "method": "DELETE",
-      "path": "/blocks/%7B%7Bblock_id%7D%7D",
+      "path": "/blocks/{block_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -512,7 +524,7 @@
       "name": "get_user",
       "description": "Retrieve a user from Notion by ID",
       "method": "GET",
-      "path": "/users/%7B%7Buser_id%7D%7D",
+      "path": "/users/{user_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -588,5 +600,58 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-notion-signature",
+    "events": [
+      {
+        "name": "page.created",
+        "description": "A new page is created"
+      },
+      {
+        "name": "page.content_updated",
+        "description": "Page content is updated"
+      },
+      {
+        "name": "page.properties_updated",
+        "description": "Page properties are changed"
+      },
+      {
+        "name": "page.deleted",
+        "description": "A page is deleted/archived"
+      },
+      {
+        "name": "page.undeleted",
+        "description": "A page is restored"
+      },
+      {
+        "name": "database.created",
+        "description": "A new database is created"
+      },
+      {
+        "name": "database.content_updated",
+        "description": "Database rows are added/modified"
+      },
+      {
+        "name": "database.properties_updated",
+        "description": "Database schema is changed"
+      },
+      {
+        "name": "database.deleted",
+        "description": "A database is deleted/archived"
+      },
+      {
+        "name": "comment.created",
+        "description": "A comment is added"
+      },
+      {
+        "name": "comment.updated",
+        "description": "A comment is edited"
+      },
+      {
+        "name": "comment.deleted",
+        "description": "A comment is removed"
+      }
+    ]
+  }
 }

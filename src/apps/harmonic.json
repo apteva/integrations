@@ -14,10 +14,10 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "apikey": "{{api_key}}"
     },
     "credential_fields": [
       {

@@ -40,10 +40,6 @@
             "type": "string",
             "description": "URL of the video or audio to extract information from"
           },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
-          },
           "format_type": {
             "type": "string",
             "enum": [
@@ -61,8 +57,7 @@
           }
         },
         "required": [
-          "url",
-          "project_id"
+          "url"
         ]
       }
     },
@@ -77,10 +72,6 @@
           "url": {
             "type": "string",
             "description": "URL of the video or audio to download"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for file storage and access control"
           },
           "folder_id": {
             "type": "integer",
@@ -148,8 +139,7 @@
           }
         },
         "required": [
-          "url",
-          "project_id"
+          "url"
         ]
       }
     }

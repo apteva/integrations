@@ -1,182 +1,932 @@
 {
   "slug": "omnikit-storage",
   "name": "OmniKit Storage",
-  "description": "File storage and management with buckets, folders, uploads, and search",
+  "description": "File storage, folders, buckets, transcripts, thumbnails, search, and document generation. Upload, organize, transcribe, and manage media files with CDN delivery.",
   "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
-  "categories": ["storage", "files", "media"],
-  "base_url": "https://api.omnikit.co/storage",
+  "categories": [
+    "storage",
+    "files",
+    "folders",
+    "buckets",
+    "upload",
+    "download",
+    "transcripts",
+    "thumbnails",
+    "search",
+    "cdn",
+    "media"
+  ],
+  "base_url": "https://api.omnikit.co",
   "auth": {
-    "types": ["api_key"],
-    "headers": { "X-API-Key": "{{api_key}}" },
+    "types": [
+      "api_key"
+    ],
+    "headers": {
+      "X-API-Key": "{{api_key}}"
+    },
     "credential_fields": [
-      { "name": "api_key", "label": "OmniKit API Key", "description": "Your OmniKit API key (starts with 'okt_')" }
+      {
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
+      }
     ]
   },
   "tools": [
     {
-      "name": "list_files",
-      "description": "List files with filtering, sorting, and pagination",
-      "method": "GET",
-      "path": "/files",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "bucket_id": { "type": "integer", "description": "Filter by storage bucket" },
-          "folder_id": { "type": "integer", "description": "Filter by folder" },
-          "file_type": { "type": "string", "enum": ["image", "video", "audio", "document", "archive", "other"], "description": "Filter by file type" },
-          "search": { "type": "string", "description": "Search in file names and descriptions" },
-          "access_level": { "type": "string", "enum": ["private", "public"], "description": "Filter by access level" },
-          "limit": { "type": "integer", "default": 50, "description": "Number of files to return" },
-          "offset": { "type": "integer", "default": 0, "description": "Pagination offset" },
-          "sort_by": { "type": "string", "enum": ["name", "size", "created_at", "updated_at"], "default": "created_at", "description": "Sort field" },
-          "sort_order": { "type": "string", "enum": ["asc", "desc"], "default": "desc", "description": "Sort direction" }
-        }
-      }
-    },
-    {
-      "name": "search_files",
-      "description": "Search and filter files with advanced options including content rating, format, dimensions, and folder search",
-      "method": "GET",
-      "path": "/search",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "search": { "type": "string", "description": "Search in file names, descriptions, and tags" },
-          "folder": { "type": "string", "description": "Search within a folder by name, path, or ID" },
-          "file_type": { "type": "string", "enum": ["image", "video", "audio", "document", "archive", "other"], "description": "Filter by file type" },
-          "extension": { "type": "string", "description": "Filter by file extension (e.g. jpg, pdf, mp4)" },
-          "format": { "type": "string", "enum": ["portrait", "landscape", "square"], "description": "Filter by aspect ratio" },
-          "sort_by": { "type": "string", "enum": ["name", "size_bytes", "created_at", "uploaded_at", "random"], "default": "created_at", "description": "Sort field" },
-          "sort_order": { "type": "string", "enum": ["asc", "desc"], "default": "desc" },
-          "limit": { "type": "integer", "default": 50, "description": "Number of files to return" },
-          "offset": { "type": "integer", "default": 0, "description": "Pagination offset" }
-        }
-      }
-    },
-    {
       "name": "get_file",
-      "description": "Get detailed file info including optional transcripts and thumbnails",
+      "description": "Get detailed file metadata including size, dimensions, duration, MIME type, URLs, and optionally transcripts with segments. Use include_transcripts=true to get transcript text, include_transcript_segments=true for timestamped segments, include_thumbnails=true for video thumbnails.",
       "method": "GET",
-      "path": "/files/{{id}}",
+      "path": "/storage/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "description": "File ID" },
-          "include_transcripts": { "type": "boolean", "default": false, "description": "Include transcript metadata" },
-          "include_transcript_segments": { "type": "boolean", "default": false, "description": "Include transcript segments with timecodes" },
-          "include_thumbnails": { "type": "boolean", "default": false, "description": "Include thumbnail URLs" }
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the file to retrieve"
+          },
+          "include_transcripts": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include transcript full text for audio/video files"
+          },
+          "include_transcript_segments": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include timestamped transcript segments with start/end times and confidence scores"
+          },
+          "include_thumbnails": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include video thumbnail list with timestamps"
+          },
+          "include_storage_info": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include storage bucket details and availability info"
+          },
+          "include_entity_tracks": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include entity tracking data for videos (persons, objects)"
+          }
         },
-        "required": ["id"]
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "list_files",
+      "description": "List files in a project with optional filtering by bucket, folder, file type, and pagination",
+      "method": "GET",
+      "path": "/storage/files",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket_id": {
+            "type": "integer",
+            "description": "Filter by storage bucket ID"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Filter by folder ID"
+          },
+          "file_type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document",
+              "archive",
+              "other"
+            ],
+            "description": "Filter by file type"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Number of files to return (max 1000)"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          }
+        }
       }
     },
     {
       "name": "upload_file",
-      "description": "Upload a file via base64 data or a public URL",
+      "description": "Upload a file with base64-encoded data. Auto-generates thumbnails for images/videos and transcripts for audio/video files.",
       "method": "POST",
-      "path": "/upload",
+      "path": "/storage/upload",
       "input_schema": {
         "type": "object",
         "properties": {
-          "file_name": { "type": "string", "description": "File name with extension" },
-          "source_url": { "type": "string", "description": "Public URL to fetch the file from" },
-          "file_data": { "type": "string", "description": "Base64-encoded file data (use source_url instead if possible)" },
-          "folder_id": { "type": "string", "description": "Folder ID to store file in" },
-          "description": { "type": "string", "description": "File description" },
-          "tags": { "type": "array", "items": { "type": "string" }, "description": "Tags for organizing" },
-          "access_level": { "type": "string", "enum": ["private", "public"], "default": "public", "description": "Access level" }
+          "file_name": {
+            "type": "string",
+            "description": "Name for the uploaded file"
+          },
+          "file_data": {
+            "type": "string",
+            "description": "Base64-encoded file content"
+          },
+          "mime_type": {
+            "type": "string",
+            "description": "MIME type (e.g., image/png, video/mp4, audio/mp3)"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Target folder ID"
+          },
+          "description": {
+            "type": "string",
+            "description": "File description"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for organizing the file"
+          },
+          "access_level": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "default": "public",
+            "description": "File access level"
+          },
+          "auto_transcribe": {
+            "type": "boolean",
+            "default": true,
+            "description": "Auto-generate transcripts for audio/video files"
+          }
         },
-        "required": ["file_name"]
+        "required": [
+          "file_name",
+          "file_data",
+          "mime_type"
+        ]
       }
     },
     {
       "name": "update_file",
-      "description": "Update file metadata, tags, or move to a different folder",
+      "description": "Update file metadata: name, description, tags, access level, or move to a different folder",
       "method": "PUT",
-      "path": "/files/{{id}}",
+      "path": "/storage/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "description": "File ID to update" },
-          "name": { "type": "string", "description": "New file name" },
-          "description": { "type": "string", "description": "New description" },
-          "folder_id": { "type": "integer", "description": "Move to different folder" },
-          "tags": { "type": "array", "items": { "type": "string" }, "description": "Update tags" },
-          "access_level": { "type": "string", "enum": ["private", "public"], "description": "Update access level" }
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the file to update"
+          },
+          "name": {
+            "type": "string",
+            "description": "New file name"
+          },
+          "description": {
+            "type": "string",
+            "description": "New description"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "New tags"
+          },
+          "access_level": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "description": "New access level"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Move file to this folder"
+          }
         },
-        "required": ["id"]
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "download_file",
+      "description": "Get a download URL for a file",
+      "method": "GET",
+      "path": "/storage/files/{file_id}/download",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the file to download"
+          }
+        },
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "search",
+      "description": "Advanced file search with filtering and sorting. For oldest/newest content use sort_by=uploaded_at (content date) with sort_order=asc/desc. created_at is the system upload timestamp, uploaded_at reflects the actual content date. For portrait/vertical videos: file_type=video, format=portrait. For landscape/horizontal: file_type=video, format=landscape. Supports filtering by type, format, dimensions, duration, size, dates, tags, content_rating, and more.",
+      "method": "GET",
+      "path": "/storage/search",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query (searches file names, descriptions, and tags)"
+          },
+          "name_contains": {
+            "type": "string",
+            "description": "Search specifically in file names only"
+          },
+          "file_type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document",
+              "archive",
+              "other"
+            ],
+            "description": "Filter by file type"
+          },
+          "mime_type": {
+            "type": "string",
+            "description": "Filter by exact MIME type (e.g., video/mp4, image/png)"
+          },
+          "mime_type_prefix": {
+            "type": "string",
+            "description": "Filter by MIME type prefix (e.g., 'image/', 'video/')"
+          },
+          "extension": {
+            "type": "string",
+            "description": "Filter by file extension (e.g., mp4, jpg, pdf)"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "portrait",
+              "landscape",
+              "square"
+            ],
+            "description": "Filter by aspect ratio format. portrait = height > width (vertical/mobile videos), landscape = width > height (horizontal/widescreen), square = equal dimensions"
+          },
+          "folder": {
+            "type": "string",
+            "description": "Folder name, path, or slug to search in (resolves automatically, includes subfolders)"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Filter by folder ID"
+          },
+          "bucket_id": {
+            "type": "integer",
+            "description": "Filter by storage bucket ID"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to filter by (matches any)"
+          },
+          "min_size": {
+            "type": "integer",
+            "description": "Minimum file size in bytes"
+          },
+          "max_size": {
+            "type": "integer",
+            "description": "Maximum file size in bytes"
+          },
+          "min_width": {
+            "type": "integer",
+            "description": "Minimum width in pixels (images/videos)"
+          },
+          "max_width": {
+            "type": "integer",
+            "description": "Maximum width in pixels (images/videos)"
+          },
+          "min_height": {
+            "type": "integer",
+            "description": "Minimum height in pixels (images/videos)"
+          },
+          "max_height": {
+            "type": "integer",
+            "description": "Maximum height in pixels (images/videos)"
+          },
+          "min_duration": {
+            "type": "number",
+            "description": "Minimum duration in seconds (video/audio)"
+          },
+          "max_duration": {
+            "type": "number",
+            "description": "Maximum duration in seconds (video/audio)"
+          },
+          "created_after": {
+            "type": "string",
+            "description": "Filter by system upload date (after). For content date filtering use uploaded_after instead."
+          },
+          "created_before": {
+            "type": "string",
+            "description": "Filter by system upload date (before). For content date filtering use uploaded_before instead."
+          },
+          "uploaded_after": {
+            "type": "string",
+            "description": "Filter by content date (after). This reflects when the content was originally from, not when it was added to the platform."
+          },
+          "uploaded_before": {
+            "type": "string",
+            "description": "Filter by content date (before). This reflects when the content was originally from, not when it was added to the platform."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "uploading",
+              "processing",
+              "completed",
+              "failed"
+            ],
+            "description": "Filter by file processing status"
+          },
+          "access_level": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "restricted"
+            ],
+            "description": "Filter by access level"
+          },
+          "content_rating": {
+            "type": "string",
+            "enum": [
+              "sfw",
+              "nsfw",
+              "safe",
+              "suggestive",
+              "adult",
+              "explicit"
+            ],
+            "description": "Filter by content rating. 'sfw' = safe-for-work only, 'nsfw' = not safe for work"
+          },
+          "has_thumbnails": {
+            "type": "boolean",
+            "description": "Filter files that have/don't have thumbnails"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "name",
+              "size",
+              "created_at",
+              "uploaded_at",
+              "file_type",
+              "extension",
+              "width",
+              "height",
+              "duration",
+              "random"
+            ],
+            "default": "created_at",
+            "description": "Sort field. Use 'uploaded_at' for content date (oldest/newest content). Use 'created_at' for system upload date. 'asc' for oldest/smallest first, 'desc' for newest/largest first. 'size' sorts by file size. 'random' for random order."
+          },
+          "sort_order": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc",
+            "description": "Sort direction. 'asc' = ascending (oldest/smallest first), 'desc' = descending (newest/largest first)"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Number of results to return (max 1000)"
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0,
+            "description": "Pagination offset"
+          },
+          "include_metadata": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include file metadata in response"
+          },
+          "include_storage_info": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include storage bucket info and full URLs"
+          },
+          "include_thumbnails": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include thumbnail data in response"
+          }
+        }
+      }
+    },
+    {
+      "name": "generate_document",
+      "description": "Generate PDF, DOCX, or XLSX documents from HTML content or templates and upload to storage",
+      "method": "POST",
+      "path": "/storage/files/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "HTML content or template content to convert"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "docx",
+              "xlsx"
+            ],
+            "default": "pdf",
+            "description": "Output format"
+          },
+          "file_name": {
+            "type": "string",
+            "description": "Output file name"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Target folder ID"
+          }
+        },
+        "required": [
+          "content",
+          "file_name"
+        ]
+      }
+    },
+    {
+      "name": "generate_presigned_url",
+      "description": "Generate a presigned URL for direct client-to-storage file upload. Use for large files instead of base64 upload. After upload, call confirm-upload to trigger processing.",
+      "method": "POST",
+      "path": "/storage/generate-presigned-url",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "description": "Name of the file to upload"
+          },
+          "mime_type": {
+            "type": "string",
+            "description": "MIME type of the file"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "description": "File size in bytes"
+          },
+          "folder_id": {
+            "type": "integer",
+            "description": "Target folder ID"
+          },
+          "access_level": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "default": "public",
+            "description": "File access level"
+          }
+        },
+        "required": [
+          "file_name",
+          "mime_type"
+        ]
+      }
+    },
+    {
+      "name": "confirm_upload",
+      "description": "Confirm that a presigned URL upload completed. Triggers post-processing: thumbnail generation, transcription, and AI description.",
+      "method": "POST",
+      "path": "/storage/confirm-upload",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the file to confirm"
+          }
+        },
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "list_thumbnails",
+      "description": "List all generated thumbnails for a video file with timestamps and dimensions",
+      "method": "GET",
+      "path": "/storage/files/{file_id}/thumbnails",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the video file"
+          }
+        },
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "generate_transcript",
+      "description": "Generate a transcript for an audio/video file using OpenAI Whisper. Supports language auto-detection or manual language specification.",
+      "method": "POST",
+      "path": "/storage/files/{file_id}/transcripts/generate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the audio/video file to transcribe"
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Language code (e.g., en, fr, es). Auto-detected if not specified."
+          }
+        },
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "list_transcripts",
+      "description": "List all transcripts for a specific file with optional segment data",
+      "method": "GET",
+      "path": "/storage/files/{file_id}/transcripts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the file"
+          },
+          "include_segments": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include timestamped segments"
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Filter by language code"
+          }
+        },
+        "required": [
+          "file_id"
+        ]
+      }
+    },
+    {
+      "name": "get_transcript",
+      "description": "Get a transcript by ID with optional format conversion (JSON, VTT, SRT, TXT) and segment data",
+      "method": "GET",
+      "path": "/storage/transcripts/{transcript_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "transcript_id": {
+            "type": "integer",
+            "description": "ID of the transcript"
+          },
+          "include_segments": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include timestamped segments"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "json",
+              "vtt",
+              "srt",
+              "txt"
+            ],
+            "default": "json",
+            "description": "Output format"
+          }
+        },
+        "required": [
+          "transcript_id"
+        ]
+      }
+    },
+    {
+      "name": "translate_transcript",
+      "description": "Translate a transcript to another language using AI (GPT-4). Creates a new transcript in the target language.",
+      "method": "POST",
+      "path": "/storage/transcripts/{transcript_id}/translate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "transcript_id": {
+            "type": "integer",
+            "description": "ID of the transcript to translate"
+          },
+          "target_language": {
+            "type": "string",
+            "description": "Target language (e.g., french, spanish, german)"
+          }
+        },
+        "required": [
+          "transcript_id",
+          "target_language"
+        ]
+      }
+    },
+    {
+      "name": "upload_transcript",
+      "description": "Upload an existing transcript file (SRT, VTT, JSON, or TXT format) for a file",
+      "method": "POST",
+      "path": "/storage/transcripts/upload",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "integer",
+            "description": "ID of the audio/video file"
+          },
+          "content": {
+            "type": "string",
+            "description": "Transcript content (SRT, VTT, JSON, or plain text)"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "srt",
+              "vtt",
+              "json",
+              "txt"
+            ],
+            "description": "Format of the transcript content"
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Language code (e.g., en, fr)"
+          }
+        },
+        "required": [
+          "file_id",
+          "content",
+          "format"
+        ]
+      }
+    },
+    {
+      "name": "list_folders",
+      "description": "List folders with optional parent folder filter and recursive listing",
+      "method": "GET",
+      "path": "/storage/folders",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "parent_folder_id": {
+            "type": "integer",
+            "description": "Filter by parent folder (omit for root folders)"
+          },
+          "include_children": {
+            "type": "boolean",
+            "default": false,
+            "description": "Recursively include child folders"
+          }
+        }
+      }
+    },
+    {
+      "name": "create_folder",
+      "description": "Create a new folder with optional parent folder and description",
+      "method": "POST",
+      "path": "/storage/folders",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Folder name"
+          },
+          "parent_folder_id": {
+            "type": "integer",
+            "description": "Parent folder ID (omit for root)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Folder description"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "update_folder",
+      "description": "Update folder name, description, or move to a different parent",
+      "method": "PUT",
+      "path": "/storage/folders/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New folder name"
+          },
+          "description": {
+            "type": "string",
+            "description": "New description"
+          },
+          "parent_folder_id": {
+            "type": "integer",
+            "description": "Move to this parent folder"
+          },
+          "id": {
+            "type": "integer",
+            "description": "ID of the folder to update"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "delete_folder",
+      "description": "Delete a folder. Use recursive=true to delete all contents.",
+      "method": "DELETE",
+      "path": "/storage/folders/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "recursive": {
+            "type": "boolean",
+            "default": false,
+            "description": "Delete folder contents recursively"
+          },
+          "id": {
+            "type": "integer",
+            "description": "ID of the folder to delete"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "list_buckets",
+      "description": "List storage buckets for the project with optional statistics",
+      "method": "GET",
+      "path": "/storage/buckets",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "include_stats": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include file count and size statistics"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_bucket",
+      "description": "Get storage bucket details with optional statistics",
+      "method": "GET",
+      "path": "/storage/buckets/{bucket_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket_id": {
+            "type": "integer",
+            "description": "ID of the bucket"
+          },
+          "include_stats": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include statistics"
+          }
+        },
+        "required": [
+          "bucket_id"
+        ]
       }
     },
     {
       "name": "delete_file",
       "description": "Delete a file from storage",
       "method": "DELETE",
-      "path": "/files/{{id}}",
+      "path": "/storage/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "description": "File ID to delete" },
-          "force": { "type": "boolean", "default": false, "description": "Force delete without trash" }
+          "file_id": {
+            "type": "integer",
+            "description": "File ID to delete"
+          },
+          "force": {
+            "type": "boolean",
+            "default": false,
+            "description": "Force delete without trash"
+          }
         },
-        "required": ["id"]
-      }
-    },
-    {
-      "name": "list_folders",
-      "description": "List folders in a bucket or parent folder",
-      "method": "GET",
-      "path": "/folders",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "parent_id": { "type": "integer", "description": "Parent folder ID (null for root)" },
-          "bucket_id": { "type": "integer", "description": "Storage bucket ID" },
-          "include_file_count": { "type": "boolean", "default": false, "description": "Include file count per folder" },
-          "search": { "type": "string", "description": "Search folder names" },
-          "limit": { "type": "integer", "default": 100, "description": "Number of folders to return" }
-        }
-      }
-    },
-    {
-      "name": "create_folder",
-      "description": "Create a new folder for organizing files",
-      "method": "POST",
-      "path": "/folders",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string", "description": "Folder name" },
-          "parent_id": { "type": "integer", "description": "Parent folder ID (for nested folders)" },
-          "description": { "type": "string", "description": "Folder description" },
-          "access_level": { "type": "string", "enum": ["private", "public"], "default": "private", "description": "Access level" }
-        },
-        "required": ["name"]
-      }
-    },
-    {
-      "name": "list_buckets",
-      "description": "List all storage buckets with optional statistics",
-      "method": "GET",
-      "path": "/buckets",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "include_stats": { "type": "boolean", "default": false, "description": "Include storage statistics" }
-        }
+        "required": [
+          "file_id"
+        ]
       }
     },
     {
       "name": "create_bucket",
       "description": "Create a new storage bucket",
       "method": "POST",
-      "path": "/buckets",
+      "path": "/storage/buckets",
       "input_schema": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "description": "Bucket name (must be unique)" },
-          "region": { "type": "string", "default": "us-east-1", "description": "Storage region" },
-          "is_default": { "type": "boolean", "default": false, "description": "Set as default bucket" }
+          "name": {
+            "type": "string",
+            "description": "Bucket name (must be unique)"
+          },
+          "region": {
+            "type": "string",
+            "default": "us-east-1",
+            "description": "Storage region"
+          },
+          "is_default": {
+            "type": "boolean",
+            "default": false,
+            "description": "Set as default bucket"
+          }
         },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "delete_bucket",
+      "description": "Delete a storage bucket (must be empty)",
+      "method": "DELETE",
+      "path": "/storage/buckets/{bucket_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket_id": {
+            "type": "integer",
+            "description": "Bucket ID to delete"
+          }
+        },
+        "required": [
+          "bucket_id"
+        ]
+      }
+    },
+    {
+      "name": "update_bucket",
+      "description": "Update storage bucket settings",
+      "method": "PUT",
+      "path": "/storage/buckets/{bucket_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket_id": {
+            "type": "integer",
+            "description": "Bucket ID to update"
+          },
+          "name": {
+            "type": "string",
+            "description": "New bucket name"
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Set as default bucket"
+          }
+        },
+        "required": [
+          "bucket_id"
+        ]
       }
     }
   ]

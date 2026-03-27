@@ -18,14 +18,14 @@
   "base_url": "https://learning.schwartzindustries.com",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "API Key"
       }
     ]
@@ -220,7 +220,7 @@
       "name": "learning_get_course",
       "description": "Get course details by ID, optionally including sections and instructor info",
       "method": "GET",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D",
+      "path": "/courses/{course_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -248,7 +248,7 @@
       "name": "learning_get_course_by_slug",
       "description": "Get course details by URL slug",
       "method": "GET",
-      "path": "/courses/by-slug/%7B%7Bslug%7D%7D",
+      "path": "/courses/by-slug/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -266,7 +266,7 @@
       "name": "learning_update_course",
       "description": "Update course details like name, description, status, pricing, etc.",
       "method": "PUT",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D",
+      "path": "/courses/{course_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -330,7 +330,7 @@
       "name": "learning_delete_course",
       "description": "Soft-delete a course",
       "method": "DELETE",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D",
+      "path": "/courses/{course_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -348,7 +348,7 @@
       "name": "learning_enroll_in_course",
       "description": "Enroll current user in a course (shorthand for enrollment-create)",
       "method": "POST",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/enroll",
+      "path": "/courses/{course_id}/enroll",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -366,7 +366,7 @@
       "name": "learning_purchase_course",
       "description": "Initialize a course purchase with payment processing",
       "method": "POST",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/purchase",
+      "path": "/courses/{course_id}/purchase",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -431,7 +431,7 @@
       "name": "learning_get_my_progress",
       "description": "Get current user's enrollment and progress for a specific course",
       "method": "GET",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/my-progress",
+      "path": "/courses/{course_id}/my-progress",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -449,7 +449,7 @@
       "name": "learning_check_course_access",
       "description": "Check if a user has access to a course",
       "method": "GET",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/access",
+      "path": "/courses/{course_id}/access",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -547,7 +547,7 @@
       "name": "learning_get_enrollment",
       "description": "Get enrollment details with progress information",
       "method": "GET",
-      "path": "/enrollments/%7B%7Benrollment_id%7D%7D",
+      "path": "/enrollments/{enrollment_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -570,7 +570,7 @@
       "name": "learning_update_progress",
       "description": "Update progress for a specific lesson within an enrollment",
       "method": "POST",
-      "path": "/enrollments/%7B%7Benrollment_id%7D%7D/progress",
+      "path": "/enrollments/{enrollment_id}/progress",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -617,7 +617,7 @@
       "name": "learning_complete_enrollment",
       "description": "Mark an enrollment as completed and optionally issue a certificate",
       "method": "POST",
-      "path": "/enrollments/%7B%7Benrollment_id%7D%7D/complete",
+      "path": "/enrollments/{enrollment_id}/complete",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -648,7 +648,7 @@
       "name": "learning_revoke_enrollment",
       "description": "Revoke a user's enrollment/access to a course",
       "method": "POST",
-      "path": "/enrollments/%7B%7Benrollment_id%7D%7D/revoke",
+      "path": "/enrollments/{enrollment_id}/revoke",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -671,7 +671,7 @@
       "name": "learning_list_sections",
       "description": "List all sections for a course",
       "method": "GET",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/sections",
+      "path": "/courses/{course_id}/sections",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -689,7 +689,7 @@
       "name": "learning_create_section",
       "description": "Create a new section within a course",
       "method": "POST",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/sections",
+      "path": "/courses/{course_id}/sections",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -737,7 +737,7 @@
       "name": "learning_update_section",
       "description": "Update a course section",
       "method": "PUT",
-      "path": "/sections/%7B%7Bsection_id%7D%7D",
+      "path": "/sections/{section_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -771,7 +771,7 @@
       "name": "learning_delete_section",
       "description": "Delete a course section and its lessons",
       "method": "DELETE",
-      "path": "/sections/%7B%7Bsection_id%7D%7D",
+      "path": "/sections/{section_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -789,7 +789,7 @@
       "name": "learning_list_lessons",
       "description": "List all lessons for a course",
       "method": "GET",
-      "path": "/courses/%7B%7Bcourse_id%7D%7D/lessons",
+      "path": "/courses/{course_id}/lessons",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -807,7 +807,7 @@
       "name": "learning_list_lessons_by_section",
       "description": "List lessons within a specific section",
       "method": "GET",
-      "path": "/sections/%7B%7Bsection_id%7D%7D/lessons",
+      "path": "/sections/{section_id}/lessons",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -825,7 +825,7 @@
       "name": "learning_create_lesson",
       "description": "Create a new lesson within a section",
       "method": "POST",
-      "path": "/sections/%7B%7Bsection_id%7D%7D/lessons",
+      "path": "/sections/{section_id}/lessons",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -880,7 +880,7 @@
       "name": "learning_get_lesson",
       "description": "Get lesson details with content and attachments",
       "method": "GET",
-      "path": "/lessons/%7B%7Blesson_id%7D%7D",
+      "path": "/lessons/{lesson_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -903,7 +903,7 @@
       "name": "learning_update_lesson",
       "description": "Update lesson content, title, or settings",
       "method": "PUT",
-      "path": "/lessons/%7B%7Blesson_id%7D%7D",
+      "path": "/lessons/{lesson_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -945,7 +945,7 @@
       "name": "learning_delete_lesson",
       "description": "Delete a lesson",
       "method": "DELETE",
-      "path": "/lessons/%7B%7Blesson_id%7D%7D",
+      "path": "/lessons/{lesson_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -963,7 +963,7 @@
       "name": "learning_create_lesson_comment",
       "description": "Add a comment to a lesson",
       "method": "POST",
-      "path": "/lessons/%7B%7Blesson_id%7D%7D/comments",
+      "path": "/lessons/{lesson_id}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -994,7 +994,7 @@
       "name": "learning_list_lesson_comments",
       "description": "List comments on a lesson",
       "method": "GET",
-      "path": "/lessons/%7B%7Blesson_id%7D%7D/comments",
+      "path": "/lessons/{lesson_id}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1055,7 +1055,7 @@
       "name": "learning_get_certificate",
       "description": "Get certificate details by ID, UUID, or verification code",
       "method": "GET",
-      "path": "/certificates/%7B%7Bcertificate_id%7D%7D",
+      "path": "/certificates/{certificate_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1091,7 +1091,7 @@
       "name": "learning_revoke_certificate",
       "description": "Revoke a certificate",
       "method": "POST",
-      "path": "/certificates/%7B%7Bcertificate_id%7D%7D/revoke",
+      "path": "/certificates/{certificate_id}/revoke",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1360,7 +1360,7 @@
       "name": "learning_get_community",
       "description": "Get community details by ID, optionally including spaces and courses",
       "method": "GET",
-      "path": "/communities/%7B%7Bid%7D%7D",
+      "path": "/communities/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1386,7 +1386,7 @@
       "name": "learning_get_community_public",
       "description": "Get public community landing page by slug",
       "method": "GET",
-      "path": "/communities/c/%7B%7Bslug%7D%7D",
+      "path": "/communities/c/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1404,7 +1404,7 @@
       "name": "learning_update_community",
       "description": "Update community settings, branding, and configuration",
       "method": "PUT",
-      "path": "/communities/%7B%7Bid%7D%7D",
+      "path": "/communities/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1454,7 +1454,7 @@
       "name": "learning_delete_community",
       "description": "Delete a community",
       "method": "DELETE",
-      "path": "/communities/%7B%7Bid%7D%7D",
+      "path": "/communities/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1472,7 +1472,7 @@
       "name": "learning_join_community",
       "description": "Join a community as a member",
       "method": "POST",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/join",
+      "path": "/communities/{community_id}/join",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1498,7 +1498,7 @@
       "name": "learning_leave_community",
       "description": "Leave a community",
       "method": "POST",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/leave",
+      "path": "/communities/{community_id}/leave",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1516,7 +1516,7 @@
       "name": "learning_list_community_members",
       "description": "List members of a community with filtering by role and status",
       "method": "GET",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/members",
+      "path": "/communities/{community_id}/members",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1557,7 +1557,7 @@
       "name": "learning_update_community_member",
       "description": "Update a community member's role, status, or settings",
       "method": "PUT",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/members/%7B%7Buser_id%7D%7D",
+      "path": "/communities/{community_id}/members/{user_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1596,7 +1596,7 @@
       "name": "learning_get_community_leaderboard",
       "description": "Get the community leaderboard rankings",
       "method": "GET",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/leaderboard",
+      "path": "/communities/{community_id}/leaderboard",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1628,7 +1628,7 @@
       "name": "learning_create_community_invite",
       "description": "Create an invite code/link for a community",
       "method": "POST",
-      "path": "/communities/%7B%7Bcommunity_id%7D%7D/invites",
+      "path": "/communities/{community_id}/invites",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1658,7 +1658,7 @@
       "name": "learning_use_community_invite",
       "description": "Redeem an invite code to join a community",
       "method": "POST",
-      "path": "/communities/invite/%7B%7Bcode%7D%7D",
+      "path": "/communities/invite/{code}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1765,7 +1765,7 @@
       "name": "learning_get_space",
       "description": "Get space details by ID",
       "method": "GET",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D",
+      "path": "/spaces/{space_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1783,7 +1783,7 @@
       "name": "learning_update_space",
       "description": "Update a community space",
       "method": "PUT",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D",
+      "path": "/spaces/{space_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1817,7 +1817,7 @@
       "name": "learning_join_space",
       "description": "Join a community space",
       "method": "POST",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D/join",
+      "path": "/spaces/{space_id}/join",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1839,7 +1839,7 @@
       "name": "learning_leave_space",
       "description": "Leave a community space",
       "method": "POST",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D/leave",
+      "path": "/spaces/{space_id}/leave",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1857,7 +1857,7 @@
       "name": "learning_list_space_posts",
       "description": "List posts within a specific space",
       "method": "GET",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D/posts",
+      "path": "/spaces/{space_id}/posts",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1885,7 +1885,7 @@
       "name": "learning_create_space_post",
       "description": "Create a new post in a space",
       "method": "POST",
-      "path": "/spaces/%7B%7Bspace_id%7D%7D/posts",
+      "path": "/spaces/{space_id}/posts",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1955,7 +1955,7 @@
       "name": "learning_get_post",
       "description": "Get post details by ID",
       "method": "GET",
-      "path": "/posts/%7B%7Bpost_id%7D%7D",
+      "path": "/posts/{post_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1973,7 +1973,7 @@
       "name": "learning_update_post",
       "description": "Update a post's content or title",
       "method": "PUT",
-      "path": "/posts/%7B%7Bpost_id%7D%7D",
+      "path": "/posts/{post_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2003,7 +2003,7 @@
       "name": "learning_delete_post",
       "description": "Delete a post",
       "method": "DELETE",
-      "path": "/posts/%7B%7Bpost_id%7D%7D",
+      "path": "/posts/{post_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2021,7 +2021,7 @@
       "name": "learning_like_post",
       "description": "Toggle like on a post",
       "method": "POST",
-      "path": "/posts/%7B%7Bpost_id%7D%7D/like",
+      "path": "/posts/{post_id}/like",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2043,7 +2043,7 @@
       "name": "learning_bookmark_post",
       "description": "Toggle bookmark on a post",
       "method": "POST",
-      "path": "/posts/%7B%7Bpost_id%7D%7D/bookmark",
+      "path": "/posts/{post_id}/bookmark",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2065,7 +2065,7 @@
       "name": "learning_list_post_comments",
       "description": "List comments on a post",
       "method": "GET",
-      "path": "/posts/%7B%7Bpost_id%7D%7D/comments",
+      "path": "/posts/{post_id}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2093,7 +2093,7 @@
       "name": "learning_create_post_comment",
       "description": "Add a comment to a post, with optional threading via parent_id",
       "method": "POST",
-      "path": "/posts/%7B%7Bpost_id%7D%7D/comments",
+      "path": "/posts/{post_id}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2128,7 +2128,7 @@
       "name": "learning_update_comment",
       "description": "Update a comment's content",
       "method": "PUT",
-      "path": "/comments/%7B%7Bcomment_id%7D%7D",
+      "path": "/comments/{comment_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2155,7 +2155,7 @@
       "name": "learning_delete_comment",
       "description": "Delete a comment",
       "method": "POST",
-      "path": "/comments/%7B%7Bcomment_id%7D%7D/delete",
+      "path": "/comments/{comment_id}/delete",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -2206,7 +2206,7 @@
       "name": "learning_subscribe_membership",
       "description": "Subscribe a user to a membership product",
       "method": "POST",
-      "path": "/memberships/%7B%7Bproduct_id%7D%7D/subscribe",
+      "path": "/memberships/{product_id}/subscribe",
       "input_schema": {
         "type": "object",
         "properties": {

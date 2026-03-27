@@ -54,10 +54,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "filled-document.docx"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [
@@ -172,10 +168,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "document.docx"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [
@@ -217,10 +209,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "merged.docx"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [
@@ -270,10 +258,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "document.pdf"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         }
       }

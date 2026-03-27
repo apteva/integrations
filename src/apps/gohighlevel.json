@@ -24,6 +24,11 @@
         "name": "accessToken",
         "label": "Access Token",
         "description": "GoHighLevel API access token (v2 API, generate from Settings > Business Profile > API Keys)"
+      },
+      {
+        "name": "locationId",
+        "label": "Location Id",
+        "description": "Default location/sub-account ID"
       }
     ]
   },
@@ -175,7 +180,7 @@
       "name": "update_contact",
       "description": "Update an existing contact in GoHighLevel. Pass the contactId in the URL and any fields to update in the body. Supports updating name, email, phone, tags, custom fields, and other attributes.",
       "method": "PUT",
-      "path": "/contacts/%7B%7Bparam.contactId%7D%7D",
+      "path": "/contacts/{{param.contactId}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -261,7 +266,7 @@
       "name": "add_contact_tags",
       "description": "Add one or more tags to an existing contact in GoHighLevel. Provide the contactId and an array of tag names to add.",
       "method": "POST",
-      "path": "/contacts/%7B%7Bparam.contactId%7D%7D/tags",
+      "path": "/contacts/{{param.contactId}}/tags",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -287,7 +292,7 @@
       "name": "remove_contact_tags",
       "description": "Remove one or more tags from an existing contact in GoHighLevel. Provide the contactId and an array of tag names to remove.",
       "method": "DELETE",
-      "path": "/contacts/%7B%7Bparam.contactId%7D%7D/tags",
+      "path": "/contacts/{{param.contactId}}/tags",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -592,5 +597,46 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-gohighlevel-signature",
+    "events": [
+      {
+        "name": "contact.created",
+        "description": "New contact created"
+      },
+      {
+        "name": "contact.updated",
+        "description": "Contact information changed"
+      },
+      {
+        "name": "contact.deleted",
+        "description": "Contact removed"
+      },
+      {
+        "name": "opportunity.created",
+        "description": "New opportunity created"
+      },
+      {
+        "name": "opportunity.status_changed",
+        "description": "Opportunity status changed"
+      },
+      {
+        "name": "appointment.scheduled",
+        "description": "New appointment booked"
+      },
+      {
+        "name": "appointment.cancelled",
+        "description": "Appointment cancelled"
+      },
+      {
+        "name": "task.completed",
+        "description": "Task marked as complete"
+      },
+      {
+        "name": "note.created",
+        "description": "New note added"
+      }
+    ]
+  }
 }

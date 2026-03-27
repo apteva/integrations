@@ -13,14 +13,14 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "x-api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "API Key"
       }
     ]

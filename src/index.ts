@@ -6,6 +6,9 @@ export type {
   OAuthConfig,
   CredentialField,
   AppToolTemplate,
+  AppWebhookConfig,
+  AppWebhookEvent,
+  WebhookRegistrationConfig,
   Connection,
   ConnectionCredentials,
   LocalTriggerConfig,
@@ -20,6 +23,7 @@ export {
   getAppTemplate,
   listAppSlugs,
   listApps,
+  resetAppCache,
 } from "./apps/index.js";
 
 // ─── HTTP Tool Executor ───
@@ -43,6 +47,22 @@ export type {
 
 // ─── MCP Server Generator ───
 export { generateMcpServer } from "./mcp-generator.js";
+
+// ─── Webhook Registrar ───
+export {
+  registerWebhook,
+  unregisterWebhook,
+  listWebhooks,
+  canAutoRegister,
+  getManualSetupInstructions,
+} from "./webhook-registrar.js";
+export type {
+  RegisterWebhookOptions,
+  RegisterWebhookResult,
+  UnregisterWebhookOptions,
+  ListWebhooksOptions,
+  ListWebhooksResult,
+} from "./webhook-registrar.js";
 
 // ─── Local Integration Provider ───
 export { LocalIntegrationProvider } from "./providers/local.js";

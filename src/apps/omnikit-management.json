@@ -13,15 +13,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -106,14 +107,10 @@
       "name": "update_project",
       "description": "Update project information including name, description, and status",
       "method": "PUT",
-      "path": "/management/projects/%7B%7Bproject_id%7D%7D",
+      "path": "/management/projects/{project_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID to update"
-          },
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for verification"
@@ -140,7 +137,6 @@
           }
         },
         "required": [
-          "project_id",
           "organization_id"
         ]
       }
@@ -149,14 +145,10 @@
       "name": "delete_project",
       "description": "Delete a project (soft delete to preserve historical data)",
       "method": "DELETE",
-      "path": "/management/projects/%7B%7Bproject_id%7D%7D",
+      "path": "/management/projects/{project_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID to delete"
-          },
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for verification"
@@ -168,7 +160,6 @@
           }
         },
         "required": [
-          "project_id",
           "organization_id"
         ]
       }
@@ -192,22 +183,15 @@
       "name": "switch_project",
       "description": "Switch the user's active project context",
       "method": "POST",
-      "path": "/management/projects/%7B%7Bproject_id%7D%7D/switch",
+      "path": "/management/projects/{project_id}/switch",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID to switch to"
-          },
           "user_id": {
             "type": "integer",
             "description": "User ID (optional, defaults to current user)"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     }
   ]

@@ -19,8 +19,24 @@
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "access_key_id",
+        "label": "Access_key_id",
+        "description": "Your AWS Access Key ID"
+      },
+      {
+        "name": "secret_access_key",
+        "label": "Secret_access_key",
+        "description": "Your AWS Secret Access Key"
+      },
+      {
+        "name": "region",
+        "label": "Region",
+        "description": "AWS Region (e.g., us-east-1)"
+      },
+      {
+        "name": "session_token",
+        "label": "Session_token",
+        "description": "Temporary session token (for temporary credentials)"
       }
     ]
   },

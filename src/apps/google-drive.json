@@ -23,6 +23,18 @@
       {
         "name": "accessToken",
         "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
       }
     ],
     "oauth2": {
@@ -83,7 +95,7 @@
       "name": "get_file",
       "description": "Get metadata for a specific file by ID",
       "method": "GET",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "path": "/drive/v3/files/{fileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -175,7 +187,7 @@
       "name": "share_file",
       "description": "Share a file or folder by creating a permission. Use type='anyone' for public link sharing.",
       "method": "POST",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/permissions",
+      "path": "/drive/v3/files/{fileId}/permissions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -224,7 +236,7 @@
       "name": "delete_file",
       "description": "Permanently delete a file or folder from Google Drive (skips trash)",
       "method": "DELETE",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "path": "/drive/v3/files/{fileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -242,7 +254,7 @@
       "name": "copy_file",
       "description": "Create a copy of a file in Google Drive",
       "method": "POST",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/copy",
+      "path": "/drive/v3/files/{fileId}/copy",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -271,7 +283,7 @@
       "name": "move_file",
       "description": "Move a file to a different folder by updating its parents",
       "method": "PATCH",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "path": "/drive/v3/files/{fileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -298,7 +310,7 @@
       "name": "rename_file",
       "description": "Rename a file or folder in Google Drive",
       "method": "PATCH",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D",
+      "path": "/drive/v3/files/{fileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -321,7 +333,7 @@
       "name": "export_file",
       "description": "Export a Google Workspace file (Doc, Sheet, Slides) to a different format like PDF, CSV, plain text, etc.",
       "method": "GET",
-      "path": "/drive/v3/files/%7B%7BfileId%7D%7D/export",
+      "path": "/drive/v3/files/{fileId}/export",
       "input_schema": {
         "type": "object",
         "properties": {

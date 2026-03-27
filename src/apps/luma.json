@@ -13,14 +13,14 @@
   "base_url": "https://api.lu.ma",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "x-luma-api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Luma API key (generate from your Luma dashboard under Settings > API)"
       }

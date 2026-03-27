@@ -23,6 +23,11 @@
         "name": "accessToken",
         "label": "Access Token",
         "description": "Bluesky access JWT (obtain via com.atproto.server.createSession)"
+      },
+      {
+        "name": "handle",
+        "label": "Handle",
+        "description": "Your Bluesky handle (e.g. user.bsky.social)"
       }
     ]
   },

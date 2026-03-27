@@ -20,11 +20,16 @@
       "api_key"
     ],
     "headers": {
-      "x-goog-api-key": "{{token}}"
+      "x-goog-api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your Google AI API Key (get from https://aistudio.google.com/apikey)"
+      },
+      {
+        "name": "apiKey",
         "label": "Api Key",
         "description": "Your Google AI API Key (get from https://aistudio.google.com/apikey)"
       }

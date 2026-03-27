@@ -13,14 +13,14 @@
   "base_url": "https://api.heyreach.io/api",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-KEY": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "API Key"
       }
     ]

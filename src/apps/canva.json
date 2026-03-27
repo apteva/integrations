@@ -68,7 +68,7 @@
       "name": "find_folders",
       "description": "Get details of a specific folder by its ID. Returns the folder name, creation date, and other metadata. To browse folder contents, use the 'Look Up Assets in Folder' tool instead.",
       "method": "GET",
-      "path": "/rest/v1/folders/%7B%7BfolderId%7D%7D",
+      "path": "/rest/v1/folders/{folderId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -86,7 +86,7 @@
       "name": "list_folder_items",
       "description": "List all items (designs, sub-folders, and image assets) inside a specific Canva folder. Supports filtering by item type and pagination. Note: video assets are not currently returned by this endpoint.",
       "method": "GET",
-      "path": "/rest/v1/folders/%7B%7BfolderId%7D%7D/items",
+      "path": "/rest/v1/folders/{folderId}/items",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -122,7 +122,7 @@
       "name": "find_asset",
       "description": "Get the metadata for a specific asset by its ID. Returns the asset name, tags, creation date, thumbnail URL, and other details. To search for assets, use 'Look Up Assets in Folder' to browse folder contents or 'Find Design(s)' to search by name.",
       "method": "GET",
-      "path": "/rest/v1/assets/%7B%7BassetId%7D%7D",
+      "path": "/rest/v1/assets/{assetId}",
       "input_schema": {
         "type": "object",
         "properties": {

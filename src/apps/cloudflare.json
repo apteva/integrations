@@ -23,6 +23,11 @@
         "name": "apiToken",
         "label": "Api Token",
         "description": "Cloudflare API token (create at dash.cloudflare.com/profile/api-tokens)"
+      },
+      {
+        "name": "accountId",
+        "label": "Account Id",
+        "description": "Cloudflare Account ID (found on your dashboard overview page)"
       }
     ]
   },

@@ -19,7 +19,7 @@
       "api_key"
     ],
     "headers": {
-      "api-key": "{{token}}"
+      "api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
@@ -164,7 +164,7 @@
       "name": "get_contact",
       "description": "Get contact details by email address or ID",
       "method": "GET",
-      "path": "/contacts/%7B%7Bidentifier%7D%7D",
+      "path": "/contacts/{identifier}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -182,7 +182,7 @@
       "name": "update_contact",
       "description": "Update an existing contact's attributes or list memberships. Attributes must be passed in UPPERCASE (e.g., FIRSTNAME, LASTNAME). Attributes must exist in your Brevo account - use brevo-list-attributes to see available attributes.",
       "method": "PUT",
-      "path": "/contacts/%7B%7Bidentifier%7D%7D",
+      "path": "/contacts/{identifier}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -233,7 +233,7 @@
       "name": "delete_contact",
       "description": "Permanently delete a contact from Brevo",
       "method": "DELETE",
-      "path": "/contacts/%7B%7Bidentifier%7D%7D",
+      "path": "/contacts/{identifier}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -337,7 +337,7 @@
       "name": "add_contacts_to_list",
       "description": "Add multiple contacts to a list by email addresses",
       "method": "POST",
-      "path": "/contacts/lists/%7B%7BlistId%7D%7D/contacts/add",
+      "path": "/contacts/lists/{listId}/contacts/add",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -363,7 +363,7 @@
       "name": "remove_contacts_from_list",
       "description": "Remove multiple contacts from a list",
       "method": "POST",
-      "path": "/contacts/lists/%7B%7BlistId%7D%7D/contacts/remove",
+      "path": "/contacts/lists/{listId}/contacts/remove",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -422,7 +422,7 @@
       "name": "get_template",
       "description": "Get a specific email template by ID",
       "method": "GET",
-      "path": "/smtp/templates/%7B%7BtemplateId%7D%7D",
+      "path": "/smtp/templates/{templateId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -497,7 +497,7 @@
       "name": "update_template",
       "description": "Update an existing email template",
       "method": "PUT",
-      "path": "/smtp/templates/%7B%7BtemplateId%7D%7D",
+      "path": "/smtp/templates/{templateId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -539,7 +539,7 @@
       "name": "delete_template",
       "description": "Delete an email template",
       "method": "DELETE",
-      "path": "/smtp/templates/%7B%7BtemplateId%7D%7D",
+      "path": "/smtp/templates/{templateId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -751,7 +751,7 @@
       "name": "get_campaign",
       "description": "Get details of a specific email campaign",
       "method": "GET",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/emailCampaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -853,7 +853,7 @@
       "name": "update_campaign",
       "description": "Update an existing email campaign (only draft campaigns can be updated)",
       "method": "PUT",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/emailCampaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -899,7 +899,7 @@
       "name": "send_campaign_now",
       "description": "Send an email campaign immediately",
       "method": "POST",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D/sendNow",
+      "path": "/emailCampaigns/{campaignId}/sendNow",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -917,7 +917,7 @@
       "name": "send_test_email",
       "description": "Send a test email for a campaign before launching",
       "method": "POST",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D/sendTest",
+      "path": "/emailCampaigns/{campaignId}/sendTest",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -943,7 +943,7 @@
       "name": "schedule_campaign",
       "description": "Schedule an email campaign for a specific date and time",
       "method": "POST",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D/schedule",
+      "path": "/emailCampaigns/{campaignId}/schedule",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -966,7 +966,7 @@
       "name": "get_campaign_stats",
       "description": "Get detailed statistics for an email campaign",
       "method": "GET",
-      "path": "/emailCampaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/emailCampaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1026,7 +1026,7 @@
       "name": "delete_sender",
       "description": "Delete a sender identity",
       "method": "DELETE",
-      "path": "/senders/%7B%7BsenderId%7D%7D",
+      "path": "/senders/{senderId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1131,7 +1131,7 @@
       "name": "delete_webhook",
       "description": "Delete a webhook",
       "method": "DELETE",
-      "path": "/webhooks/%7B%7BwebhookId%7D%7D",
+      "path": "/webhooks/{webhookId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1266,7 +1266,7 @@
       "name": "create_attribute",
       "description": "Create a new contact attribute (field) definition. You must create an attribute before you can use it on contacts. Categories: normal (standard fields), transactional, category (enumerated values), calculated, global.",
       "method": "POST",
-      "path": "/contacts/attributes/%7B%7BattributeCategory%7D%7D/%7B%7BattributeName%7D%7D",
+      "path": "/contacts/attributes/{attributeCategory}/{attributeName}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1327,7 +1327,7 @@
       "name": "update_attribute",
       "description": "Update an existing contact attribute definition. Used to modify enumeration values for category attributes or formulas for calculated attributes.",
       "method": "PUT",
-      "path": "/contacts/attributes/%7B%7BattributeCategory%7D%7D/%7B%7BattributeName%7D%7D",
+      "path": "/contacts/attributes/{attributeCategory}/{attributeName}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1375,7 +1375,7 @@
       "name": "delete_attribute",
       "description": "Delete a contact attribute definition. Warning: This removes the attribute from all contacts.",
       "method": "DELETE",
-      "path": "/contacts/attributes/%7B%7BattributeCategory%7D%7D/%7B%7BattributeName%7D%7D",
+      "path": "/contacts/attributes/{attributeCategory}/{attributeName}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1405,7 +1405,7 @@
       "name": "get_list",
       "description": "Get details of a specific contact list including subscriber count",
       "method": "GET",
-      "path": "/contacts/lists/%7B%7BlistId%7D%7D",
+      "path": "/contacts/lists/{listId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1419,5 +1419,74 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-brevo-signature",
+    "events": [
+      {
+        "name": "sent",
+        "description": "An email was sent to the recipient"
+      },
+      {
+        "name": "hardBounce",
+        "description": "Email permanently bounced (invalid address, domain not found, etc.)"
+      },
+      {
+        "name": "softBounce",
+        "description": "Email temporarily bounced (mailbox full, server unavailable, etc.)"
+      },
+      {
+        "name": "blocked",
+        "description": "Email was blocked before sending (blacklisted contact, etc.)"
+      },
+      {
+        "name": "spam",
+        "description": "Recipient marked the email as spam"
+      },
+      {
+        "name": "delivered",
+        "description": "Email was successfully delivered to the recipient's mailbox"
+      },
+      {
+        "name": "request",
+        "description": "Email send request was received by Brevo"
+      },
+      {
+        "name": "click",
+        "description": "A link in the email was clicked by the recipient"
+      },
+      {
+        "name": "invalid",
+        "description": "Email address was detected as invalid"
+      },
+      {
+        "name": "deferred",
+        "description": "Email delivery was deferred by the receiving server"
+      },
+      {
+        "name": "opened",
+        "description": "Email was opened by the recipient"
+      },
+      {
+        "name": "uniqueOpened",
+        "description": "Email was opened for the first time by the recipient"
+      },
+      {
+        "name": "unsubscribed",
+        "description": "Recipient unsubscribed from the mailing list"
+      },
+      {
+        "name": "listAddition",
+        "description": "Contact was added to a mailing list"
+      },
+      {
+        "name": "contactUpdated",
+        "description": "Contact information was updated"
+      },
+      {
+        "name": "contactDeleted",
+        "description": "Contact was deleted from the account"
+      }
+    ]
+  }
 }

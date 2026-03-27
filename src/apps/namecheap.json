@@ -37,6 +37,16 @@
         "name": "clientIp",
         "label": "Client Ip",
         "description": "Your whitelisted IP address (must be whitelisted in Namecheap account)"
+      },
+      {
+        "name": "mode",
+        "label": "Mode",
+        "description": "API mode: live or sandbox (default: live)"
+      },
+      {
+        "name": "apiKey",
+        "label": "Api Key",
+        "description": "Namecheap API key (generate from Account > Profile > Tools > API Access)"
       }
     ]
   },

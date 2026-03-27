@@ -23,6 +23,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
     ],
     "oauth2": {
@@ -138,7 +150,7 @@
       "name": "get_message",
       "description": "Get full email message details including headers, body, and attachment metadata",
       "method": "GET",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D",
+      "path": "/users/me/messages/{messageId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -171,7 +183,7 @@
       "name": "modify_message",
       "description": "Add or remove labels from a message (e.g. mark as read/unread, star, archive, categorize)",
       "method": "POST",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/modify",
+      "path": "/users/me/messages/{messageId}/modify",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -203,7 +215,7 @@
       "name": "trash_message",
       "description": "Move a message to the trash",
       "method": "POST",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/trash",
+      "path": "/users/me/messages/{messageId}/trash",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -221,7 +233,7 @@
       "name": "untrash_message",
       "description": "Remove a message from trash and restore it",
       "method": "POST",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/untrash",
+      "path": "/users/me/messages/{messageId}/untrash",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -239,7 +251,7 @@
       "name": "delete_message",
       "description": "Permanently delete a message (bypasses trash). This action is irreversible",
       "method": "DELETE",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D",
+      "path": "/users/me/messages/{messageId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -329,7 +341,7 @@
       "name": "get_thread",
       "description": "Get all messages in an email thread (conversation)",
       "method": "GET",
-      "path": "/users/me/threads/%7B%7BthreadId%7D%7D",
+      "path": "/users/me/threads/{threadId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -358,7 +370,7 @@
       "name": "modify_thread",
       "description": "Add or remove labels from all messages in a thread",
       "method": "POST",
-      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/modify",
+      "path": "/users/me/threads/{threadId}/modify",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -390,7 +402,7 @@
       "name": "trash_thread",
       "description": "Move an entire thread to trash",
       "method": "POST",
-      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/trash",
+      "path": "/users/me/threads/{threadId}/trash",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -408,7 +420,7 @@
       "name": "untrash_thread",
       "description": "Restore a thread from trash",
       "method": "POST",
-      "path": "/users/me/threads/%7B%7BthreadId%7D%7D/untrash",
+      "path": "/users/me/threads/{threadId}/untrash",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -436,7 +448,7 @@
       "name": "get_label",
       "description": "Get details for a specific label including message and thread counts",
       "method": "GET",
-      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "path": "/users/me/labels/{labelId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -505,7 +517,7 @@
       "name": "update_label",
       "description": "Update a label's name, visibility, or color",
       "method": "PATCH",
-      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "path": "/users/me/labels/{labelId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -553,7 +565,7 @@
       "name": "delete_label",
       "description": "Permanently delete a label. Messages with this label are not deleted, only the label is removed",
       "method": "DELETE",
-      "path": "/users/me/labels/%7B%7BlabelId%7D%7D",
+      "path": "/users/me/labels/{labelId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -596,7 +608,7 @@
       "name": "get_draft",
       "description": "Get a specific draft's content and metadata",
       "method": "GET",
-      "path": "/users/me/drafts/%7B%7BdraftId%7D%7D",
+      "path": "/users/me/drafts/{draftId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -673,7 +685,7 @@
       "name": "delete_draft",
       "description": "Permanently delete a draft",
       "method": "DELETE",
-      "path": "/users/me/drafts/%7B%7BdraftId%7D%7D",
+      "path": "/users/me/drafts/{draftId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -709,7 +721,7 @@
       "name": "get_attachment",
       "description": "Download an email attachment by message ID and attachment ID. Returns base64-encoded attachment data",
       "method": "GET",
-      "path": "/users/me/messages/%7B%7BmessageId%7D%7D/attachments/%7B%7BattachmentId%7D%7D",
+      "path": "/users/me/messages/{messageId}/attachments/{attachmentId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -819,7 +831,7 @@
       "name": "delete_filter",
       "description": "Delete an email filter rule",
       "method": "DELETE",
-      "path": "/users/me/settings/filters/%7B%7BfilterId%7D%7D",
+      "path": "/users/me/settings/filters/{filterId}",
       "input_schema": {
         "type": "object",
         "properties": {

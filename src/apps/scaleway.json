@@ -106,10 +106,6 @@
             "type": "string",
             "description": "Image UUID to use for the server"
           },
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "tags": {
             "type": "array",
             "items": {
@@ -275,10 +271,6 @@
             "type": "integer",
             "description": "Volume size in bytes (e.g., 10000000000 for 10GB)"
           },
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
-          },
           "tags": {
             "type": "array",
             "items": {
@@ -379,10 +371,6 @@
             "type": "string",
             "description": "Scaleway zone",
             "default": "fr-par-1"
-          },
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
           },
           "server_id": {
             "type": "string",
@@ -547,10 +535,6 @@
           "description": {
             "type": "string",
             "description": "Description"
-          },
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
           },
           "stateful": {
             "type": "boolean",
@@ -866,10 +850,6 @@
           "volume_id": {
             "type": "string",
             "description": "Volume UUID to snapshot"
-          },
-          "project_id": {
-            "type": "string",
-            "description": "Project ID"
           },
           "tags": {
             "type": "array",

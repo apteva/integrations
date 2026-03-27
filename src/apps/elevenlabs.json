@@ -18,11 +18,11 @@
       "api_key"
     ],
     "headers": {
-      "xi-api-key": "{{token}}"
+      "xi-api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Your ElevenLabs API Key"
       }
@@ -49,10 +49,10 @@
             "type": "string",
             "description": "Voice ID to use (required)"
           },
-          "model": {
+          "model_id": {
             "type": "string",
-            "default": "eleven_monolingual_v1",
-            "description": "ElevenLabs model to use"
+            "default": "eleven_multilingual_v2",
+            "description": "ElevenLabs model ID (e.g. eleven_multilingual_v2, eleven_turbo_v2_5, eleven_flash_v2_5)"
           },
           "stability": {
             "type": "number",
@@ -74,6 +74,37 @@
             "maximum": 1,
             "default": 0,
             "description": "Style setting (0.0-1.0)"
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Language code for multilingual models (e.g. en, es, fr, de, ja)"
+          },
+          "output_format": {
+            "type": "string",
+            "default": "mp3_44100_128",
+            "description": "Output format (mp3_44100_128, pcm_16000, pcm_22050, pcm_24000, pcm_44100, ulaw_8000)"
+          },
+          "seed": {
+            "type": "integer",
+            "description": "Seed for deterministic generation"
+          },
+          "previous_text": {
+            "type": "string",
+            "description": "Text that comes before the current text for context"
+          },
+          "next_text": {
+            "type": "string",
+            "description": "Text that comes after the current text for context"
+          },
+          "apply_text_normalization": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "on",
+              "off"
+            ],
+            "default": "auto",
+            "description": "Text normalization mode"
           }
         },
         "required": [
@@ -133,7 +164,8 @@
               "community",
               "default",
               "workspace",
-              "non-default"
+              "non-default",
+              "saved"
             ],
             "description": "Filter by voice type"
           },
@@ -218,6 +250,11 @@
           "labels": {
             "type": "object",
             "description": "Labels for the voice (accent, age, gender, etc.)"
+          },
+          "remove_background_noise": {
+            "type": "boolean",
+            "default": false,
+            "description": "Remove background noise from audio samples before cloning"
           }
         },
         "required": [
@@ -249,15 +286,27 @@
           },
           "music_length_ms": {
             "type": "number",
-            "minimum": 10000,
-            "maximum": 300000,
+            "minimum": 3000,
+            "maximum": 600000,
             "default": 30000,
-            "description": "Music length in milliseconds (10000-300000, 10 seconds to 5 minutes)"
+            "description": "Music length in milliseconds (3000-600000, 3 seconds to 10 minutes)"
           },
           "output_format": {
             "type": "string",
             "default": "mp3",
             "description": "Audio output format (mp3 or wav)"
+          },
+          "model_id": {
+            "type": "string",
+            "description": "Model ID for music generation"
+          },
+          "force_instrumental": {
+            "type": "boolean",
+            "description": "Force instrumental-only output (no vocals)"
+          },
+          "seed": {
+            "type": "integer",
+            "description": "Seed for deterministic generation"
           }
         },
         "required": [
@@ -311,10 +360,10 @@
           },
           "music_length_ms": {
             "type": "number",
-            "minimum": 5000,
-            "maximum": 300000,
+            "minimum": 3000,
+            "maximum": 600000,
             "default": 30000,
-            "description": "Target music length in milliseconds"
+            "description": "Target music length in milliseconds (3000-600000)"
           }
         },
         "required": [

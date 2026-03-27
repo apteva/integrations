@@ -126,7 +126,7 @@
       "name": "get_post",
       "description": "Retrieve details and status of a specific post by ID",
       "method": "GET",
-      "path": "/posts/%7B%7BpostId%7D%7D",
+      "path": "/posts/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -144,7 +144,7 @@
       "name": "update_post",
       "description": "Modify a scheduled post before it's published",
       "method": "PATCH",
-      "path": "/posts/%7B%7BpostId%7D%7D",
+      "path": "/posts/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -184,7 +184,7 @@
       "name": "delete_post",
       "description": "Remove a post from the queue",
       "method": "DELETE",
-      "path": "/posts/%7B%7BpostId%7D%7D",
+      "path": "/posts/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -278,7 +278,7 @@
       "name": "get_profile",
       "description": "Get details of a specific profile",
       "method": "GET",
-      "path": "/profiles/%7B%7BprofileId%7D%7D",
+      "path": "/profiles/{profileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -296,7 +296,7 @@
       "name": "delete_profile",
       "description": "Delete a profile and disconnect all associated accounts",
       "method": "DELETE",
-      "path": "/profiles/%7B%7BprofileId%7D%7D",
+      "path": "/profiles/{profileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -333,7 +333,7 @@
       "name": "connect_account",
       "description": "Get OAuth URL to connect a social media account. User must visit the returned URL to complete OAuth flow.",
       "method": "GET",
-      "path": "/connect/%7B%7Bplatform%7D%7D",
+      "path": "/connect/{platform}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -374,7 +374,7 @@
       "name": "disconnect_account",
       "description": "Disconnect a social media account",
       "method": "DELETE",
-      "path": "/accounts/%7B%7BaccountId%7D%7D",
+      "path": "/accounts/{accountId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -461,7 +461,7 @@
       "name": "get_conversation",
       "description": "Get details of a specific conversation including message history",
       "method": "GET",
-      "path": "/messages/conversations/%7B%7BconversationId%7D%7D",
+      "path": "/messages/conversations/{conversationId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -479,7 +479,7 @@
       "name": "reply_conversation",
       "description": "Reply to a DM, comment, or review. Requires Inbox addon subscription.",
       "method": "POST",
-      "path": "/messages/conversations/%7B%7BconversationId%7D%7D/messages",
+      "path": "/messages/conversations/{conversationId}/messages",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -555,7 +555,7 @@
       "name": "delete_webhook",
       "description": "Delete a webhook by ID",
       "method": "DELETE",
-      "path": "/webhooks/%7B%7BwebhookId%7D%7D",
+      "path": "/webhooks/{webhookId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -573,7 +573,7 @@
       "name": "retry_post",
       "description": "Retry publishing a failed post",
       "method": "POST",
-      "path": "/posts/%7B%7BpostId%7D%7D/retry",
+      "path": "/posts/{postId}/retry",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -591,7 +591,7 @@
       "name": "unpublish_post",
       "description": "Remove a published post from a specific platform",
       "method": "DELETE",
-      "path": "/posts/%7B%7BpostId%7D%7D/platform/%7B%7Bplatform%7D%7D",
+      "path": "/posts/{postId}/platform/{platform}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -669,7 +669,7 @@
       "name": "account_health",
       "description": "Check the connection health status of a connected social media account",
       "method": "GET",
-      "path": "/accounts/%7B%7BaccountId|health%7D%7D/health",
+      "path": "/accounts/{{accountId|health}}/health",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -704,7 +704,7 @@
       "name": "reply_comment",
       "description": "Reply to a comment on a post",
       "method": "POST",
-      "path": "/comments/posts/%7B%7BpostId%7D%7D/reply",
+      "path": "/comments/posts/{postId}/reply",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -727,7 +727,7 @@
       "name": "follower_stats",
       "description": "Get follower count and growth stats for a connected account",
       "method": "GET",
-      "path": "/accounts/%7B%7BaccountId%7D%7D/followers",
+      "path": "/accounts/{accountId}/followers",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -912,7 +912,7 @@
       "name": "delete_queue_slot",
       "description": "Remove a queue from a profile. If deleting the default queue, another queue automatically becomes the default.",
       "method": "DELETE",
-      "path": "/queue/%7B%7BqueueId%7D%7D",
+      "path": "/queue/{queueId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1030,7 +1030,7 @@
       "name": "update_profile",
       "description": "Update an existing profile's name or description",
       "method": "PATCH",
-      "path": "/profiles/%7B%7BprofileId%7D%7D",
+      "path": "/profiles/{profileId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1052,5 +1052,34 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-late-signature",
+    "events": [
+      {
+        "name": "post.scheduled",
+        "description": "A post was scheduled for future publishing"
+      },
+      {
+        "name": "post.published",
+        "description": "A post was successfully published to social media"
+      },
+      {
+        "name": "post.failed",
+        "description": "A post failed to publish to all target platforms"
+      },
+      {
+        "name": "post.partial",
+        "description": "A post was published to some platforms but failed on others"
+      },
+      {
+        "name": "account.connected",
+        "description": "A social media account was connected via OAuth"
+      },
+      {
+        "name": "account.disconnected",
+        "description": "A social media account was disconnected"
+      }
+    ]
+  }
 }

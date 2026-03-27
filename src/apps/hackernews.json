@@ -91,7 +91,7 @@
       "name": "get_item",
       "description": "Get a specific Hacker News item by ID. Items can be stories, comments, jobs, Ask HNs, or polls. Returns title, url, score, by (author), time, descendants (comment count), kids (child comment IDs), text, and type.",
       "method": "GET",
-      "path": "/item/%7B%7Bid%7D%7D.json",
+      "path": "/item/{id}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -109,7 +109,7 @@
       "name": "get_user",
       "description": "Get a Hacker News user profile by username. Returns id, created (unix timestamp), karma, about (bio in HTML), and submitted (array of item IDs the user has posted).",
       "method": "GET",
-      "path": "/user/%7B%7Busername%7D%7D.json",
+      "path": "/user/{username}.json",
       "input_schema": {
         "type": "object",
         "properties": {

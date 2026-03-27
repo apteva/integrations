@@ -23,6 +23,10 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
       }
     ],
     "oauth2": {

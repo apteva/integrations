@@ -13,7 +13,8 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
@@ -21,9 +22,38 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "access_token"
+      },
+      {
+        "name": "instagramAccountId",
+        "label": "instagramAccountId"
+      },
+      {
+        "name": "userId",
+        "label": "userId"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://api.instagram.com/oauth/authorize",
+      "token_url": "https://api.instagram.com/oauth/access_token",
+      "scopes": [
+        "user_profile",
+        "user_media",
+        "instagram_basic",
+        "instagram_content_publish",
+        "instagram_manage_comments",
+        "instagram_manage_insights",
+        "instagram_manage_messages",
+        "pages_show_list",
+        "pages_read_engagement"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {
@@ -125,7 +155,7 @@
     },
     {
       "name": "create_media_container",
-      "description": "Step 1 of 2 to publish on Instagram. Create a media container with image/video URL and caption. Returns containerId for step 2 (publish-media-container). For videos: use sync=true to wait for processing to complete automatically (recommended), or poll manually with get-container-status.",
+      "description": "Step 1 of 2 to publish on Instagram. Create a media container with image/video URL and caption. Returns containerId for step 2 (publish-media-container). For videos: use sync=true to wait for processing to complete automatically (recommended), or poll manually with get-container-status.\n\nFor CAROUSEL posts: 1) Create child containers with isCarouselItem=true (each with imageUrl or videoUrl, mediaType IMAGE or REELS). 2) Create parent carousel container via Graph API: POST /{instagramAccountId}/media with media_type=CAROUSEL, children={comma-separated child IDs}, and caption. 3) Publish the parent container with publish-media-container. Up to 10 items per carousel.",
       "method": "POST",
       "path": "/create-media-container",
       "input_schema": {
@@ -395,7 +425,7 @@
     },
     {
       "name": "get_media_insights",
-      "description": "Get analytics and insights for a specific Instagram media post",
+      "description": "Get analytics and insights for a specific Instagram media post. Note: 'plays' metric was deprecated in 2025 — use 'views' instead.",
       "method": "GET",
       "path": "/get-media-insights",
       "input_schema": {
@@ -416,8 +446,7 @@
                 "saved",
                 "likes",
                 "comments",
-                "shares",
-                "plays"
+                "shares"
               ]
             },
             "default": [
@@ -426,8 +455,7 @@
               "saved",
               "likes",
               "comments",
-              "shares",
-              "plays"
+              "shares"
             ]
           }
         },

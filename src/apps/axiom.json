@@ -23,6 +23,11 @@
         "name": "apiToken",
         "label": "Api Token",
         "description": "Axiom API token (generate at app.axiom.co/settings/api-tokens)"
+      },
+      {
+        "name": "orgId",
+        "label": "Org Id",
+        "description": "Axiom organization ID"
       }
     ]
   },
@@ -65,7 +70,7 @@
       "name": "ingest_events",
       "description": "Ingest one or more events into a specified Axiom dataset. Send an array of JSON objects to be stored as log/event entries.",
       "method": "POST",
-      "path": "/datasets/%7B%7Bparam.dataset%7D%7D/ingest",
+      "path": "/datasets/{{param.dataset}}/ingest",
       "input_schema": {
         "type": "object",
         "properties": {

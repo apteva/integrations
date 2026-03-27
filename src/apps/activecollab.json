@@ -61,15 +61,7 @@
       "path": "/project-get",
       "input_schema": {
         "type": "object",
-        "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          }
-        },
-        "required": [
-          "project_id"
-        ]
+        "properties": {}
       }
     },
     {
@@ -122,10 +114,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "task_list_id": {
             "type": "integer",
             "description": "Filter by task list ID"
@@ -138,10 +126,7 @@
             "type": "boolean",
             "description": "Filter by completion status"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -152,10 +137,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "task_list_id": {
             "type": "integer",
             "description": "Task list ID"
@@ -190,7 +171,6 @@
           }
         },
         "required": [
-          "project_id",
           "name"
         ]
       }
@@ -203,10 +183,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "task_id": {
             "type": "integer",
             "description": "Task ID"
@@ -229,7 +205,6 @@
           }
         },
         "required": [
-          "project_id",
           "task_id"
         ]
       }
@@ -242,10 +217,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Filter by project ID"
-          },
           "task_id": {
             "type": "integer",
             "description": "Filter by task ID"
@@ -282,10 +253,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "task_id": {
             "type": "integer",
             "description": "Task ID (optional)"
@@ -320,7 +287,6 @@
           }
         },
         "required": [
-          "project_id",
           "value",
           "record_date"
         ]
@@ -348,10 +314,6 @@
             "type": "integer",
             "description": "Filter by client ID"
           },
-          "project_id": {
-            "type": "integer",
-            "description": "Filter by project ID"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -376,10 +338,6 @@
           "client_id": {
             "type": "integer",
             "description": "Client company ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "number": {
             "type": "string",

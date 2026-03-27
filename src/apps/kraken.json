@@ -18,7 +18,7 @@
       "api_key"
     ],
     "headers": {
-      "API-Key": "{{token}}"
+      "API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {

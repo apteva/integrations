@@ -23,6 +23,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "account_id",
+        "label": "account_id"
       }
     ],
     "oauth2": {

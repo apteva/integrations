@@ -24,6 +24,11 @@
         "name": "auth_token",
         "label": "Auth_token",
         "description": "Blynk Auth Token (from device template or organization settings)"
+      },
+      {
+        "name": "server_url",
+        "label": "Server_url",
+        "description": "Blynk server URL (default: blynk.cloud)"
       }
     ]
   },

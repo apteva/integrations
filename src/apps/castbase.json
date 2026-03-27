@@ -37,10 +37,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "title": {
             "type": "string",
             "description": "Podcast title (required)"
@@ -83,7 +79,6 @@
           }
         },
         "required": [
-          "project_id",
           "title",
           "author",
           "owner_email"
@@ -98,10 +93,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID (required)"
@@ -123,7 +114,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id"
         ]
       }
@@ -136,10 +126,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -175,10 +161,7 @@
             "default": "created_at:desc",
             "description": "Sort order (created_at:desc, title:asc, etc.)"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -189,10 +172,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID (required)"
@@ -232,7 +211,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id"
         ]
       }
@@ -245,10 +223,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID to delete (required)"
@@ -265,7 +239,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id"
         ]
       }
@@ -278,10 +251,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID (required)"
@@ -319,7 +288,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id",
           "title"
         ]
@@ -333,10 +301,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID (required)"
@@ -348,7 +312,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -361,10 +324,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID (required)"
@@ -411,7 +370,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id"
         ]
       }
@@ -424,10 +382,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID to publish (required)"
@@ -444,7 +398,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -457,10 +410,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID (required)"
@@ -493,7 +442,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -604,10 +552,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID to delete (required)"
@@ -619,7 +563,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -632,10 +575,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID to unpublish (required)"
@@ -647,7 +586,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -660,10 +598,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "episode_id": {
             "type": "string",
             "description": "Episode ID to update (required)"
@@ -699,7 +633,6 @@
           }
         },
         "required": [
-          "project_id",
           "episode_id"
         ]
       }
@@ -712,10 +645,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID (required)"
-          },
           "podcast_id": {
             "type": "string",
             "description": "Podcast ID (required)"
@@ -744,7 +673,6 @@
           }
         },
         "required": [
-          "project_id",
           "podcast_id"
         ]
       }

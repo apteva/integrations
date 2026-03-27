@@ -38,10 +38,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for multi-tenant isolation"
-          },
           "name": {
             "type": "string",
             "description": "Composition name"
@@ -117,7 +113,6 @@
           }
         },
         "required": [
-          "project_id",
           "name",
           "composition"
         ]
@@ -135,10 +130,6 @@
             "type": "string",
             "description": "Composition ID to retrieve"
           },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
-          },
           "include_files": {
             "type": "boolean",
             "default": true,
@@ -146,8 +137,7 @@
           }
         },
         "required": [
-          "id",
-          "project_id"
+          "id"
         ]
       }
     },
@@ -159,10 +149,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -195,10 +181,7 @@
             "default": "created_at:desc",
             "description": "Sort field and direction (e.g., 'name:asc', 'created_at:desc')"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -216,10 +199,6 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for multi-tenant isolation"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           },
           "slug": {
             "type": "string",
@@ -495,8 +474,7 @@
         },
         "required": [
           "name",
-          "organization_id",
-          "project_id"
+          "organization_id"
         ]
       }
     },
@@ -515,10 +493,6 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for access control"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           },
           "name": {
             "type": "string",
@@ -729,8 +703,7 @@
         },
         "required": [
           "persona_id",
-          "organization_id",
-          "project_id"
+          "organization_id"
         ]
       }
     },
@@ -753,15 +726,10 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for access control"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           }
         },
         "required": [
-          "organization_id",
-          "project_id"
+          "organization_id"
         ]
       }
     },
@@ -776,10 +744,6 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for multi-tenant isolation"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           },
           "is_active": {
             "type": "boolean",
@@ -834,8 +798,7 @@
           }
         },
         "required": [
-          "organization_id",
-          "project_id"
+          "organization_id"
         ]
       }
     },
@@ -873,10 +836,6 @@
             "type": "integer",
             "description": "Organization ID for access control"
           },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
-          },
           "image_url": {
             "type": "string",
             "description": "URL of the image to set"
@@ -901,7 +860,6 @@
         "required": [
           "persona_id",
           "organization_id",
-          "project_id",
           "image_url"
         ]
       }
@@ -921,10 +879,6 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for access control"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           },
           "provider": {
             "type": "string",
@@ -961,7 +915,6 @@
         "required": [
           "persona_id",
           "organization_id",
-          "project_id",
           "provider_voice_id"
         ]
       }
@@ -981,10 +934,6 @@
           "organization_id": {
             "type": "integer",
             "description": "Organization ID for access control"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for access control"
           },
           "provider": {
             "type": "string",
@@ -1011,7 +960,6 @@
         "required": [
           "persona_id",
           "organization_id",
-          "project_id",
           "provider_avatar_id"
         ]
       }

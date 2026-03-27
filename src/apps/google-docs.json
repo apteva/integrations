@@ -22,6 +22,18 @@
       {
         "name": "accessToken",
         "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
       }
     ],
     "oauth2": {

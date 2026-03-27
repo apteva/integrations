@@ -19,15 +19,26 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "APCA-API-KEY-ID": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api_key",
+        "description": "Your Alpaca API Key ID"
+      },
+      {
+        "name": "api_secret",
+        "label": "Api_secret",
+        "description": "Your Alpaca Secret Key"
+      },
+      {
+        "name": "base_url",
+        "label": "Base_url",
+        "description": "Default: https://paper-api.alpaca.markets — set to https://api.alpaca.markets for live trading"
       }
     ]
   },

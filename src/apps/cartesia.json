@@ -15,14 +15,14 @@
   "base_url": "https://api.cartesia.ai",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Cartesia API key (from your Cartesia dashboard)"
       }
@@ -43,7 +43,7 @@
       "name": "get_voice",
       "description": "Retrieve details for a specific voice by its ID. Returns the voice's name, description, language, and embedding information.",
       "method": "GET",
-      "path": "/voices/%7B%7Bparam.voice_id%7D%7D",
+      "path": "/voices/{{param.voice_id}}",
       "input_schema": {
         "type": "object",
         "properties": {

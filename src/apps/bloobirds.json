@@ -204,7 +204,7 @@
       "name": "update_lead",
       "description": "Update an existing lead bobject in Bloobirds. Provide the lead's bobject ID and the fields to update.",
       "method": "PUT",
-      "path": "/bobjects/Lead/%7B%7Bparam.bobject_id%7D%7D",
+      "path": "/bobjects/Lead/{{param.bobject_id}}",
       "input_schema": {
         "type": "object",
         "properties": {

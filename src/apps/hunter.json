@@ -14,15 +14,16 @@
   "base_url": "https://api.hunter.io/v2",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-KEY": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your Hunter.io API Key (found at https://hunter.io/api-keys)"
       }
     ]
   },
@@ -250,7 +251,7 @@
       "name": "lead_get",
       "description": "Get a specific lead by ID.",
       "method": "GET",
-      "path": "/leads/%7B%7Blead_id%7D%7D",
+      "path": "/leads/{lead_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -326,7 +327,7 @@
       "name": "lead_update",
       "description": "Update an existing lead.",
       "method": "PUT",
-      "path": "/leads/%7B%7Blead_id%7D%7D",
+      "path": "/leads/{lead_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -376,7 +377,7 @@
       "name": "lead_delete",
       "description": "Delete a lead by ID.",
       "method": "DELETE",
-      "path": "/leads/%7B%7Blead_id%7D%7D",
+      "path": "/leads/{lead_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -454,7 +455,7 @@
       "name": "campaign_add_recipients",
       "description": "Add recipients to an email campaign by email addresses or lead IDs (max 50 per request).",
       "method": "POST",
-      "path": "/campaigns/%7B%7Bcampaign_id%7D%7D/recipients",
+      "path": "/campaigns/{campaign_id}/recipients",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -486,7 +487,7 @@
       "name": "campaign_start",
       "description": "Start an email campaign that is in draft state. Campaign must have recipients and content configured.",
       "method": "POST",
-      "path": "/campaigns/%7B%7Bcampaign_id%7D%7D/start",
+      "path": "/campaigns/{campaign_id}/start",
       "input_schema": {
         "type": "object",
         "properties": {

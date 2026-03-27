@@ -41,7 +41,7 @@
       "name": "list_subscribers",
       "description": "List all subscribers for a specific publication. Supports pagination and filtering by email, status, and tier.",
       "method": "GET",
-      "path": "/publications/%7B%7Bparam.publication_id%7D%7D/subscriptions",
+      "path": "/publications/{{param.publication_id}}/subscriptions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -80,7 +80,7 @@
       "name": "create_subscriber",
       "description": "Create a new subscriber (subscription) for a publication. Provide the subscriber's email and optional details like UTM parameters and custom fields.",
       "method": "POST",
-      "path": "/publications/%7B%7Bparam.publication_id%7D%7D/subscriptions",
+      "path": "/publications/{{param.publication_id}}/subscriptions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -144,7 +144,7 @@
       "name": "get_subscriber",
       "description": "Retrieve a specific subscriber by their subscription ID. Returns detailed subscriber information including status, subscription date, and custom fields.",
       "method": "GET",
-      "path": "/publications/%7B%7Bparam.publication_id%7D%7D/subscriptions/%7B%7Bparam.subscription_id%7D%7D",
+      "path": "/publications/{{param.publication_id}}/subscriptions/{{param.subscription_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -167,7 +167,7 @@
       "name": "list_posts",
       "description": "List all posts for a specific publication. Returns post details including title, status, publish date, and content metadata. Supports pagination.",
       "method": "GET",
-      "path": "/publications/%7B%7Bparam.publication_id%7D%7D/posts",
+      "path": "/publications/{{param.publication_id}}/posts",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -202,7 +202,7 @@
       "name": "create_post",
       "description": "Create a new post (newsletter) in a publication. Provide the title and content as raw HTML or structured blocks. Posts can be published immediately, scheduled, or saved as drafts.",
       "method": "POST",
-      "path": "/publications/%7B%7Bparam.publication_id%7D%7D/posts",
+      "path": "/publications/{{param.publication_id}}/posts",
       "input_schema": {
         "type": "object",
         "properties": {

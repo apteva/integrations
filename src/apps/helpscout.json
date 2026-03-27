@@ -16,12 +16,12 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "Bearer {{access_token}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "access_token",
+        "label": "Access Token"
       }
     ]
   },
@@ -539,7 +539,7 @@
       "name": "get_webhook",
       "description": "Get a specific webhook by ID.",
       "method": "GET",
-      "path": "/webhooks/%7B%7Bparam.webhook_id%7D%7D",
+      "path": "/webhooks/{{param.webhook_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -605,7 +605,7 @@
       "name": "update_webhook",
       "description": "Update an existing webhook.",
       "method": "PUT",
-      "path": "/webhooks/%7B%7Bparam.webhook_id%7D%7D",
+      "path": "/webhooks/{{param.webhook_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -646,7 +646,7 @@
       "name": "delete_webhook",
       "description": "Delete a webhook.",
       "method": "DELETE",
-      "path": "/webhooks/%7B%7Bparam.webhook_id%7D%7D",
+      "path": "/webhooks/{{param.webhook_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -660,5 +660,58 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-helpscout-signature",
+    "events": [
+      {
+        "name": "convo.created",
+        "description": "A new conversation was created in Help Scout"
+      },
+      {
+        "name": "convo.deleted",
+        "description": "A conversation was deleted from Help Scout"
+      },
+      {
+        "name": "convo.moved",
+        "description": "A conversation was moved to a different mailbox"
+      },
+      {
+        "name": "convo.status",
+        "description": "A conversation's status was changed (active, closed, pending, spam)"
+      },
+      {
+        "name": "convo.assigned",
+        "description": "A conversation was assigned to a user or team"
+      },
+      {
+        "name": "convo.tags",
+        "description": "Tags were added or removed from a conversation"
+      },
+      {
+        "name": "convo.customer.reply.created",
+        "description": "A customer replied to a conversation"
+      },
+      {
+        "name": "convo.agent.reply.created",
+        "description": "An agent replied to a conversation"
+      },
+      {
+        "name": "convo.note.created",
+        "description": "An internal note was added to a conversation"
+      },
+      {
+        "name": "customer.created",
+        "description": "A new customer was created in Help Scout"
+      },
+      {
+        "name": "customer.updated",
+        "description": "A customer's profile was updated"
+      },
+      {
+        "name": "satisfaction.ratings",
+        "description": "A customer submitted a satisfaction rating"
+      }
+    ]
+  }
 }

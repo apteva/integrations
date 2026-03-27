@@ -23,6 +23,18 @@
       {
         "name": "accessToken",
         "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
       }
     ],
     "oauth2": {
@@ -85,7 +97,7 @@
       "name": "get_spreadsheet",
       "description": "Get spreadsheet metadata including sheet names, properties, and named ranges",
       "method": "GET",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D",
+      "path": "/spreadsheets/{spreadsheetId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -108,7 +120,7 @@
       "name": "read_range",
       "description": "Read values from a range in a spreadsheet using A1 notation (e.g. 'Sheet1!A1:D10')",
       "method": "GET",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D",
+      "path": "/spreadsheets/{spreadsheetId}/values/{range}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -159,7 +171,7 @@
       "name": "write_range",
       "description": "Write values to a range in a spreadsheet. Overwrites existing data in the range.",
       "method": "PUT",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D",
+      "path": "/spreadsheets/{spreadsheetId}/values/{range}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -199,7 +211,7 @@
       "name": "append_rows",
       "description": "Append rows of data after the last row with data in a sheet",
       "method": "POST",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D:append",
+      "path": "/spreadsheets/{spreadsheetId}/values/{range}:append",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -248,7 +260,7 @@
       "name": "clear_range",
       "description": "Clear values from a range in a spreadsheet (keeps formatting)",
       "method": "POST",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values/%7B%7Brange%7D%7D:clear",
+      "path": "/spreadsheets/{spreadsheetId}/values/{range}:clear",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -271,7 +283,7 @@
       "name": "batch_get",
       "description": "Read multiple ranges from a spreadsheet in a single request",
       "method": "GET",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D/values:batchGet",
+      "path": "/spreadsheets/{spreadsheetId}/values:batchGet",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -304,7 +316,7 @@
       "name": "add_sheet",
       "description": "Add a new sheet (tab) to an existing spreadsheet",
       "method": "POST",
-      "path": "/spreadsheets/%7B%7BspreadsheetId%7D%7D:batchUpdate",
+      "path": "/spreadsheets/{spreadsheetId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {

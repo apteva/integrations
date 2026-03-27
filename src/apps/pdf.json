@@ -128,10 +128,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "edited.pdf"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [
@@ -173,10 +169,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "filled-form.pdf"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         }
       }
@@ -214,10 +206,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "merged.pdf"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [
@@ -266,10 +254,6 @@
             ],
             "description": "Pages to watermark ('all' or array of page numbers)",
             "default": "all"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         }
       }
@@ -282,11 +266,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID",
-            "required": true
-          },
           "template_id": {
             "type": "integer",
             "description": "Template ID to use"
@@ -307,7 +286,6 @@
           }
         },
         "required": [
-          "project_id",
           "data"
         ]
       }
@@ -351,10 +329,6 @@
             "type": "string",
             "description": "Output filename",
             "default": "document.pdf"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage"
           }
         },
         "required": [

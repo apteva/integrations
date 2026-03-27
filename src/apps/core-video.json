@@ -25,11 +25,11 @@
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Your Media API key for accessing the /media/* endpoints. The project is determined automatically from the key."
       }
@@ -88,7 +88,7 @@
       "name": "get_file",
       "description": "Get detailed metadata about a file including size, dimensions, duration, mime type, and storage info",
       "method": "GET",
-      "path": "/media/files/%7B%7Bfile_id%7D%7D",
+      "path": "/media/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -163,7 +163,7 @@
       "name": "download_file",
       "description": "Get a download URL for a file in storage",
       "method": "GET",
-      "path": "/media/files/%7B%7Bfile_id%7D%7D/download",
+      "path": "/media/files/{file_id}/download",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -186,7 +186,7 @@
       "name": "update_file",
       "description": "Update file metadata - name, description, tags, access level, or move to different folder",
       "method": "PUT",
-      "path": "/media/files/%7B%7Bfile_id%7D%7D",
+      "path": "/media/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -232,7 +232,7 @@
       "name": "delete_file",
       "description": "Delete a file from storage permanently",
       "method": "DELETE",
-      "path": "/media/files/%7B%7Bfile_id%7D%7D",
+      "path": "/media/files/{file_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -359,7 +359,7 @@
       "name": "list_thumbnails",
       "description": "List all thumbnails for a video file with timing information and URLs",
       "method": "GET",
-      "path": "/media/files/%7B%7Bfile_id%7D%7D/thumbnails",
+      "path": "/media/files/{file_id}/thumbnails",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -446,7 +446,7 @@
       "name": "update_folder",
       "description": "Update folder name, description, or move to different parent",
       "method": "PUT",
-      "path": "/media/folders/%7B%7Bfolder_id%7D%7D",
+      "path": "/media/folders/{folder_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -476,7 +476,7 @@
       "name": "delete_folder",
       "description": "Delete a folder and optionally all its contents recursively",
       "method": "DELETE",
-      "path": "/media/folders/%7B%7Bfolder_id%7D%7D",
+      "path": "/media/folders/{folder_id}",
       "input_schema": {
         "type": "object",
         "properties": {

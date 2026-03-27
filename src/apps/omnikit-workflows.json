@@ -15,15 +15,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },

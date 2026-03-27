@@ -206,5 +206,14 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-typeform-signature",
+    "events": [
+      {
+        "name": "form_response",
+        "description": "New form response submitted"
+      }
+    ]
+  }
 }

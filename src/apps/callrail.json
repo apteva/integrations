@@ -16,13 +16,18 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "{{token}}"
     },
     "credential_fields": [
       {
         "name": "token",
         "label": "Api Key",
         "description": "CallRail API key (generate at app.callrail.com/api)"
+      },
+      {
+        "name": "accountId",
+        "label": "Account Id",
+        "description": "CallRail account ID"
       }
     ]
   },

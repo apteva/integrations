@@ -24,7 +24,7 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Token"
       }
     ]
   },
@@ -54,7 +54,7 @@
       "name": "get_page",
       "description": "Get details of a specific landing page by ID, including its configuration, publish status, and URL.",
       "method": "GET",
-      "path": "/pages/%7B%7BpageId%7D%7D",
+      "path": "/pages/{pageId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -95,7 +95,7 @@
       "name": "update_page",
       "description": "Update a landing page's name or settings.",
       "method": "PUT",
-      "path": "/pages/%7B%7BpageId%7D%7D",
+      "path": "/pages/{pageId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -117,7 +117,7 @@
       "name": "delete_page",
       "description": "Delete a landing page.",
       "method": "DELETE",
-      "path": "/pages/%7B%7BpageId%7D%7D",
+      "path": "/pages/{pageId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -197,7 +197,7 @@
       "name": "get_page_analytics",
       "description": "Get conversion analytics for a landing page — views, unique visitors, conversions, and conversion rate.",
       "method": "GET",
-      "path": "/pages/%7B%7BpageId%7D%7D/analytics",
+      "path": "/pages/{pageId}/analytics",
       "input_schema": {
         "type": "object",
         "properties": {

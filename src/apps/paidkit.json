@@ -21,7 +21,7 @@
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
@@ -131,7 +131,7 @@
       "name": "campaign_get",
       "description": "Get a single campaign by ID with full details including platform data, budget, dates, and sync status.",
       "method": "GET",
-      "path": "/campaigns/%7B%7Bid%7D%7D",
+      "path": "/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -220,7 +220,7 @@
       "name": "campaign_update",
       "description": "Update an existing campaign's name, status, budget, dates, or bid strategy. Changes are synced to the platform.",
       "method": "PUT",
-      "path": "/campaigns/%7B%7Bid%7D%7D",
+      "path": "/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -266,7 +266,7 @@
       "name": "campaign_delete",
       "description": "Delete a campaign from the platform and remove it locally.",
       "method": "DELETE",
-      "path": "/campaigns/%7B%7Bid%7D%7D",
+      "path": "/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -284,7 +284,7 @@
       "name": "campaign_sync",
       "description": "Sync a campaign's data from the ad platform to the local database. Pulls latest status, budget, and platform data.",
       "method": "POST",
-      "path": "/campaigns/%7B%7Bid%7D%7D/sync",
+      "path": "/campaigns/{id}/sync",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -400,9 +400,10 @@
               "LANDING_PAGE_VIEWS",
               "CONVERSATIONS",
               "IMPRESSIONS",
-              "VALUE"
+              "VALUE",
+              "VISIT_INSTAGRAM_PROFILE"
             ],
-            "description": "REQUIRED for Facebook. Must match campaign objective: AWARENESS→REACH, TRAFFIC→LINK_CLICKS, ENGAGEMENT→POST_ENGAGEMENT (most common) or PAGE_LIKES (page like campaigns only), LEADS→LEAD_GENERATION, SALES→OFFSITE_CONVERSIONS, APP_PROMOTION→APP_INSTALLS, VIDEO→THRUPLAY. NOTE: POST_ENGAGEMENT and PAGE_LIKES both require platform_data.promotedObject.page_id. OFFSITE_CONVERSIONS requires platform_data.promotedObject.pixel_id. Defaults to LINK_CLICKS if omitted"
+            "description": "REQUIRED for Facebook. Must match campaign objective: AWARENESS→REACH, TRAFFIC→LINK_CLICKS, ENGAGEMENT→POST_ENGAGEMENT or PAGE_LIKES (page likes) or VISIT_INSTAGRAM_PROFILE (Instagram follower/profile visit campaigns), LEADS→LEAD_GENERATION, SALES→OFFSITE_CONVERSIONS, APP_PROMOTION→APP_INSTALLS, VIDEO→THRUPLAY. NOTE: POST_ENGAGEMENT and PAGE_LIKES require platform_data.promotedObject.page_id (from paidkit-page-list). VISIT_INSTAGRAM_PROFILE requires platform_data.promotedObject.instagram_profile_id (from paidkit-instagram-account-list). OFFSITE_CONVERSIONS requires platform_data.promotedObject.pixel_id (from paidkit-pixel-list). Defaults to LINK_CLICKS if omitted"
           },
           "billing_event": {
             "type": "string",
@@ -422,7 +423,7 @@
           },
           "platform_data": {
             "type": "object",
-            "description": "Platform-specific settings passed directly to the ad platform. REQUIRED for Facebook engagement/conversion goals. For PAGE_LIKES or POST_ENGAGEMENT: {promotedObject:{page_id:'YOUR_FACEBOOK_PAGE_ID'}} — get page_id from paidkit-page-list. For OFFSITE_CONVERSIONS or VALUE: {promotedObject:{pixel_id:'YOUR_PIXEL_ID',custom_event_type:'Purchase'}} — get pixel_id from paidkit-pixel-list, custom_event_type can be Purchase, Lead, CompleteRegistration, AddToCart, ViewContent, Search, InitiateCheckout, AddPaymentInfo, Subscribe, StartTrial. destination_type is auto-set from optimization_goal"
+            "description": "Platform-specific settings passed directly to the ad platform. REQUIRED for Facebook engagement/conversion goals. For PAGE_LIKES or POST_ENGAGEMENT: {promotedObject:{page_id:'YOUR_FACEBOOK_PAGE_ID'}} — get page_id from paidkit-page-list. For VISIT_INSTAGRAM_PROFILE: {promotedObject:{instagram_profile_id:'YOUR_IG_PROFILE_ID'}} — get instagram_profile_id from paidkit-instagram-account-list. For OFFSITE_CONVERSIONS or VALUE: {promotedObject:{pixel_id:'YOUR_PIXEL_ID',custom_event_type:'Purchase'}} — get pixel_id from paidkit-pixel-list, custom_event_type can be Purchase, Lead, CompleteRegistration, AddToCart, ViewContent, Search, InitiateCheckout, AddPaymentInfo, Subscribe, StartTrial. destination_type is auto-set from optimization_goal"
           }
         },
         "required": [
@@ -436,7 +437,7 @@
       "name": "adgroup_update",
       "description": "Update an ad group's name, status, budget, bid, or targeting.",
       "method": "PUT",
-      "path": "/adgroups/%7B%7Bid%7D%7D",
+      "path": "/adgroups/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -474,7 +475,7 @@
       "name": "adgroup_delete",
       "description": "Delete an ad group from the platform and locally.",
       "method": "DELETE",
-      "path": "/adgroups/%7B%7Bid%7D%7D",
+      "path": "/adgroups/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -610,7 +611,7 @@
       "name": "ad_update",
       "description": "Update an ad's name, status, tracking URL, or platform data.",
       "method": "PUT",
-      "path": "/ads/%7B%7Bid%7D%7D",
+      "path": "/ads/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -644,7 +645,7 @@
       "name": "ad_delete",
       "description": "Delete an ad from the platform and locally.",
       "method": "DELETE",
-      "path": "/ads/%7B%7Bid%7D%7D",
+      "path": "/ads/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -755,7 +756,7 @@
       "name": "creative_delete",
       "description": "Delete an ad creative.",
       "method": "DELETE",
-      "path": "/creatives/%7B%7Bid%7D%7D",
+      "path": "/creatives/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -862,7 +863,7 @@
       "name": "audience_delete",
       "description": "Delete an audience from the platform and locally.",
       "method": "DELETE",
-      "path": "/audiences/%7B%7Bid%7D%7D",
+      "path": "/audiences/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1146,7 +1147,7 @@
       "name": "conversion_delete",
       "description": "Remove a conversion action. This stops tracking for that conversion type.",
       "method": "DELETE",
-      "path": "/conversions/%7B%7Bid%7D%7D",
+      "path": "/conversions/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1182,7 +1183,7 @@
       "name": "page_list",
       "description": "List pages/profiles linked to an ad account. Returns Facebook Pages, LinkedIn Company Pages, etc. depending on the account's platform. Use this to find page IDs needed for ad creation (e.g. PAGE_LIKES campaigns require a page_id).",
       "method": "GET",
-      "path": "/accounts/%7B%7Bad_account_id%7D%7D/pages",
+      "path": "/accounts/{ad_account_id}/pages",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1197,10 +1198,28 @@
       }
     },
     {
+      "name": "instagram_account_list",
+      "description": "List Instagram business accounts linked to a Facebook ad account. Returns Instagram profile IDs needed for VISIT_INSTAGRAM_PROFILE (Instagram follower/profile visit) campaigns. Each account includes id, username, follower count, and linked Facebook page.",
+      "method": "GET",
+      "path": "/facebook/instagram-accounts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ad_account_id": {
+            "type": "string",
+            "description": "PaidKit ad account ID (from paidkit-account-list). Must be a Facebook account."
+          }
+        },
+        "required": [
+          "ad_account_id"
+        ]
+      }
+    },
+    {
       "name": "pixel_list",
       "description": "List tracking pixels/tags for an ad account. Returns Meta Pixels for Facebook accounts, LinkedIn Insight Tags for LinkedIn accounts, etc. Use this to find pixel IDs for conversion tracking setup.",
       "method": "GET",
-      "path": "/accounts/%7B%7Bad_account_id%7D%7D/pixels",
+      "path": "/accounts/{ad_account_id}/pixels",
       "input_schema": {
         "type": "object",
         "properties": {

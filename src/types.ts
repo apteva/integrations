@@ -9,6 +9,46 @@ export interface AppTemplate {
   auth: AppAuthConfig;
   base_url: string;
   tools: AppToolTemplate[];
+  webhooks?: AppWebhookConfig;
+}
+
+export interface AppWebhookConfig {
+  signature_header: string; // e.g. "x-hub-signature-256", "stripe-signature"
+  events: AppWebhookEvent[];
+  registration?: WebhookRegistrationConfig; // How to auto-register webhooks with the external service
+}
+
+export interface WebhookRegistrationConfig {
+  /** HTTP method for registering webhook */
+  method: "POST" | "PUT" | "PATCH";
+  /** API path for registering webhook (relative to base_url) */
+  path: string;
+  /** Field name in request body for the callback URL */
+  url_field: string;
+  /** Field name for events list (if API supports filtering by event) */
+  events_field?: string;
+  /** Field name for the webhook secret */
+  secret_field?: string;
+  /** Static fields always included in registration request */
+  extra?: Record<string, unknown>;
+  /** Content-Type for registration request (default: "application/json") */
+  content_type?: string;
+  /** Where to find the webhook ID in the response (dot-notation, e.g. "id" or "result.id") */
+  id_field?: string;
+  /** HTTP method + path to delete a webhook. {id} placeholder for webhook ID */
+  delete_path?: string;
+  delete_method?: "DELETE" | "POST";
+  /** HTTP method + path to list existing webhooks */
+  list_path?: string;
+  /** Where to find webhook array in list response (dot-notation) */
+  list_field?: string;
+  /** Notes for services that can't auto-register (UI-only setup) */
+  manual_setup?: string;
+}
+
+export interface AppWebhookEvent {
+  name: string; // e.g. "push", "payment_intent.succeeded"
+  description: string;
 }
 
 export interface AppAuthConfig {

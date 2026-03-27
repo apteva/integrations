@@ -13,17 +13,44 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "accessToken",
+        "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://www.facebook.com/v22.0/dialog/oauth",
+      "token_url": "https://graph.facebook.com/v22.0/oauth/access_token",
+      "scopes": [
+        "email",
+        "public_profile",
+        "pages_show_list",
+        "pages_read_engagement",
+        "pages_manage_posts",
+        "pages_manage_metadata",
+        "instagram_basic",
+        "instagram_content_publish",
+        "ads_management",
+        "business_management"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {

@@ -16,15 +16,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -37,10 +38,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required - content types are project-scoped)"
-          },
           "name": {
             "type": "string",
             "description": "Content type name"
@@ -78,7 +75,6 @@
           }
         },
         "required": [
-          "project_id",
           "name",
           "slug"
         ]
@@ -92,10 +88,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required - content types are project-scoped)"
-          },
           "limit": {
             "type": "integer",
             "default": 50,
@@ -106,24 +98,17 @@
             "default": 0,
             "description": "Pagination offset"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
       "name": "create_content_entry",
       "description": "Create a new content entry of a specific type. Requires project_id.",
       "method": "POST",
-      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D",
+      "path": "/cms/content/{content_type_slug}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "content_type_slug": {
             "type": "string",
             "description": "Content type slug (used in URL path)"
@@ -157,7 +142,6 @@
           }
         },
         "required": [
-          "project_id",
           "content_type_slug",
           "slug",
           "data"
@@ -168,14 +152,10 @@
       "name": "list_content_entries",
       "description": "Retrieve content entries for a specific content type with filtering and pagination. Requires project_id and content_type_slug.",
       "method": "GET",
-      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D",
+      "path": "/cms/content/{content_type_slug}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "content_type_slug": {
             "type": "string",
             "description": "Content type slug (used in URL path)"
@@ -201,7 +181,6 @@
           }
         },
         "required": [
-          "project_id",
           "content_type_slug"
         ]
       }
@@ -210,12 +189,12 @@
       "name": "get_content_entry",
       "description": "Retrieve a specific content entry by ID or slug",
       "method": "GET",
-      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "path": "/cms/entries/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID"
           },
           "slug": {
@@ -223,7 +202,7 @@
             "description": "Entry slug (alternative to ID)"
           },
           "content_type_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content type ID (for slug lookup)"
           },
           "content_type_slug": {
@@ -240,14 +219,14 @@
     },
     {
       "name": "update_content_entry",
-      "description": "Update an existing content entry",
+      "description": "Update a content entry's fields. Now does a DEEP MERGE on the data object — only provided fields are changed, others are preserved.\n\nExample: { \"data\": { \"title\": \"New Title\" } } updates only the title. The content, excerpt, and all other fields stay untouched.\n\nFor surgical text edits within a large field (e.g., fixing a typo in a 5000-word article), use patch-content-field instead — it supports find/replace, append, prepend without resending the full content.",
       "method": "PUT",
-      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "path": "/cms/entries/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID to update"
           },
           "data": {
@@ -281,12 +260,12 @@
       "name": "publish_content_entry",
       "description": "Publish a content entry making it live",
       "method": "POST",
-      "path": "/cms/entries/%7B%7Bid%7D%7D/publish",
+      "path": "/cms/entries/{id}/publish",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID to publish"
           },
           "updated_by": {
@@ -303,12 +282,12 @@
       "name": "delete_content_entry",
       "description": "Delete a content entry and all its versions (cannot be undone)",
       "method": "DELETE",
-      "path": "/cms/entries/%7B%7Bid%7D%7D",
+      "path": "/cms/entries/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID to delete (required)"
           },
           "deleted_by": {
@@ -325,12 +304,12 @@
       "name": "delete_content_type",
       "description": "Delete a content type and all associated entries (cannot be undone)",
       "method": "DELETE",
-      "path": "/cms/content-types/%7B%7Bid%7D%7D",
+      "path": "/cms/content-types/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content type ID to delete (required)"
           },
           "deleted_by": {
@@ -352,12 +331,12 @@
       "name": "preview_content_entry",
       "description": "Generate preview URL for unpublished content",
       "method": "GET",
-      "path": "/cms/preview/%7B%7Bcontent_type_slug%7D%7D/%7B%7Bid%7D%7D",
+      "path": "/cms/preview/{content_type_slug}/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID to preview"
           },
           "content_type_slug": {
@@ -387,16 +366,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "query": {
             "type": "string",
             "description": "Search query (required - what to search for)"
           },
           "content_type_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Filter by content type ID"
           },
           "content_type_slug": {
@@ -420,7 +395,6 @@
           }
         },
         "required": [
-          "project_id",
           "query"
         ]
       }
@@ -429,14 +403,10 @@
       "name": "get_delivery_content",
       "description": "Retrieve published content optimized for API delivery. Requires project_id.",
       "method": "GET",
-      "path": "/cms/delivery/%7B%7Bcontent_type_slug%7D%7D",
+      "path": "/cms/delivery/{content_type_slug}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "content_type_slug": {
             "type": "string",
             "description": "Content type slug (required)"
@@ -470,7 +440,6 @@
           }
         },
         "required": [
-          "project_id",
           "content_type_slug"
         ]
       }
@@ -479,17 +448,13 @@
       "name": "get_content_type",
       "description": "Get a specific content type by ID or slug with its field definitions. project_id is required when looking up by slug.",
       "method": "GET",
-      "path": "/cms/content-types/%7B%7Bidentifier%7D%7D",
+      "path": "/cms/content-types/{identifier}",
       "input_schema": {
         "type": "object",
         "properties": {
           "identifier": {
             "type": "string",
             "description": "Content type ID (UUID) or slug"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required when looking up by slug)"
           }
         },
         "required": [
@@ -501,12 +466,12 @@
       "name": "update_content_type",
       "description": "Update an existing content type's name, description, icon, or settings",
       "method": "PUT",
-      "path": "/cms/content-types/%7B%7Bid%7D%7D",
+      "path": "/cms/content-types/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content type ID to update"
           },
           "name": {
@@ -539,14 +504,10 @@
       "name": "get_content_entry_by_slug",
       "description": "Retrieve a content entry by content type and entry slug. Requires project_id.",
       "method": "GET",
-      "path": "/cms/content/%7B%7Bcontent_type_slug%7D%7D/by-slug/%7B%7Bslug%7D%7D",
+      "path": "/cms/content/{content_type_slug}/by-slug/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "content_type_slug": {
             "type": "string",
             "description": "Content type slug"
@@ -562,7 +523,6 @@
           }
         },
         "required": [
-          "project_id",
           "content_type_slug",
           "slug"
         ]
@@ -572,12 +532,12 @@
       "name": "unpublish_content_entry",
       "description": "Unpublish a content entry (revert to draft status)",
       "method": "POST",
-      "path": "/cms/entries/%7B%7Bid%7D%7D/unpublish",
+      "path": "/cms/entries/{id}/unpublish",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Entry ID to unpublish"
           },
           "updated_by": {
@@ -594,12 +554,12 @@
       "name": "create_content_field",
       "description": "Add a new field to a content type (text, number, image, select, etc.)",
       "method": "POST",
-      "path": "/cms/content-types/%7B%7Bcontent_type_id%7D%7D/fields",
+      "path": "/cms/content-types/{content_type_id}/fields",
       "input_schema": {
         "type": "object",
         "properties": {
           "content_type_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content type ID to add the field to"
           },
           "name": {
@@ -664,12 +624,12 @@
       "name": "update_content_field",
       "description": "Update an existing content field's label, options, or requirements",
       "method": "PUT",
-      "path": "/cms/content-fields/%7B%7Bid%7D%7D",
+      "path": "/cms/content-fields/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content field ID to update"
           },
           "label": {
@@ -702,12 +662,12 @@
       "name": "delete_content_field",
       "description": "Delete a content field from a content type",
       "method": "DELETE",
-      "path": "/cms/content-fields/%7B%7Bid%7D%7D",
+      "path": "/cms/content-fields/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content field ID to delete"
           }
         },
@@ -720,12 +680,12 @@
       "name": "reorder_content_fields",
       "description": "Reorder the fields of a content type",
       "method": "POST",
-      "path": "/cms/content-types/%7B%7Bcontent_type_id%7D%7D/fields/reorder",
+      "path": "/cms/content-types/{content_type_id}/fields/reorder",
       "input_schema": {
         "type": "object",
         "properties": {
           "content_type_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content type ID"
           },
           "field_orders": {
@@ -756,14 +716,10 @@
       "name": "get_delivery_content_by_slug",
       "description": "Retrieve a single published content entry by slug, optimized for API delivery. Requires project_id.",
       "method": "GET",
-      "path": "/cms/delivery/%7B%7Bcontent_type_slug%7D%7D/%7B%7Bslug%7D%7D",
+      "path": "/cms/delivery/{content_type_slug}/{slug}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (required)"
-          },
           "content_type_slug": {
             "type": "string",
             "description": "Content type slug"
@@ -774,7 +730,6 @@
           }
         },
         "required": [
-          "project_id",
           "content_type_slug",
           "slug"
         ]
@@ -784,12 +739,12 @@
       "name": "list_content_versions",
       "description": "List all versions of a content entry with pagination",
       "method": "GET",
-      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions",
+      "path": "/cms/entries/{content_entry_id}/versions",
       "input_schema": {
         "type": "object",
         "properties": {
           "content_entry_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content entry ID"
           },
           "limit": {
@@ -817,12 +772,12 @@
       "name": "get_content_version",
       "description": "Get a specific content version by version ID",
       "method": "GET",
-      "path": "/cms/versions/%7B%7Bversion_id%7D%7D",
+      "path": "/cms/versions/{version_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "version_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content version ID"
           }
         },
@@ -835,12 +790,12 @@
       "name": "get_content_version_by_number",
       "description": "Get a specific version of a content entry by version number",
       "method": "GET",
-      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions/%7B%7Bversion_number%7D%7D",
+      "path": "/cms/entries/{content_entry_id}/versions/{version_number}",
       "input_schema": {
         "type": "object",
         "properties": {
           "content_entry_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content entry ID"
           },
           "version_number": {
@@ -858,12 +813,12 @@
       "name": "restore_content_version",
       "description": "Restore a content entry to a previous version by version ID",
       "method": "POST",
-      "path": "/cms/versions/%7B%7Bversion_id%7D%7D/restore",
+      "path": "/cms/versions/{version_id}/restore",
       "input_schema": {
         "type": "object",
         "properties": {
           "version_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Version ID to restore to"
           }
         },
@@ -876,12 +831,12 @@
       "name": "restore_content_version_by_number",
       "description": "Restore a content entry to a previous version by entry ID and version number",
       "method": "POST",
-      "path": "/cms/entries/%7B%7Bcontent_entry_id%7D%7D/versions/%7B%7Bversion_number%7D%7D/restore",
+      "path": "/cms/entries/{content_entry_id}/versions/{version_number}/restore",
       "input_schema": {
         "type": "object",
         "properties": {
           "content_entry_id": {
-            "type": "integer",
+            "type": "string",
             "description": "Content entry ID"
           },
           "version_number": {
@@ -894,6 +849,106 @@
           "version_number"
         ]
       }
+    },
+    {
+      "name": "patch_content_field",
+      "description": "Surgically edit a specific field within a content entry without resending the entire content. Ideal for large articles.\n\nOperations (applied in order):\n- set: Replace the entire field value\n- find_replace: Find and replace text (all occurrences). { \"op\": \"find_replace\", \"find\": \"old\", \"replace\": \"new\" }\n- regex_replace: Regex find/replace. { \"op\": \"regex_replace\", \"pattern\": \"\\bfoo\\b\", \"replace\": \"bar\", \"flags\": \"gi\" }\n- append: Add text to end. { \"op\": \"append\", \"value\": \"\\n\\nNew paragraph.\" }\n- prepend: Add text to start. { \"op\": \"prepend\", \"value\": \"Note: Updated.\\n\\n\" }\n\nCreates a version before patching. If entry is published, automatically sets to draft.",
+      "method": "POST",
+      "path": "/cms/entries/{id}/patch",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content entry ID (UUID)"
+          },
+          "field": {
+            "type": "string",
+            "description": "Name of the field to patch (e.g., 'content', 'title', 'excerpt')"
+          },
+          "operations": {
+            "type": "array",
+            "description": "Array of patch operations to apply in order",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "set",
+                    "find_replace",
+                    "regex_replace",
+                    "append",
+                    "prepend"
+                  ],
+                  "description": "Operation type"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Value for set/append/prepend operations"
+                },
+                "find": {
+                  "type": "string",
+                  "description": "Text to find (for find_replace)"
+                },
+                "replace": {
+                  "type": "string",
+                  "description": "Replacement text (for find_replace and regex_replace)"
+                },
+                "pattern": {
+                  "type": "string",
+                  "description": "Regex pattern (for regex_replace)"
+                },
+                "flags": {
+                  "type": "string",
+                  "description": "Regex flags (for regex_replace, default: 'g')"
+                }
+              },
+              "required": [
+                "op"
+              ]
+            }
+          },
+          "change_description": {
+            "type": "string",
+            "description": "Description of the change (stored in version history)"
+          }
+        },
+        "required": [
+          "id",
+          "field",
+          "operations"
+        ]
+      }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-webhook-signature",
+    "events": [
+      {
+        "name": "content.created",
+        "description": "New content entry created"
+      },
+      {
+        "name": "content.updated",
+        "description": "Content entry updated"
+      },
+      {
+        "name": "content.draft_created",
+        "description": "Draft version of content entry created"
+      },
+      {
+        "name": "content.deleted",
+        "description": "Content entry deleted"
+      },
+      {
+        "name": "content.published",
+        "description": "Content entry published"
+      },
+      {
+        "name": "content.unpublished",
+        "description": "Published content entry unpublished"
+      }
+    ]
+  }
 }

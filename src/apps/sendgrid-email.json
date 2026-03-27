@@ -20,8 +20,9 @@
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api_key",
+        "description": "Your SendGrid API Key"
       }
     ]
   },
@@ -229,5 +230,46 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-sendgrid-signature",
+    "events": [
+      {
+        "name": "email.processed",
+        "description": "Email accepted for delivery"
+      },
+      {
+        "name": "email.delivered",
+        "description": "Email delivered to recipient"
+      },
+      {
+        "name": "email.opened",
+        "description": "Email opened by recipient"
+      },
+      {
+        "name": "email.clicked",
+        "description": "Link clicked in email"
+      },
+      {
+        "name": "email.bounced",
+        "description": "Email bounced"
+      },
+      {
+        "name": "email.dropped",
+        "description": "Email dropped (suppressed)"
+      },
+      {
+        "name": "email.deferred",
+        "description": "Email delivery deferred"
+      },
+      {
+        "name": "email.spam_report",
+        "description": "Email marked as spam"
+      },
+      {
+        "name": "email.unsubscribe",
+        "description": "Recipient unsubscribed"
+      }
+    ]
+  }
 }

@@ -21,13 +21,18 @@
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Your ClipKit API Key for authentication"
+      },
+      {
+        "name": "projectId",
+        "label": "Project Id",
+        "description": "Default project ID for all operations (can be overridden per request)"
       }
     ]
   },
@@ -43,10 +48,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "output_format": {
             "type": "string",
@@ -87,8 +88,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -103,10 +103,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "timestamps": {
             "type": "array",
@@ -153,8 +149,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -169,10 +164,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video/audio file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "start_time": {
             "type": "number",
@@ -210,8 +201,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -226,10 +216,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "resolution": {
             "type": "string",
@@ -294,8 +280,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -310,10 +295,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "quality": {
             "type": "string",
@@ -338,8 +319,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -354,10 +334,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "start_time": {
             "type": "number",
@@ -396,8 +372,7 @@
           }
         },
         "required": [
-          "file_id",
-          "project_id"
+          "file_id"
         ]
       }
     },
@@ -412,10 +387,6 @@
           "file_id": {
             "type": "integer",
             "description": "Source video file ID"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
           },
           "subtitle_file_id": {
             "type": "integer",
@@ -446,7 +417,6 @@
         },
         "required": [
           "file_id",
-          "project_id",
           "subtitle_file_id"
         ]
       }
@@ -459,10 +429,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "video_files": {
             "type": "array",
             "items": {
@@ -508,7 +474,6 @@
           }
         },
         "required": [
-          "project_id",
           "video_files"
         ]
       }

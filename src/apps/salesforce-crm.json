@@ -14,17 +14,68 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "accessToken",
+        "label": "accessToken"
+      },
+      {
+        "name": "instanceUrl",
+        "label": "instanceUrl"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "id",
+        "label": "id"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
+      },
+      {
+        "name": "issuedAt",
+        "label": "issuedAt"
+      },
+      {
+        "name": "signature",
+        "label": "signature"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://login.salesforce.com/services/oauth2/authorize",
+      "token_url": "https://login.salesforce.com/services/oauth2/token",
+      "scopes": [
+        "api",
+        "refresh_token",
+        "offline_access",
+        "openid",
+        "profile",
+        "email",
+        "address",
+        "phone",
+        "full",
+        "chatter_api",
+        "custom_permissions",
+        "wave_api",
+        "cdp_query_api",
+        "cdp_profile_api",
+        "lightning",
+        "content",
+        "visualforce",
+        "web"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {

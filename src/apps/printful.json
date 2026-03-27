@@ -22,6 +22,11 @@
         "name": "api_key",
         "label": "Api_key",
         "description": "Your Printful API access token (from Dashboard > Settings > API)"
+      },
+      {
+        "name": "store_id",
+        "label": "Store_id",
+        "description": "Optional store ID if you have multiple Printful stores"
       }
     ]
   },

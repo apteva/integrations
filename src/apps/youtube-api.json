@@ -14,7 +14,8 @@
   "base_url": "https://www.googleapis.com/youtube/v3",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
@@ -22,9 +23,38 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "expires_at",
+        "label": "expires_at"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": [
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/youtube.upload",
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtubepartner",
+        "https://www.googleapis.com/auth/yt-analytics.readonly"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {

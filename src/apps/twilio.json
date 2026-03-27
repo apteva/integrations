@@ -29,6 +29,11 @@
         "name": "auth_token",
         "label": "Auth_token",
         "description": "Your Twilio Auth Token"
+      },
+      {
+        "name": "phone_number",
+        "label": "Phone_number",
+        "description": "Your Twilio Phone Number"
       }
     ]
   },
@@ -37,7 +42,7 @@
       "name": "send_sms",
       "description": "Send an SMS or MMS message via Twilio. Supports text, media attachments, content templates, and status callbacks.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Messages.json",
+      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -80,7 +85,7 @@
       "name": "send_whatsapp",
       "description": "Send a WhatsApp message via Twilio. Use whatsapp: prefix on phone numbers. For business-initiated conversations (user hasn't messaged you in 24h), you MUST use a ContentSid (approved template) instead of Body. Free-form Body only works within the 24-hour window after the user messages you.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Messages.json",
+      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -146,7 +151,7 @@
       "name": "get_message",
       "description": "Retrieve details of a specific message by SID.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Messages/%7B%7BMessageSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Messages/{MessageSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -164,7 +169,7 @@
       "name": "list_messages",
       "description": "List sent and received messages with optional filters.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Messages.json",
+      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -192,7 +197,7 @@
       "name": "delete_message",
       "description": "Delete a message by SID. This removes the message body and media but keeps the log entry.",
       "method": "DELETE",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Messages/%7B%7BMessageSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Messages/{MessageSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -210,7 +215,7 @@
       "name": "make_call",
       "description": "Initiate an outbound phone call. Provide either a TwiML URL or inline TwiML instructions.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Calls.json",
+      "path": "/Accounts/{{credential.account_sid}}/Calls.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -262,7 +267,7 @@
       "name": "get_call",
       "description": "Retrieve details of a specific call by SID.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Calls/%7B%7BCallSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Calls/{CallSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -280,7 +285,7 @@
       "name": "list_calls",
       "description": "List call logs with optional filters for status, date, and phone numbers.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Calls.json",
+      "path": "/Accounts/{{credential.account_sid}}/Calls.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -322,7 +327,7 @@
       "name": "update_call",
       "description": "Modify an in-progress call — redirect to new TwiML, end the call, or pause/resume recording.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Calls/%7B%7BCallSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Calls/{CallSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -356,7 +361,7 @@
       "name": "list_phone_numbers",
       "description": "List all phone numbers in your Twilio account with their capabilities and configuration.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/IncomingPhoneNumbers.json",
+      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -380,7 +385,7 @@
       "name": "buy_phone_number",
       "description": "Purchase a phone number for your Twilio account.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/IncomingPhoneNumbers.json",
+      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -410,7 +415,7 @@
       "name": "update_phone_number",
       "description": "Update configuration for a phone number — webhooks, friendly name, voice/SMS settings.",
       "method": "POST",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/IncomingPhoneNumbers/%7B%7BPhoneNumberSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -444,7 +449,7 @@
       "name": "release_phone_number",
       "description": "Release (delete) a phone number from your Twilio account.",
       "method": "DELETE",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/IncomingPhoneNumbers/%7B%7BPhoneNumberSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -462,7 +467,7 @@
       "name": "search_available_numbers",
       "description": "Search for available phone numbers to purchase by country, area code, or capabilities.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/AvailablePhoneNumbers/%7B%7BCountry%7D%7D/Local.json",
+      "path": "/Accounts/{{credential.account_sid}}/AvailablePhoneNumbers/{Country}/Local.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -508,7 +513,7 @@
       "name": "search_toll_free_numbers",
       "description": "Search for available toll-free phone numbers to purchase.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/AvailablePhoneNumbers/%7B%7BCountry%7D%7D/TollFree.json",
+      "path": "/Accounts/{{credential.account_sid}}/AvailablePhoneNumbers/{Country}/TollFree.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -546,7 +551,7 @@
       "name": "list_recordings",
       "description": "List call recordings with optional filters.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Recordings.json",
+      "path": "/Accounts/{{credential.account_sid}}/Recordings.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -570,7 +575,7 @@
       "name": "get_recording",
       "description": "Retrieve details of a specific recording.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Recordings/%7B%7BRecordingSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Recordings/{RecordingSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -588,7 +593,7 @@
       "name": "delete_recording",
       "description": "Delete a call recording.",
       "method": "DELETE",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Recordings/%7B%7BRecordingSid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}/Recordings/{RecordingSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -606,7 +611,7 @@
       "name": "get_account",
       "description": "Retrieve your Twilio account details including balance, status, and type.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D.json",
+      "path": "/Accounts/{{credential.account_sid}}.json",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -616,7 +621,7 @@
       "name": "get_balance",
       "description": "Retrieve your Twilio account balance and currency.",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Balance.json",
+      "path": "/Accounts/{{credential.account_sid}}/Balance.json",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -626,7 +631,7 @@
       "name": "get_usage",
       "description": "Retrieve usage records for your account — see costs per category (calls, SMS, numbers, etc.).",
       "method": "GET",
-      "path": "/Accounts/%7B%7Bcredential.account_sid%7D%7D/Usage/Records.json",
+      "path": "/Accounts/{{credential.account_sid}}/Usage/Records.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -670,7 +675,7 @@
       "name": "get_whatsapp_sender",
       "description": "Get details of a specific WhatsApp Business sender by SID — status, phone number, profile info, and capabilities.",
       "method": "GET",
-      "path": "/v2/Channels/Senders/%7B%7BSenderSid%7D%7D",
+      "path": "/v2/Channels/Senders/{SenderSid}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -797,7 +802,7 @@
       "name": "get_content_template",
       "description": "Retrieve details of a specific content template by SID — body, variables, type, and approval status.",
       "method": "GET",
-      "path": "/v1/Content/%7B%7BContentSid%7D%7D",
+      "path": "/v1/Content/{ContentSid}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -848,7 +853,7 @@
       "name": "submit_content_template_approval",
       "description": "Submit a content template for WhatsApp approval. Once approved by Meta, the template can be used to initiate conversations outside the 24-hour window.",
       "method": "POST",
-      "path": "/v1/Content/%7B%7BContentSid%7D%7D/ApprovalRequests/whatsapp",
+      "path": "/v1/Content/{ContentSid}/ApprovalRequests/whatsapp",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -881,7 +886,7 @@
       "name": "delete_content_template",
       "description": "Delete a content template. Cannot delete templates that have been submitted for WhatsApp approval.",
       "method": "DELETE",
-      "path": "/v1/Content/%7B%7BContentSid%7D%7D",
+      "path": "/v1/Content/{ContentSid}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -899,7 +904,7 @@
       "name": "lookup_phone_number",
       "description": "Look up information about a phone number — carrier, caller name, line type (mobile/landline/voip).",
       "method": "GET",
-      "path": "/v2/PhoneNumbers/%7B%7BPhoneNumber%7D%7D",
+      "path": "/v2/PhoneNumbers/{PhoneNumber}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -945,7 +950,7 @@
       "name": "send_verification",
       "description": "Send a verification code to a phone number via SMS, call, or email.",
       "method": "POST",
-      "path": "/v2/Services/%7B%7BServiceSid%7D%7D/Verifications",
+      "path": "/v2/Services/{ServiceSid}/Verifications",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -980,7 +985,7 @@
       "name": "check_verification",
       "description": "Verify a code submitted by the user against the one sent.",
       "method": "POST",
-      "path": "/v2/Services/%7B%7BServiceSid%7D%7D/VerificationCheck",
+      "path": "/v2/Services/{ServiceSid}/VerificationCheck",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1004,5 +1009,54 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-twilio-signature",
+    "events": [
+      {
+        "name": "sms.received",
+        "description": "Inbound SMS message received"
+      },
+      {
+        "name": "sms.delivered",
+        "description": "SMS delivery confirmed"
+      },
+      {
+        "name": "sms.failed",
+        "description": "SMS delivery failed"
+      },
+      {
+        "name": "whatsapp.received",
+        "description": "Inbound WhatsApp message received"
+      },
+      {
+        "name": "whatsapp.delivered",
+        "description": "WhatsApp message delivery confirmed"
+      },
+      {
+        "name": "whatsapp.failed",
+        "description": "WhatsApp message delivery failed"
+      },
+      {
+        "name": "call.initiated",
+        "description": "Phone call initiated"
+      },
+      {
+        "name": "call.ringing",
+        "description": "Phone call ringing"
+      },
+      {
+        "name": "call.completed",
+        "description": "Phone call completed"
+      },
+      {
+        "name": "call.failed",
+        "description": "Phone call failed"
+      },
+      {
+        "name": "recording.completed",
+        "description": "Call recording ready"
+      }
+    ]
+  }
 }

@@ -14,15 +14,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -106,7 +107,7 @@
       "name": "get_api",
       "description": "Get a single API definition by ID, optionally including its routes",
       "method": "GET",
-      "path": "/apis/%7B%7Bapi_id%7D%7D",
+      "path": "/apis/{api_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -128,7 +129,7 @@
       "name": "get_api_by_prefix",
       "description": "Get a single API definition by its URL prefix",
       "method": "GET",
-      "path": "/apis/prefix/%7B%7Bprefix%7D%7D",
+      "path": "/apis/prefix/{prefix}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -150,7 +151,7 @@
       "name": "update_api",
       "description": "Update an existing API definition's name, prefix, description, tags, or visibility",
       "method": "PUT",
-      "path": "/apis/%7B%7Bapi_id%7D%7D",
+      "path": "/apis/{api_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -195,7 +196,7 @@
       "name": "delete_api",
       "description": "Delete an API and all its routes permanently",
       "method": "DELETE",
-      "path": "/apis/%7B%7Bapi_id%7D%7D",
+      "path": "/apis/{api_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -378,7 +379,7 @@
       "name": "get_route",
       "description": "Get a single API route by ID",
       "method": "GET",
-      "path": "/routes/%7B%7Broute_id%7D%7D",
+      "path": "/routes/{route_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -396,7 +397,7 @@
       "name": "update_route",
       "description": "Update an existing API route's path, method, function, or metadata",
       "method": "PUT",
-      "path": "/routes/%7B%7Broute_id%7D%7D",
+      "path": "/routes/{route_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -453,7 +454,7 @@
       "name": "delete_route",
       "description": "Delete an API route permanently",
       "method": "DELETE",
-      "path": "/routes/%7B%7Broute_id%7D%7D",
+      "path": "/routes/{route_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -555,7 +556,7 @@
       "name": "get_api_key",
       "description": "Get a single API key by ID",
       "method": "GET",
-      "path": "/api-keys/%7B%7Bkey_id%7D%7D",
+      "path": "/api-keys/{key_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -573,7 +574,7 @@
       "name": "update_api_key",
       "description": "Update an API key's name, scopes, expiration, or allowed origins/IPs",
       "method": "PUT",
-      "path": "/api-keys/%7B%7Bkey_id%7D%7D",
+      "path": "/api-keys/{key_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -624,7 +625,7 @@
       "name": "revoke_api_key",
       "description": "Revoke an API key so it can no longer be used for authentication",
       "method": "POST",
-      "path": "/api-keys/%7B%7Bkey_id%7D%7D/revoke",
+      "path": "/api-keys/{key_id}/revoke",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -642,7 +643,7 @@
       "name": "delete_api_key",
       "description": "Permanently delete an API key (hard delete)",
       "method": "DELETE",
-      "path": "/api-keys/%7B%7Bkey_id%7D%7D",
+      "path": "/api-keys/{key_id}",
       "input_schema": {
         "type": "object",
         "properties": {

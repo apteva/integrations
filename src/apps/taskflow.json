@@ -16,13 +16,18 @@
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Your OmniKit API key for TaskFlow access (starts with 'okt_')"
+      },
+      {
+        "name": "projectId",
+        "label": "Project Id",
+        "description": "Project ID for task management context (optional)"
       }
     ]
   },
@@ -115,7 +120,7 @@
       "name": "update_task",
       "description": "Update existing task properties",
       "method": "PUT",
-      "path": "/tasks/%7B%7Bparam.id%7D%7D",
+      "path": "/tasks/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -197,7 +202,7 @@
       "name": "complete_task",
       "description": "Mark tasks as completed",
       "method": "POST",
-      "path": "/tasks/%7B%7Bparam.id%7D%7D/complete",
+      "path": "/tasks/{{param.id}}/complete",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -223,7 +228,7 @@
       "name": "delete_task",
       "description": "Delete tasks permanently",
       "method": "DELETE",
-      "path": "/tasks/%7B%7Bparam.id%7D%7D",
+      "path": "/tasks/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -241,7 +246,7 @@
       "name": "get_task",
       "description": "Retrieve individual task with full details",
       "method": "GET",
-      "path": "/tasks/%7B%7Bparam.id%7D%7D",
+      "path": "/tasks/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -263,10 +268,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID to list tasks for"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -309,10 +310,7 @@
             "minimum": 0,
             "default": 0
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -411,7 +409,7 @@
       "name": "update_list",
       "description": "Update existing project list properties",
       "method": "PUT",
-      "path": "/lists/%7B%7Bparam.id%7D%7D",
+      "path": "/lists/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -467,7 +465,7 @@
       "name": "delete_list",
       "description": "Delete project lists permanently",
       "method": "DELETE",
-      "path": "/lists/%7B%7Bparam.id%7D%7D",
+      "path": "/lists/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -485,7 +483,7 @@
       "name": "get_list",
       "description": "Retrieve individual list with full details",
       "method": "GET",
-      "path": "/lists/%7B%7Bparam.id%7D%7D",
+      "path": "/lists/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -507,10 +505,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID to list lists for"
-          },
           "status": {
             "type": "string",
             "enum": [
@@ -535,17 +529,14 @@
             "minimum": 0,
             "default": 0
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
       "name": "get_list_tasks",
       "description": "Retrieve all tasks within a specific list",
       "method": "GET",
-      "path": "/lists/%7B%7Bparam.list_id%7D%7D/tasks",
+      "path": "/lists/{{param.list_id}}/tasks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -634,7 +625,7 @@
       "name": "get_project",
       "description": "Retrieve a single project by ID with full details including name, slug, description, organization, and active status.",
       "method": "GET",
-      "path": "/projects/%7B%7Bparam.id%7D%7D",
+      "path": "/projects/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -652,7 +643,7 @@
       "name": "update_project",
       "description": "Update an existing project's name, description, slug, or active status. Validates slug uniqueness within the organization when changing slugs.",
       "method": "PUT",
-      "path": "/projects/%7B%7Bparam.id%7D%7D",
+      "path": "/projects/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -686,7 +677,7 @@
       "name": "delete_project",
       "description": "Delete a project. Defaults to soft delete (deactivation). Supports hard delete and cascade deletion of all related tasks and lists.",
       "method": "DELETE",
-      "path": "/projects/%7B%7Bparam.id%7D%7D",
+      "path": "/projects/{{param.id}}",
       "input_schema": {
         "type": "object",
         "properties": {

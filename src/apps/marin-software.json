@@ -761,7 +761,7 @@
       "name": "marin_job_status",
       "description": "Check the status of a bulk operation job. Bulk creates and updates are processed asynchronously and return a job_id.",
       "method": "GET",
-      "path": "/open-api/0.1/jobs/%7B%7Bjob_id%7D%7D/status",
+      "path": "/open-api/0.1/jobs/{job_id}/status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -792,7 +792,7 @@
       "name": "marin_social_stats",
       "description": "Retrieve Meta/Facebook advertising statistics via the Marin Social API. Get advertiser data, campaign metrics, and media plan information.",
       "method": "GET",
-      "path": "/social-api/v1/advertisers/%7B%7BadvertiserId%7D%7D/stats",
+      "path": "/social-api/v1/advertisers/{advertiserId}/stats",
       "input_schema": {
         "type": "object",
         "properties": {

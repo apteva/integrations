@@ -32,7 +32,7 @@
       "name": "list_folder_items",
       "description": "List all files and folders within a specific Box folder. Returns item names, types, IDs, sizes, and modification dates. Supports pagination via offset and limit. Use folder_id '0' for the root folder.",
       "method": "GET",
-      "path": "/2.0/folders/%7B%7Bparam.folder_id%7D%7D/items",
+      "path": "/2.0/folders/{{param.folder_id}}/items",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -81,7 +81,7 @@
       "name": "get_file_info",
       "description": "Retrieve detailed information about a specific file in Box by its ID. Returns metadata including name, size, SHA1 hash, owner, parent folder, timestamps, shared link status, and more.",
       "method": "GET",
-      "path": "/2.0/files/%7B%7Bparam.file_id%7D%7D",
+      "path": "/2.0/files/{{param.file_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -233,7 +233,7 @@
       "name": "create_shared_link",
       "description": "Create or update a shared link for a file in Box. Allows setting the access level (open, company, or collaborators), optional password protection, expiration date, and download permissions. Returns the file object with the shared link URL.",
       "method": "PUT",
-      "path": "/2.0/files/%7B%7Bparam.file_id%7D%7D",
+      "path": "/2.0/files/{{param.file_id}}",
       "input_schema": {
         "type": "object",
         "properties": {

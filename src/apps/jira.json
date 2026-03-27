@@ -22,6 +22,22 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
     ],
     "oauth2": {
@@ -222,5 +238,50 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-atlassian-webhook-identifier",
+    "events": [
+      {
+        "name": "jira:issue_created",
+        "description": "New issue created"
+      },
+      {
+        "name": "jira:issue_updated",
+        "description": "Issue fields changed"
+      },
+      {
+        "name": "jira:issue_deleted",
+        "description": "Issue deleted"
+      },
+      {
+        "name": "comment_created",
+        "description": "Comment added to issue"
+      },
+      {
+        "name": "comment_updated",
+        "description": "Comment edited"
+      },
+      {
+        "name": "sprint_started",
+        "description": "Sprint started"
+      },
+      {
+        "name": "sprint_closed",
+        "description": "Sprint completed"
+      },
+      {
+        "name": "board_created",
+        "description": "New board created"
+      },
+      {
+        "name": "project_created",
+        "description": "New project created"
+      },
+      {
+        "name": "worklog_created",
+        "description": "Work log entry added"
+      }
+    ]
+  }
 }

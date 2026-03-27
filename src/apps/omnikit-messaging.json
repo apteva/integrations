@@ -16,15 +16,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -161,7 +162,7 @@
       "name": "update_template",
       "description": "Update an existing email or SMS template. Modify name, subject, content, category, tags, or active status. Variables in content are auto-extracted. Unsubscribe link is added automatically - do NOT include it in your content.",
       "method": "PUT",
-      "path": "/messaging/templates/%7B%7Bid%7D%7D",
+      "path": "/messaging/templates/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -215,7 +216,7 @@
       "name": "get_template",
       "description": "Get a message template by ID or name",
       "method": "GET",
-      "path": "/messaging/templates/%7B%7Bid%7D%7D",
+      "path": "/messaging/templates/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -299,7 +300,7 @@
       "name": "get_contact",
       "description": "Get a specific messaging contact by ID",
       "method": "GET",
-      "path": "/messaging/contacts/%7B%7Bid%7D%7D",
+      "path": "/messaging/contacts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -360,7 +361,7 @@
       "name": "update_contact",
       "description": "Update an existing contact",
       "method": "PUT",
-      "path": "/messaging/contacts/%7B%7Bid%7D%7D",
+      "path": "/messaging/contacts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -550,7 +551,7 @@
       "name": "get_campaign",
       "description": "Get details of a specific CAMPAIGN by ID. Returns campaign configuration, stats, and metadata.",
       "method": "GET",
-      "path": "/messaging/campaigns/%7B%7Bid%7D%7D",
+      "path": "/messaging/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -568,7 +569,7 @@
       "name": "update_campaign",
       "description": "Update a CAMPAIGN's details (name, description, channel, template, segment, sender, schedule, tracking, send settings). Can only update campaigns that haven't been sent yet.",
       "method": "PUT",
-      "path": "/messaging/campaigns/%7B%7Bid%7D%7D",
+      "path": "/messaging/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -632,7 +633,7 @@
       "name": "delete_campaign",
       "description": "Delete/cancel a CAMPAIGN. Can only delete campaigns that haven't been sent yet. Use with caution.",
       "method": "DELETE",
-      "path": "/messaging/campaigns/%7B%7Bid%7D%7D",
+      "path": "/messaging/campaigns/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -834,7 +835,7 @@
       "name": "update_segment",
       "description": "Update an existing contact segment's name, description, or filters",
       "method": "PUT",
-      "path": "/messaging/segments/%7B%7Bid%7D%7D",
+      "path": "/messaging/segments/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -868,7 +869,7 @@
       "name": "delete_segment",
       "description": "Delete a contact segment (cannot be undone)",
       "method": "DELETE",
-      "path": "/messaging/segments/%7B%7Bid%7D%7D",
+      "path": "/messaging/segments/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -886,7 +887,7 @@
       "name": "refresh_segment",
       "description": "Manually refresh segment membership based on current filter rules",
       "method": "POST",
-      "path": "/messaging/segments/%7B%7Bsegment_id%7D%7D/refresh",
+      "path": "/messaging/segments/{segment_id}/refresh",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -904,7 +905,7 @@
       "name": "test_campaign",
       "description": "Send a test email for a campaign to verify content and rendering before sending to the full audience",
       "method": "POST",
-      "path": "/messaging/campaigns/%7B%7Bcampaign_id%7D%7D/test",
+      "path": "/messaging/campaigns/{campaign_id}/test",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -937,7 +938,7 @@
       "name": "launch_campaign",
       "description": "Execute and send a campaign to its target audience. Campaign must be created first with create-campaign.",
       "method": "POST",
-      "path": "/messaging/campaigns/%7B%7Bcampaign_id%7D%7D/launch",
+      "path": "/messaging/campaigns/{campaign_id}/launch",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1043,7 +1044,7 @@
       "name": "conversation_reply",
       "description": "Send a reply message within an existing customer support conversation thread. Requires conversation_id. Use this when responding to customer inquiries. For standalone messages to contacts, use omnikit-messaging-send-message instead.",
       "method": "POST",
-      "path": "/messaging/conversations/%7B%7Bconversation_id%7D%7D/reply",
+      "path": "/messaging/conversations/{conversation_id}/reply",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1204,7 +1205,7 @@
       "name": "get_conversation",
       "description": "Get conversation metadata and context (status, priority, participants, tags, assigned_to). Returns conversation info only - NOT the message history. Use omnikit-messaging-list-messages to load actual messages.",
       "method": "GET",
-      "path": "/messaging/conversations/%7B%7Bid%7D%7D",
+      "path": "/messaging/conversations/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1222,7 +1223,7 @@
       "name": "update_conversation",
       "description": "Update conversation status, priority, assignment, and metadata. Use this to change status from open to closed, modify priority, or reassign conversations",
       "method": "PUT",
-      "path": "/messaging/conversations/%7B%7Bconversation_id%7D%7D",
+      "path": "/messaging/conversations/{conversation_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1288,7 +1289,7 @@
       "name": "delete_contact",
       "description": "Soft-delete a messaging contact by ID. The contact will be marked as deleted but data is retained for audit purposes.",
       "method": "DELETE",
-      "path": "/messaging/contacts/%7B%7Bid%7D%7D",
+      "path": "/messaging/contacts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1310,7 +1311,7 @@
       "name": "contact_history",
       "description": "Get the full message history and engagement statistics for a contact. Returns contact info, message history with delivery/open/click tracking, and an engagement summary with rates. Use this to check if a contact has already been emailed before sending again.",
       "method": "GET",
-      "path": "/messaging/contacts/%7B%7Bid%7D%7D/history",
+      "path": "/messaging/contacts/{id}/history",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1360,7 +1361,7 @@
       "name": "delete_template",
       "description": "Soft-delete a message template by ID. Template will be marked as deleted but retained for audit. Cannot delete templates actively used by running campaigns.",
       "method": "DELETE",
-      "path": "/messaging/templates/%7B%7Bid%7D%7D",
+      "path": "/messaging/templates/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1497,7 +1498,7 @@
       "name": "close_conversation",
       "description": "Close a conversation with resolution details. Optionally send a final message, set resolution status (resolved, not_resolved, escalated, duplicate, spam, abandoned), and record satisfaction rating.",
       "method": "POST",
-      "path": "/messaging/conversations/%7B%7Bconversation_id%7D%7D/close",
+      "path": "/messaging/conversations/{conversation_id}/close",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1553,7 +1554,7 @@
       "name": "delete_conversation",
       "description": "Soft-delete a conversation and its messages. The data is retained for audit purposes but no longer visible in listings.",
       "method": "DELETE",
-      "path": "/messaging/conversations/%7B%7Bid%7D%7D",
+      "path": "/messaging/conversations/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1571,7 +1572,7 @@
       "name": "assign_conversation",
       "description": "Assign or reassign a conversation to a support agent. Supports notification of both new and previous assignees, priority changes, and assignment notes.",
       "method": "POST",
-      "path": "/messaging/conversations/%7B%7Bconversation_id%7D%7D/assign",
+      "path": "/messaging/conversations/{conversation_id}/assign",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1625,7 +1626,7 @@
       "name": "escalate_conversation",
       "description": "Escalate a conversation to a higher priority level or different team. Use when a conversation needs elevated attention or specialist handling.",
       "method": "POST",
-      "path": "/messaging/conversations/%7B%7Bconversation_id%7D%7D/escalate",
+      "path": "/messaging/conversations/{conversation_id}/escalate",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1755,7 +1756,7 @@
       "name": "get_sender",
       "description": "Get details of a specific authorized sender by ID, including email, display name, active status, and verification info.",
       "method": "GET",
-      "path": "/messaging/senders/%7B%7Bid%7D%7D",
+      "path": "/messaging/senders/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1773,7 +1774,7 @@
       "name": "update_sender",
       "description": "Update an existing authorized sender - change email, display name, description, or active status.",
       "method": "PUT",
-      "path": "/messaging/senders/%7B%7Bid%7D%7D",
+      "path": "/messaging/senders/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1808,7 +1809,7 @@
       "name": "delete_sender",
       "description": "Delete an authorized sender email address. Cannot delete senders that are actively used by running campaigns.",
       "method": "DELETE",
-      "path": "/messaging/senders/%7B%7Bid%7D%7D",
+      "path": "/messaging/senders/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1822,5 +1823,74 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-webhook-signature",
+    "events": [
+      {
+        "name": "messaging.inbound_message_processed",
+        "description": "Inbound message received from customer (email reply, SMS, etc.)"
+      },
+      {
+        "name": "messaging.message_sent",
+        "description": "Outbound message successfully sent"
+      },
+      {
+        "name": "messaging.message_delivered",
+        "description": "Message delivery confirmed by provider"
+      },
+      {
+        "name": "messaging.message_opened",
+        "description": "Email opened (tracking pixel loaded)"
+      },
+      {
+        "name": "messaging.message_clicked",
+        "description": "Link in message was clicked"
+      },
+      {
+        "name": "messaging.message_bounced",
+        "description": "Message delivery failed (hard or soft bounce)"
+      },
+      {
+        "name": "messaging.message_complained",
+        "description": "Recipient marked message as spam"
+      },
+      {
+        "name": "messaging.conversation_created",
+        "description": "New support conversation started"
+      },
+      {
+        "name": "messaging.conversation_updated",
+        "description": "Conversation status, priority, or assignment changed"
+      },
+      {
+        "name": "messaging.conversation_closed",
+        "description": "Conversation marked as resolved/closed"
+      },
+      {
+        "name": "messaging.contact_created",
+        "description": "New contact added to project"
+      },
+      {
+        "name": "messaging.contact_updated",
+        "description": "Contact information or attributes changed"
+      },
+      {
+        "name": "messaging.contact_unsubscribed",
+        "description": "Contact opted out of communications"
+      },
+      {
+        "name": "messaging.campaign_launched",
+        "description": "Campaign started sending to recipients"
+      },
+      {
+        "name": "messaging.campaign_completed",
+        "description": "Campaign finished sending to all recipients"
+      },
+      {
+        "name": "messaging.campaign_failed",
+        "description": "Campaign failed to send"
+      }
+    ]
+  }
 }

@@ -16,7 +16,7 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "{{token}}"
     },
     "credential_fields": [
       {

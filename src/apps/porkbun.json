@@ -45,7 +45,7 @@
       "name": "check_availability",
       "description": "Check if a domain name is available for registration. Returns pricing and availability status.",
       "method": "POST",
-      "path": "/json/v3/domain/checkDomain/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/checkDomain/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -73,7 +73,7 @@
       "name": "get_domain",
       "description": "Retrieve detailed information about a specific domain including status, expiration, auto-renew, and WHOIS privacy settings.",
       "method": "POST",
-      "path": "/json/v3/domain/retrieve/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/retrieve/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -91,7 +91,7 @@
       "name": "register_domain",
       "description": "Register a new domain name. IMPORTANT: You MUST first call porkbun-check-availability to get the domain's price, then pass that price as the 'cost' parameter (in pennies). Example flow: 1) check availability → get pricing, 2) register with cost. agreeToTerms must be 'yes'.",
       "method": "POST",
-      "path": "/json/v3/domain/create/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/create/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -129,7 +129,7 @@
       "name": "renew_domain",
       "description": "Renew an existing domain registration for additional years.",
       "method": "POST",
-      "path": "/json/v3/domain/renew/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/renew/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -152,7 +152,7 @@
       "name": "get_nameservers",
       "description": "Retrieve the nameservers currently configured for a domain.",
       "method": "POST",
-      "path": "/json/v3/domain/getNs/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/getNs/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -170,7 +170,7 @@
       "name": "update_nameservers",
       "description": "Update the nameservers for a domain. Provide an array of nameserver hostnames.",
       "method": "POST",
-      "path": "/json/v3/domain/updateNs/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/updateNs/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -196,7 +196,7 @@
       "name": "list_dns_records",
       "description": "Retrieve all DNS records for a domain. Returns record IDs, types, names, content, TTL, and priorities.",
       "method": "POST",
-      "path": "/json/v3/dns/retrieve/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/dns/retrieve/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -214,7 +214,7 @@
       "name": "create_dns_record",
       "description": "Create a new DNS record for a domain. Supports A, AAAA, CNAME, MX, TXT, SRV, NS, ALIAS, CAA, HTTPS, SVCB, and TLSA record types.",
       "method": "POST",
-      "path": "/json/v3/dns/create/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/dns/create/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -269,7 +269,7 @@
       "name": "update_dns_record",
       "description": "Update an existing DNS record by its record ID. Use porkbun-list-dns-records to find record IDs.",
       "method": "POST",
-      "path": "/json/v3/dns/edit/%7B%7Bdomain%7D%7D/%7B%7BrecordId%7D%7D",
+      "path": "/json/v3/dns/edit/{domain}/{recordId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -329,7 +329,7 @@
       "name": "delete_dns_record",
       "description": "Delete a DNS record by its record ID. Use porkbun-list-dns-records to find record IDs.",
       "method": "POST",
-      "path": "/json/v3/dns/delete/%7B%7Bdomain%7D%7D/%7B%7BrecordId%7D%7D",
+      "path": "/json/v3/dns/delete/{domain}/{recordId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -362,7 +362,7 @@
       "name": "enable_whois_privacy",
       "description": "Enable WHOIS privacy protection for a domain to hide personal information from public WHOIS lookups.",
       "method": "POST",
-      "path": "/json/v3/domain/enableWhoisPrivacy/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/enableWhoisPrivacy/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -380,7 +380,7 @@
       "name": "add_url_forward",
       "description": "Add URL forwarding for a domain or subdomain. Supports temporary (302) and permanent (301) redirects, as well as masked forwarding.",
       "method": "POST",
-      "path": "/json/v3/domain/addUrlForward/%7B%7Bdomain%7D%7D",
+      "path": "/json/v3/domain/addUrlForward/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {

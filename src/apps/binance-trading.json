@@ -14,15 +14,26 @@
   "base_url": "https://api.binance.com/api/v3",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-MBX-APIKEY": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api_key",
+        "description": "Your Binance API Key"
+      },
+      {
+        "name": "api_secret",
+        "label": "Api_secret",
+        "description": "Your Binance Secret Key"
+      },
+      {
+        "name": "testnet",
+        "label": "Testnet",
+        "description": "Use testnet (true) or live trading (false)"
       }
     ]
   },

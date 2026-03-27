@@ -18,15 +18,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -130,7 +131,7 @@
       "name": "update_invoice",
       "description": "Update invoice details or change status. Can mark invoices as 'paid' (auto-calculates amount_paid as full total), or update other fields like description, due_date, etc.",
       "method": "PUT",
-      "path": "/billing/invoices/%7B%7Binvoice_id%7D%7D",
+      "path": "/billing/invoices/{invoice_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -226,7 +227,7 @@
       "name": "finalize_invoice",
       "description": "Finalize a draft invoice (makes it immutable and ready for sending)",
       "method": "POST",
-      "path": "/billing/invoices/%7B%7Binvoice_id%7D%7D/finalize",
+      "path": "/billing/invoices/{invoice_id}/finalize",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -316,7 +317,7 @@
       "name": "get_invoice",
       "description": "Retrieve detailed information about a specific invoice",
       "method": "GET",
-      "path": "/billing/invoices/%7B%7Binvoice_id%7D%7D",
+      "path": "/billing/invoices/{invoice_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -349,7 +350,7 @@
       "name": "void_invoice",
       "description": "Void an invoice (mark as cancelled)",
       "method": "POST",
-      "path": "/billing/invoices/%7B%7Binvoice_id%7D%7D/void",
+      "path": "/billing/invoices/{invoice_id}/void",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -371,7 +372,7 @@
       "name": "generate_invoice_pdf",
       "description": "Generate a PDF version of an invoice",
       "method": "POST",
-      "path": "/billing/invoices/%7B%7Binvoice_id%7D%7D/regenerate-pdf",
+      "path": "/billing/invoices/{invoice_id}/regenerate-pdf",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -479,7 +480,7 @@
       "name": "update_subscription",
       "description": "Update subscription plan, quantity, or addons",
       "method": "PUT",
-      "path": "/billing/subscriptions/%7B%7Bsubscription_id%7D%7D",
+      "path": "/billing/subscriptions/{subscription_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -547,7 +548,7 @@
       "name": "cancel_subscription",
       "description": "Cancel an active subscription",
       "method": "POST",
-      "path": "/billing/subscriptions/%7B%7Bsubscription_id%7D%7D/cancel",
+      "path": "/billing/subscriptions/{subscription_id}/cancel",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -682,7 +683,7 @@
       "name": "get_subscription",
       "description": "Retrieve detailed information about a specific subscription",
       "method": "GET",
-      "path": "/billing/subscriptions/%7B%7Bsubscription_id%7D%7D",
+      "path": "/billing/subscriptions/{subscription_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -828,7 +829,7 @@
       "name": "update_customer",
       "description": "Update customer billing information",
       "method": "PUT",
-      "path": "/billing/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/billing/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -922,7 +923,7 @@
       "name": "get_customer",
       "description": "Retrieve detailed information about a specific customer",
       "method": "GET",
-      "path": "/billing/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/billing/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -940,7 +941,7 @@
       "name": "get_customer_by_user_id",
       "description": "Retrieve customer information by associated user ID",
       "method": "GET",
-      "path": "/billing/customers/by-user/%7B%7Buser_id%7D%7D",
+      "path": "/billing/customers/by-user/{user_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -958,7 +959,7 @@
       "name": "delete_customer",
       "description": "Delete a customer and associated billing data",
       "method": "DELETE",
-      "path": "/billing/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/billing/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1124,7 +1125,7 @@
       "name": "list_payment_methods",
       "description": "List payment methods for a customer",
       "method": "GET",
-      "path": "/billing/customers/%7B%7Bcustomer_id%7D%7D/payment-methods",
+      "path": "/billing/customers/{customer_id}/payment-methods",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1154,7 +1155,7 @@
       "name": "create_payment_method",
       "description": "Create a new payment method for a customer",
       "method": "POST",
-      "path": "/billing/customers/%7B%7Bcustomer_id%7D%7D/payment-methods",
+      "path": "/billing/customers/{customer_id}/payment-methods",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1229,7 +1230,7 @@
       "name": "create_price",
       "description": "Create a price for a product",
       "method": "POST",
-      "path": "/billing/products/%7B%7Bproduct_id%7D%7D/prices",
+      "path": "/billing/products/{product_id}/prices",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1384,7 +1385,7 @@
       "name": "update_vendor",
       "description": "Update vendor information",
       "method": "PUT",
-      "path": "/billing/vendors/%7B%7Bvendor_id%7D%7D",
+      "path": "/billing/vendors/{vendor_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1431,7 +1432,7 @@
       "name": "get_vendor",
       "description": "Retrieve detailed information about a specific vendor",
       "method": "GET",
-      "path": "/billing/vendors/%7B%7Bvendor_id%7D%7D",
+      "path": "/billing/vendors/{vendor_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1496,7 +1497,7 @@
       "name": "delete_vendor",
       "description": "Delete a vendor (soft delete to preserve expense history)",
       "method": "DELETE",
-      "path": "/billing/vendors/%7B%7Bvendor_id%7D%7D",
+      "path": "/billing/vendors/{vendor_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1588,7 +1589,7 @@
       "name": "update_expense",
       "description": "Update expense information and approval status",
       "method": "PUT",
-      "path": "/billing/expenses/%7B%7Bexpense_id%7D%7D",
+      "path": "/billing/expenses/{expense_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1654,7 +1655,7 @@
       "name": "get_expense",
       "description": "Retrieve detailed information about a specific expense",
       "method": "GET",
-      "path": "/billing/expenses/%7B%7Bexpense_id%7D%7D",
+      "path": "/billing/expenses/{expense_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1763,7 +1764,7 @@
       "name": "delete_expense",
       "description": "Delete an expense record",
       "method": "DELETE",
-      "path": "/billing/expenses/%7B%7Bexpense_id%7D%7D",
+      "path": "/billing/expenses/{expense_id}",
       "input_schema": {
         "type": "object",
         "properties": {

@@ -13,15 +13,21 @@
   "base_url": "https://gigsapi.schwartzindustries.com",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your Gigs API key"
+      },
+      {
+        "name": "userId",
+        "label": "User Id",
+        "description": "Default user ID for operations (can be overridden per request)"
       }
     ]
   },
@@ -52,10 +58,6 @@
             "type": "string",
             "description": "Deadline in ISO 8601 format (YYYY-MM-DD)",
             "format": "date"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Associated project ID"
           },
           "template_id": {
             "type": "integer",
@@ -140,7 +142,7 @@
       "name": "get_gig_details",
       "description": "Get detailed information about a specific gig",
       "method": "GET",
-      "path": "/gigs/%7B%7Bid%7D%7D",
+      "path": "/gigs/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -158,7 +160,7 @@
       "name": "assign_gig",
       "description": "Assign a gig to a worker (client only)",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/assign",
+      "path": "/gigs/{id}/assign",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -186,7 +188,7 @@
       "name": "update_gig_status",
       "description": "Update the status of a gig",
       "method": "PUT",
-      "path": "/gigs/%7B%7Bid%7D%7D/status",
+      "path": "/gigs/{id}/status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -222,7 +224,7 @@
       "name": "update_gig",
       "description": "Update gig details such as title, description, budget, deadline, or priority",
       "method": "PUT",
-      "path": "/gigs/%7B%7Bid%7D%7D",
+      "path": "/gigs/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -267,7 +269,7 @@
       "name": "cancel_gig",
       "description": "Cancel a gig (client only)",
       "method": "DELETE",
-      "path": "/gigs/%7B%7Bid%7D%7D",
+      "path": "/gigs/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -514,7 +516,7 @@
       "name": "apply_template_to_gig",
       "description": "Apply a template's instructions to a gig",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/apply-template",
+      "path": "/gigs/{id}/apply-template",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -542,7 +544,7 @@
       "name": "add_instruction_to_gig",
       "description": "Add an instruction from the instruction library to a gig. Use 'List Instructions' or 'Search Instructions' to find the library instruction_id.",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions",
+      "path": "/gigs/{id}/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -578,7 +580,7 @@
       "name": "get_gig_instructions",
       "description": "Get all instructions attached to a gig. Returns gig_instructions records with their 'id' (needed for remove/complete/customize/reset operations), instruction details, completion status, and submitted files.",
       "method": "GET",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions",
+      "path": "/gigs/{id}/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -596,7 +598,7 @@
       "name": "mark_instruction_complete",
       "description": "Mark a gig instruction as completed. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D/complete",
+      "path": "/gigs/{id}/instructions/{instructionId}/complete",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -624,7 +626,7 @@
       "name": "submit_work",
       "description": "Submit work files for a gig",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/submissions",
+      "path": "/gigs/{id}/submissions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -669,7 +671,7 @@
       "name": "get_submissions",
       "description": "Get all submissions for a gig",
       "method": "GET",
-      "path": "/gigs/%7B%7Bid%7D%7D/submissions",
+      "path": "/gigs/{id}/submissions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -687,7 +689,7 @@
       "name": "review_submission",
       "description": "Review and approve/reject a work submission (client only)",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D/review",
+      "path": "/gigs/{id}/submissions/{submissionId}/review",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -729,7 +731,7 @@
       "name": "request_revision",
       "description": "Request changes to a work submission",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D/revision",
+      "path": "/gigs/{id}/submissions/{submissionId}/revision",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -762,7 +764,7 @@
       "name": "get_gig_activity",
       "description": "Get activity log/history for a gig",
       "method": "GET",
-      "path": "/gigs/%7B%7Bid%7D%7D/activity",
+      "path": "/gigs/{id}/activity",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -794,10 +796,6 @@
             ],
             "default": "all"
           },
-          "project_id": {
-            "type": "integer",
-            "description": "Filter by project ID"
-          },
           "limit": {
             "type": "integer",
             "description": "Number of users to return",
@@ -818,7 +816,7 @@
       "name": "get_instruction",
       "description": "Get a single instruction from the library by ID",
       "method": "GET",
-      "path": "/instructions/%7B%7Bid%7D%7D",
+      "path": "/instructions/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -840,7 +838,7 @@
       "name": "update_instruction",
       "description": "Update an instruction's content, media, or settings",
       "method": "PUT",
-      "path": "/instructions/%7B%7Bid%7D%7D",
+      "path": "/instructions/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -904,7 +902,7 @@
       "name": "delete_instruction",
       "description": "Delete an instruction from the library",
       "method": "DELETE",
-      "path": "/instructions/%7B%7Bid%7D%7D",
+      "path": "/instructions/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -927,7 +925,7 @@
       "name": "get_template",
       "description": "Get a template with its instructions",
       "method": "GET",
-      "path": "/templates/%7B%7Bid%7D%7D",
+      "path": "/templates/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -988,7 +986,7 @@
       "name": "delete_template",
       "description": "Delete a gig template",
       "method": "DELETE",
-      "path": "/gigs/templates/%7B%7Bid%7D%7D",
+      "path": "/gigs/templates/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1011,7 +1009,7 @@
       "name": "clone_template",
       "description": "Create a copy of a template for customization",
       "method": "POST",
-      "path": "/gigs/templates/%7B%7Bid%7D%7D/clone",
+      "path": "/gigs/templates/{id}/clone",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1039,7 +1037,7 @@
       "name": "add_instruction_to_template",
       "description": "Add an instruction from the library to a template",
       "method": "POST",
-      "path": "/templates/%7B%7Bid%7D%7D/instructions",
+      "path": "/templates/{id}/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1076,7 +1074,7 @@
       "name": "remove_instruction_from_template",
       "description": "Remove an instruction from a template",
       "method": "DELETE",
-      "path": "/templates/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
+      "path": "/templates/{id}/instructions/{instructionId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1103,7 +1101,7 @@
       "name": "reorder_template_instructions",
       "description": "Reorder the instructions within a template",
       "method": "PUT",
-      "path": "/gigs/templates/%7B%7Bid%7D%7D/instructions/reorder",
+      "path": "/gigs/templates/{id}/instructions/reorder",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1175,7 +1173,7 @@
       "name": "remove_gig_instruction",
       "description": "Remove an instruction from a gig. Use 'Get Gig Instructions' first to find the gig_instructions record ID for the instruction you want to remove.",
       "method": "DELETE",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
+      "path": "/gigs/{id}/instructions/{instructionId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1198,7 +1196,7 @@
       "name": "customize_gig_instruction",
       "description": "Customize an instruction for a specific gig with custom content or media. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
+      "path": "/gigs/{id}/instructions/{instructionId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1273,7 +1271,7 @@
       "name": "delete_submission",
       "description": "Delete a work submission from a gig",
       "method": "DELETE",
-      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D",
+      "path": "/gigs/{id}/submissions/{submissionId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1301,22 +1299,17 @@
       "name": "complete_gig",
       "description": "Complete a gig by verifying all required instructions are done, creating a submissions folder, moving files, and updating status to completed",
       "method": "POST",
-      "path": "/gigs/%7B%7Bid%7D%7D/complete",
+      "path": "/gigs/{id}/complete",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "description": "Gig ID to complete"
-          },
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID for storage operations (required for folder creation)"
           }
         },
         "required": [
-          "id",
-          "project_id"
+          "id"
         ]
       }
     },
@@ -1324,7 +1317,7 @@
       "name": "reset_instruction_status",
       "description": "Reset a gig instruction to not completed, clearing all submission data and files. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D/reset",
+      "path": "/gigs/{id}/instructions/{instructionId}/reset",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1345,7 +1338,7 @@
     },
     {
       "name": "create_user",
-      "description": "Register a new user (model) in the gigs platform. Creates a user account scoped to the modeling project.",
+      "description": "Register a new user (model) in the gigs platform. Creates a user account and automatically creates a matching contact record for storing phone, notes, and other contact details.",
       "method": "POST",
       "path": "/users",
       "input_schema": {
@@ -1368,6 +1361,64 @@
           "display_name": {
             "type": "string",
             "description": "Display name shown in the platform"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number (stored in contact record)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes about this user/model (stored in contact record)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for categorization (e.g. ['model', 'hypno-reactions']). Defaults to ['gigs-user', role]"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Custom contact attributes (e.g. social media links, address, emergency contact, bio)",
+            "properties": {
+              "first_name": {
+                "type": "string"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "bio": {
+                "type": "string"
+              },
+              "instagram": {
+                "type": "string"
+              },
+              "twitter": {
+                "type": "string"
+              },
+              "tiktok": {
+                "type": "string"
+              },
+              "website": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
           }
         },
         "required": [
@@ -1378,9 +1429,9 @@
     },
     {
       "name": "delete_user",
-      "description": "Delete a user (model) from the gigs platform. Only users belonging to the modeling project can be deleted.",
+      "description": "Delete a user (model) from the gigs platform and their linked contact record. Only users belonging to the modeling project can be deleted.",
       "method": "DELETE",
-      "path": "/users/%7B%7Buser_id%7D%7D",
+      "path": "/users/{user_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1396,9 +1447,9 @@
     },
     {
       "name": "update_user",
-      "description": "Update a user (model) profile in the gigs platform. Can change display name, username, email, role, or account status.",
+      "description": "Update a user (model) profile and contact details. Changes are automatically synced to the linked contact record. Supports phone, notes, tags, and custom attributes.",
       "method": "PUT",
-      "path": "/users/%7B%7Buser_id%7D%7D",
+      "path": "/users/{user_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1431,6 +1482,26 @@
               "disabled",
               "pending"
             ]
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number (synced to contact record)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes about this user/model (synced to contact record)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for categorization (synced to contact record)"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Custom contact attributes (merged with existing). Supports: first_name, last_name, company, address, city, state, country, bio, instagram, twitter, tiktok, website, and any custom fields.",
+            "additionalProperties": true
           }
         },
         "required": [
@@ -1438,5 +1509,50 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-webhook-signature",
+    "events": [
+      {
+        "name": "gig.created",
+        "description": "New gig created"
+      },
+      {
+        "name": "gig.assigned",
+        "description": "Gig assigned to a worker"
+      },
+      {
+        "name": "gig.status_updated",
+        "description": "Gig status manually changed"
+      },
+      {
+        "name": "gig.cancelled",
+        "description": "Gig cancelled"
+      },
+      {
+        "name": "gig.completed",
+        "description": "Gig completed"
+      },
+      {
+        "name": "gig.work_submitted",
+        "description": "Work submitted for a gig"
+      },
+      {
+        "name": "gig.submission_approved",
+        "description": "Submission approved"
+      },
+      {
+        "name": "gig.submission_rejected",
+        "description": "Submission rejected"
+      },
+      {
+        "name": "gig.revision_requested",
+        "description": "Revision requested on submission"
+      },
+      {
+        "name": "gig.instruction_completed",
+        "description": "Gig instruction marked complete"
+      }
+    ]
+  }
 }

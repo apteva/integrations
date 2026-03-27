@@ -66,18 +66,11 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project GID"
-          },
           "completed_since": {
             "type": "string",
             "description": "Filter completed tasks since date"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {

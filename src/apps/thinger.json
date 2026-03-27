@@ -30,6 +30,11 @@
         "name": "password",
         "label": "Password",
         "description": "Thinger.io password"
+      },
+      {
+        "name": "server_url",
+        "label": "Server_url",
+        "description": "Thinger.io server URL (default: api.thinger.io)"
       }
     ]
   },

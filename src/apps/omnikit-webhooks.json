@@ -13,15 +13,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -165,7 +166,7 @@
       "name": "omnikit_webhook_get",
       "description": "Get details of a specific webhook by ID, including configuration, status, and recent delivery stats.",
       "method": "GET",
-      "path": "/webhooks/%7B%7Bwebhook_id%7D%7D",
+      "path": "/webhooks/{webhook_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -183,7 +184,7 @@
       "name": "omnikit_webhook_update",
       "description": "Update an existing webhook configuration. Change endpoint URL, event types, filters, or enable/disable.",
       "method": "PUT",
-      "path": "/webhooks/%7B%7Bwebhook_id%7D%7D",
+      "path": "/webhooks/{webhook_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -236,7 +237,7 @@
       "name": "omnikit_webhook_delete",
       "description": "Delete a webhook subscription. You will no longer receive events at the registered endpoint.",
       "method": "DELETE",
-      "path": "/webhooks/%7B%7Bwebhook_id%7D%7D",
+      "path": "/webhooks/{webhook_id}",
       "input_schema": {
         "type": "object",
         "properties": {

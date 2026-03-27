@@ -23,7 +23,7 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Token"
       }
     ]
   },
@@ -36,10 +36,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID to associate with the presentation"
-          },
           "name": {
             "type": "string",
             "description": "Presentation name/title"
@@ -120,7 +116,6 @@
           }
         },
         "required": [
-          "project_id",
           "name"
         ]
       }
@@ -159,10 +154,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Filter by project ID"
-          },
           "limit": {
             "type": "number",
             "description": "Max results (default: 50)"

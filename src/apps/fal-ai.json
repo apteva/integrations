@@ -34,7 +34,7 @@
       "name": "run",
       "description": "Run a fal.ai model synchronously and get the result directly. Best for fast models that complete in under 60 seconds (e.g. FLUX image generation, whisper transcription)",
       "method": "POST",
-      "path": "/%7B%7Bmodel_id%7D%7D",
+      "path": "/{model_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -124,7 +124,7 @@
       "name": "queue_submit",
       "description": "Submit a model request to the fal.ai queue for async processing. Returns a request_id to poll for results. Best for longer-running models (video generation, training, etc.)",
       "method": "POST",
-      "path": "/%7B%7Bmodel_id%7D%7D",
+      "path": "/{model_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -209,7 +209,7 @@
       "name": "queue_status",
       "description": "Check the status of an async queue request. Returns status (IN_QUEUE, IN_PROGRESS, COMPLETED) and queue position",
       "method": "GET",
-      "path": "/%7B%7Bmodel_id%7D%7D/requests/%7B%7Brequest_id%7D%7D/status",
+      "path": "/{model_id}/requests/{request_id}/status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -232,7 +232,7 @@
       "name": "queue_result",
       "description": "Retrieve the result of a completed async queue request. Only call after status is COMPLETED",
       "method": "GET",
-      "path": "/%7B%7Bmodel_id%7D%7D/requests/%7B%7Brequest_id%7D%7D",
+      "path": "/{model_id}/requests/{request_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -255,7 +255,7 @@
       "name": "queue_cancel",
       "description": "Cancel a pending or in-progress queue request",
       "method": "PUT",
-      "path": "/%7B%7Bmodel_id%7D%7D/requests/%7B%7Brequest_id%7D%7D/cancel",
+      "path": "/{model_id}/requests/{request_id}/cancel",
       "input_schema": {
         "type": "object",
         "properties": {

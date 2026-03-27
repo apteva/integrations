@@ -57,7 +57,7 @@
       "name": "get_bitlink",
       "description": "Retrieve details about a specific Bitlink including its long URL, creation date, tags, and custom bitlinks. The bitlink parameter should be the short URL without the protocol (e.g. 'bit.ly/abc123').",
       "method": "GET",
-      "path": "/bitlinks/%7B%7Bparam.bitlink%7D%7D",
+      "path": "/bitlinks/{{param.bitlink}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -75,7 +75,7 @@
       "name": "list_bitlinks",
       "description": "Retrieve a list of Bitlinks for a specific group. Returns Bitlinks sorted by creation date. Supports pagination and filtering.",
       "method": "GET",
-      "path": "/groups/%7B%7Bparam.group_guid%7D%7D/bitlinks",
+      "path": "/groups/{{param.group_guid}}/bitlinks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -105,7 +105,7 @@
       "name": "get_clicks_summary",
       "description": "Get a summary of clicks for a specific Bitlink. Returns total click count for the specified time period. Useful for analytics and reporting.",
       "method": "GET",
-      "path": "/bitlinks/%7B%7Bparam.bitlink%7D%7D/clicks/summary",
+      "path": "/bitlinks/{{param.bitlink}}/clicks/summary",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -142,7 +142,7 @@
       "name": "update_bitlink",
       "description": "Update properties of an existing Bitlink such as its title, tags, or archived status. Note: the destination URL (long_url) cannot be changed after creation.",
       "method": "PATCH",
-      "path": "/bitlinks/%7B%7Bparam.bitlink%7D%7D",
+      "path": "/bitlinks/{{param.bitlink}}",
       "input_schema": {
         "type": "object",
         "properties": {

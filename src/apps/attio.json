@@ -63,7 +63,7 @@
       "name": "list_call_recordings",
       "description": "List all call recordings associated with a specific meeting in Attio CRM. Returns recording metadata including video URLs and processing status. Requires a meeting ID obtained from the list meetings endpoint.",
       "method": "GET",
-      "path": "/meetings/%7B%7Bparam.meeting_id%7D%7D/call_recordings",
+      "path": "/meetings/{{param.meeting_id}}/call_recordings",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -90,7 +90,7 @@
       "name": "create_call_recording",
       "description": "Create a new call recording for a meeting in Attio CRM. Provide a video URL pointing to the recording file. Rate limited to 1 request per second. This endpoint is in alpha.",
       "method": "POST",
-      "path": "/meetings/%7B%7Bparam.meeting_id%7D%7D/call_recordings",
+      "path": "/meetings/{{param.meeting_id}}/call_recordings",
       "input_schema": {
         "type": "object",
         "properties": {

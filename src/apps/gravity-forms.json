@@ -16,12 +16,16 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "Basic {{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "API Key"
+      },
+      {
+        "name": "site_url",
+        "label": "Site_url"
       }
     ]
   },

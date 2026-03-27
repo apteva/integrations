@@ -34,10 +34,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "include_counts": {
             "type": "boolean",
             "description": "Include unread counts",
@@ -47,10 +43,7 @@
             "type": "boolean",
             "description": "Filter by active status"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -61,10 +54,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "url": {
             "type": "string",
             "description": "RSS feed URL"
@@ -76,7 +65,6 @@
           }
         },
         "required": [
-          "project_id",
           "url"
         ]
       }
@@ -89,17 +77,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "feed_id": {
             "type": "integer",
             "description": "Feed ID to remove"
           }
         },
         "required": [
-          "project_id",
           "feed_id"
         ]
       }
@@ -112,10 +95,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "feed_id": {
             "type": "integer",
             "description": "Feed ID to refresh"
@@ -124,10 +103,7 @@
             "type": "string",
             "description": "Feed URL to refresh (alternative to feed_id)"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -138,10 +114,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "feed_id": {
             "type": "integer",
             "description": "Filter by feed ID"
@@ -177,10 +149,7 @@
             "description": "Offset for pagination",
             "default": 0
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -191,10 +160,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "entry_id": {
             "type": "integer",
             "description": "Entry ID"
@@ -206,7 +171,6 @@
           }
         },
         "required": [
-          "project_id",
           "entry_id"
         ]
       }
@@ -219,10 +183,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "entry_ids": {
             "type": "array",
             "items": {
@@ -243,10 +203,7 @@
             "description": "Read status to set (true=read, false=unread)",
             "default": true
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -257,10 +214,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "entry_id": {
             "type": "integer",
             "description": "Entry ID"
@@ -272,7 +225,6 @@
           }
         },
         "required": [
-          "project_id",
           "entry_id"
         ]
       }

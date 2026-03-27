@@ -23,6 +23,11 @@
         "name": "accessToken",
         "label": "Access Token",
         "description": "DNSimple API access token (generate at dnsimple.com/a/{account}/account/access_tokens)"
+      },
+      {
+        "name": "accountId",
+        "label": "Account Id",
+        "description": "DNSimple Account ID (numeric, found in your account URL)"
       }
     ]
   },
@@ -31,7 +36,7 @@
       "name": "list_domains",
       "description": "List all domains in a DNSimple account with optional sorting and pagination",
       "method": "GET",
-      "path": "/%7B%7BaccountId%7D%7D/domains",
+      "path": "/{accountId}/domains",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -57,7 +62,7 @@
       "name": "get_domain",
       "description": "Retrieve details for a specific domain in a DNSimple account",
       "method": "GET",
-      "path": "/%7B%7BaccountId%7D%7D/domains/%7B%7BdomainName%7D%7D",
+      "path": "/{accountId}/domains/{domainName}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -80,7 +85,7 @@
       "name": "register_domain",
       "description": "Register a new domain through DNSimple. Requires a registrant contact ID.",
       "method": "POST",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/registrations",
+      "path": "/{accountId}/registrar/domains/{domainName}/registrations",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -120,7 +125,7 @@
       "name": "check_availability",
       "description": "Check if a domain name is available for registration",
       "method": "GET",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/check",
+      "path": "/{accountId}/registrar/domains/{domainName}/check",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -143,7 +148,7 @@
       "name": "renew_domain",
       "description": "Renew a domain registration for an additional period",
       "method": "POST",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/renewals",
+      "path": "/{accountId}/registrar/domains/{domainName}/renewals",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -170,7 +175,7 @@
       "name": "transfer_domain",
       "description": "Transfer a domain to DNSimple from another registrar",
       "method": "POST",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/transfers",
+      "path": "/{accountId}/registrar/domains/{domainName}/transfers",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -210,7 +215,7 @@
       "name": "list_dns_records",
       "description": "List DNS records for a zone with optional filtering by record type and name",
       "method": "GET",
-      "path": "/%7B%7BaccountId%7D%7D/zones/%7B%7BzoneName%7D%7D/records",
+      "path": "/{accountId}/zones/{zoneName}/records",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -241,7 +246,7 @@
       "name": "create_dns_record",
       "description": "Create a new DNS record in a zone",
       "method": "POST",
-      "path": "/%7B%7BaccountId%7D%7D/zones/%7B%7BzoneName%7D%7D/records",
+      "path": "/{accountId}/zones/{zoneName}/records",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -287,7 +292,7 @@
       "name": "update_dns_record",
       "description": "Update an existing DNS record in a zone",
       "method": "PATCH",
-      "path": "/%7B%7BaccountId%7D%7D/zones/%7B%7BzoneName%7D%7D/records/%7B%7BrecordId%7D%7D",
+      "path": "/{accountId}/zones/{zoneName}/records/{recordId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -331,7 +336,7 @@
       "name": "delete_dns_record",
       "description": "Delete a DNS record from a zone",
       "method": "DELETE",
-      "path": "/%7B%7BaccountId%7D%7D/zones/%7B%7BzoneName%7D%7D/records/%7B%7BrecordId%7D%7D",
+      "path": "/{accountId}/zones/{zoneName}/records/{recordId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -359,7 +364,7 @@
       "name": "get_whois_privacy",
       "description": "Get the WHOIS privacy status for a domain",
       "method": "GET",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/whois_privacy",
+      "path": "/{accountId}/registrar/domains/{domainName}/whois_privacy",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -382,7 +387,7 @@
       "name": "enable_whois_privacy",
       "description": "Enable WHOIS privacy protection for a domain",
       "method": "PUT",
-      "path": "/%7B%7BaccountId%7D%7D/registrar/domains/%7B%7BdomainName%7D%7D/whois_privacy",
+      "path": "/{accountId}/registrar/domains/{domainName}/whois_privacy",
       "input_schema": {
         "type": "object",
         "properties": {

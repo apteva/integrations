@@ -13,7 +13,8 @@
   "base_url": "",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
@@ -21,9 +22,68 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
+      },
+      {
+        "name": "id_token",
+        "label": "id_token"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+      "token_url": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+      "scopes": [
+        "openid",
+        "profile",
+        "email",
+        "offline_access",
+        "User.Read",
+        "User.ReadWrite",
+        "User.ReadBasic.All",
+        "Mail.Read",
+        "Mail.ReadWrite",
+        "Mail.Send",
+        "Calendars.Read",
+        "Calendars.ReadWrite",
+        "Contacts.Read",
+        "Contacts.ReadWrite",
+        "Files.Read",
+        "Files.ReadWrite",
+        "Files.Read.All",
+        "Files.ReadWrite.All",
+        "Sites.Read.All",
+        "Sites.ReadWrite.All",
+        "Directory.Read.All",
+        "Group.Read.All",
+        "Group.ReadWrite.All",
+        "Team.ReadBasic.All",
+        "TeamSettings.Read.All",
+        "TeamSettings.ReadWrite.All",
+        "Channel.ReadBasic.All",
+        "ChannelSettings.Read.All",
+        "ChannelSettings.ReadWrite.All",
+        "ChatMessage.Read",
+        "ChatMessage.Send"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {

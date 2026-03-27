@@ -22,6 +22,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "team",
+        "label": "team"
+      },
+      {
+        "name": "team_id",
+        "label": "team_id"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
     ],
     "oauth2": {
@@ -270,5 +282,50 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-slack-signature",
+    "events": [
+      {
+        "name": "message.received",
+        "description": "Message posted in a channel"
+      },
+      {
+        "name": "message.updated",
+        "description": "Message was edited"
+      },
+      {
+        "name": "message.deleted",
+        "description": "Message was deleted"
+      },
+      {
+        "name": "channel.created",
+        "description": "New channel created"
+      },
+      {
+        "name": "channel.archived",
+        "description": "Channel archived"
+      },
+      {
+        "name": "member.joined",
+        "description": "User joined a channel"
+      },
+      {
+        "name": "reaction.added",
+        "description": "Reaction added to message"
+      },
+      {
+        "name": "reaction.removed",
+        "description": "Reaction removed from message"
+      },
+      {
+        "name": "app.mention",
+        "description": "Bot was mentioned"
+      },
+      {
+        "name": "team.join",
+        "description": "New user joined workspace"
+      }
+    ]
+  }
 }

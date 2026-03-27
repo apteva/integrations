@@ -644,5 +644,50 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-hub-signature",
+    "events": [
+      {
+        "name": "conversation.created",
+        "description": "New conversation started"
+      },
+      {
+        "name": "conversation.replied",
+        "description": "Reply added to conversation"
+      },
+      {
+        "name": "conversation.closed",
+        "description": "Conversation closed"
+      },
+      {
+        "name": "conversation.opened",
+        "description": "Conversation reopened"
+      },
+      {
+        "name": "conversation.assigned",
+        "description": "Conversation assigned to teammate"
+      },
+      {
+        "name": "contact.created",
+        "description": "New contact created"
+      },
+      {
+        "name": "contact.updated",
+        "description": "Contact details changed"
+      },
+      {
+        "name": "contact.deleted",
+        "description": "Contact removed"
+      },
+      {
+        "name": "user.created",
+        "description": "New user identified"
+      },
+      {
+        "name": "contact.tag.created",
+        "description": "Tag added to contact"
+      }
+    ]
+  }
 }

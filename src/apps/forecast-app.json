@@ -59,15 +59,7 @@
       "path": "/forecast-project-get",
       "input_schema": {
         "type": "object",
-        "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          }
-        },
-        "required": [
-          "project_id"
-        ]
+        "properties": {}
       }
     },
     {
@@ -125,10 +117,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "assignee_id": {
             "type": "integer",
             "description": "Filter by assignee"
@@ -137,10 +125,7 @@
             "type": "boolean",
             "description": "Filter by completion status"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -151,10 +136,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "title": {
             "type": "string",
             "description": "Task title"
@@ -185,7 +166,6 @@
           }
         },
         "required": [
-          "project_id",
           "title"
         ]
       }
@@ -198,10 +178,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Filter by project ID"
-          },
           "person_id": {
             "type": "integer",
             "description": "Filter by person ID"
@@ -225,10 +201,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          },
           "task_id": {
             "type": "integer",
             "description": "Task ID (optional)"
@@ -251,7 +223,6 @@
           }
         },
         "required": [
-          "project_id",
           "person_id",
           "date",
           "hours"
@@ -312,15 +283,7 @@
       "path": "/forecast-phases-list",
       "input_schema": {
         "type": "object",
-        "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID"
-          }
-        },
-        "required": [
-          "project_id"
-        ]
+        "properties": {}
       }
     },
     {
@@ -331,10 +294,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Filter by project ID"
-          },
           "person_id": {
             "type": "integer",
             "description": "Filter by person ID"
@@ -358,10 +317,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "integer",
-            "description": "Project ID (optional, omit for all projects)"
-          },
           "start_date": {
             "type": "string",
             "description": "Start date for financial period"

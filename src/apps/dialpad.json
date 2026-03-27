@@ -56,7 +56,7 @@
       "name": "get_contact",
       "description": "Retrieve a specific contact by ID. Returns full contact details including name, phone numbers, email, company, and title. Only shared and local contact types can be retrieved.",
       "method": "GET",
-      "path": "/contacts/%7B%7Bparam.contact_id%7D%7D",
+      "path": "/contacts/{{param.contact_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -116,7 +116,7 @@
       "name": "get_call",
       "description": "Retrieve details about a specific call by its ID. Returns call information including duration, participants, direction, recording status, and transcript availability.",
       "method": "GET",
-      "path": "/calls/%7B%7Bparam.call_id%7D%7D",
+      "path": "/calls/{{param.call_id}}",
       "input_schema": {
         "type": "object",
         "properties": {

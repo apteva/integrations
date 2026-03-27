@@ -17,38 +17,33 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
   "tools": [
     {
       "name": "list_sources",
-      "description": "Get available analytics sources (web, patreon, youtube, stripe, etc.) and their metrics. Shows which sources have data and summary statistics.",
+      "description": "ALWAYS call this first before importing or querying metrics. Returns all configured analytics sources with their available metric names, including sources without data yet. The response contains the exact metric_name values needed for import-metrics and query-metrics. Sources with has_data=false still have valid metrics that can be imported into.",
       "method": "GET",
       "path": "/analytics/sources",
       "input_schema": {
         "type": "object",
-        "properties": {
-          "include_empty": {
-            "type": "boolean",
-            "description": "Include sources without data (shows all configured sources)",
-            "default": true
-          }
-        }
+        "properties": {}
       }
     },
     {
       "name": "import_metrics",
-      "description": "Import external/platform-specific metrics directly. Supports single metric or bulk import. Use for YouTube views, Patreon patrons, social media stats, etc.",
+      "description": "Import metrics data. First call list-sources to discover the exact metric_name values available for each source. Supports single metric or bulk import via the metrics array.",
       "method": "POST",
       "path": "/analytics/metrics/import",
       "input_schema": {
@@ -56,7 +51,7 @@
         "properties": {
           "metric_name": {
             "type": "string",
-            "description": "Metric name for single import (e.g., 'youtube_views', 'patreon_patrons')"
+            "description": "Metric name for single import - use exact values from list-sources"
           },
           "value": {
             "type": "number",
@@ -82,7 +77,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Source platform (e.g., 'youtube', 'patreon', 'twitter', 'instagram', 'stripe')"
+            "description": "Source platform identifier - use the source id from list-sources"
           },
           "dimensions": {
             "type": "object",
@@ -132,9 +127,9 @@
     },
     {
       "name": "query_metrics",
-      "description": "Query pre-aggregated metrics data with flexible filtering, grouping, and date ranges. Returns time-series data for charts and reports.",
+      "description": "Query metrics data with flexible filtering, grouping, and date ranges. First call list-sources to discover available metric_name values. Returns time-series data for charts and reports.",
       "method": "GET",
-      "path": "/analytics/metrics/%7B%7Bmetric_name%7D%7D",
+      "path": "/analytics/metrics/{metric_name}",
       "input_schema": {
         "type": "object",
         "properties": {

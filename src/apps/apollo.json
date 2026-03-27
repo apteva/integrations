@@ -14,14 +14,14 @@
   "base_url": "https://api.apollo.io/api/v1",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "x-api-key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
+        "name": "api_key",
         "label": "Api Key",
         "description": "Apollo.io API key (find at app.apollo.io under Settings > Integrations > API)"
       }
@@ -296,7 +296,7 @@
       "name": "org_get",
       "description": "Get complete details for a specific organization by Apollo ID. Returns industry, funding, employees, technology stack, and more.",
       "method": "GET",
-      "path": "/organizations/%7B%7Borganization_id%7D%7D",
+      "path": "/organizations/{organization_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -388,7 +388,7 @@
       "name": "contact_update",
       "description": "Update an existing CRM contact.",
       "method": "PATCH",
-      "path": "/contacts/%7B%7Bcontact_id%7D%7D",
+      "path": "/contacts/{contact_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -441,7 +441,7 @@
       "name": "contact_view",
       "description": "Get full details for a specific CRM contact including enriched data.",
       "method": "GET",
-      "path": "/contacts/%7B%7Bcontact_id%7D%7D",
+      "path": "/contacts/{contact_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -616,7 +616,7 @@
       "name": "deal_view",
       "description": "Get details for a specific deal/opportunity.",
       "method": "GET",
-      "path": "/opportunities/%7B%7Bopportunity_id%7D%7D",
+      "path": "/opportunities/{opportunity_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -688,7 +688,7 @@
       "name": "sequence_add_contacts",
       "description": "Add contacts to an email sequence/campaign.",
       "method": "POST",
-      "path": "/emailer_campaigns/%7B%7Bsequence_id%7D%7D/add_contact_ids",
+      "path": "/emailer_campaigns/{sequence_id}/add_contact_ids",
       "input_schema": {
         "type": "object",
         "properties": {

@@ -24,6 +24,14 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
     ],
     "oauth2": {
@@ -83,7 +91,7 @@
       "name": "get_user",
       "description": "Get a user's public profile by their username",
       "method": "GET",
-      "path": "/users/%7B%7Busername%7D%7D",
+      "path": "/users/{username}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -154,7 +162,7 @@
       "name": "get_repo",
       "description": "Get detailed information about a repository including description, stars, forks, language, default branch, and permissions",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D",
+      "path": "/repos/{owner}/{repo}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -177,7 +185,7 @@
       "name": "list_user_repos",
       "description": "List public repositories for a specific user",
       "method": "GET",
-      "path": "/users/%7B%7Busername%7D%7D/repos",
+      "path": "/users/{username}/repos",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -308,7 +316,7 @@
       "name": "get_contents",
       "description": "Get repository contents — a file (with content) or directory listing. For files up to 1MB, content is base64 encoded.",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/contents/%7B%7Bpath%7D%7D",
+      "path": "/repos/{owner}/{repo}/contents/{path}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -340,7 +348,7 @@
       "name": "create_or_update_file",
       "description": "Create or update a file in a repository. Content must be base64 encoded. To update, include the SHA of the file being replaced (from get-contents).",
       "method": "PUT",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/contents/%7B%7Bpath%7D%7D",
+      "path": "/repos/{owner}/{repo}/contents/{path}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -386,7 +394,7 @@
       "name": "delete_file",
       "description": "Delete a file from a repository. Requires the file's SHA (from get-contents).",
       "method": "DELETE",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/contents/%7B%7Bpath%7D%7D",
+      "path": "/repos/{owner}/{repo}/contents/{path}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -428,7 +436,7 @@
       "name": "list_branches",
       "description": "List branches in a repository",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/branches",
+      "path": "/repos/{owner}/{repo}/branches",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -461,7 +469,7 @@
       "name": "create_branch",
       "description": "Create a new branch. First get the SHA of the source branch via list-branches or get-contents, then create a git ref.",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/git/refs",
+      "path": "/repos/{owner}/{repo}/git/refs",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -494,7 +502,7 @@
       "name": "list_commits",
       "description": "List commits in a repository. Can filter by branch, path, author, and date range.",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/commits",
+      "path": "/repos/{owner}/{repo}/commits",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -547,7 +555,7 @@
       "name": "list_issues",
       "description": "List issues in a repository. Filter by state, labels, assignee, milestone, and more.",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues",
+      "path": "/repos/{owner}/{repo}/issues",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -617,7 +625,7 @@
       "name": "get_issue",
       "description": "Get a specific issue by number with full details including body, labels, assignees, and milestone",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues/%7B%7Bissue_number%7D%7D",
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -645,7 +653,7 @@
       "name": "create_issue",
       "description": "Create a new issue in a repository with title, body, labels, and assignees",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues",
+      "path": "/repos/{owner}/{repo}/issues",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -691,7 +699,7 @@
       "name": "update_issue",
       "description": "Update an issue — change title, body, state, labels, or assignees",
       "method": "PATCH",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues/%7B%7Bissue_number%7D%7D",
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -749,7 +757,7 @@
       "name": "list_issue_comments",
       "description": "List comments on an issue or pull request",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues/%7B%7Bissue_number%7D%7D/comments",
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -787,7 +795,7 @@
       "name": "add_issue_comment",
       "description": "Add a comment to an issue or pull request",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/issues/%7B%7Bissue_number%7D%7D/comments",
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -875,7 +883,7 @@
       "name": "list_pulls",
       "description": "List pull requests in a repository with state, branch, and sort filters",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/pulls",
+      "path": "/repos/{owner}/{repo}/pulls",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -946,7 +954,7 @@
       "name": "get_pull",
       "description": "Get a specific pull request with full details including diff stats, mergeable status, and review status",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/pulls/%7B%7Bpull_number%7D%7D",
+      "path": "/repos/{owner}/{repo}/pulls/{pull_number}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -974,7 +982,7 @@
       "name": "create_pull",
       "description": "Create a new pull request from a head branch into a base branch",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/pulls",
+      "path": "/repos/{owner}/{repo}/pulls",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1021,7 +1029,7 @@
       "name": "merge_pull",
       "description": "Merge a pull request. Choose merge method: merge commit, squash, or rebase.",
       "method": "PUT",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/pulls/%7B%7Bpull_number%7D%7D/merge",
+      "path": "/repos/{owner}/{repo}/pulls/{pull_number}/merge",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1067,7 +1075,7 @@
       "name": "list_pull_files",
       "description": "List files changed in a pull request with patch/diff details",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/pulls/%7B%7Bpull_number%7D%7D/files",
+      "path": "/repos/{owner}/{repo}/pulls/{pull_number}/files",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1105,7 +1113,7 @@
       "name": "list_releases",
       "description": "List releases in a repository, ordered by creation date",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/releases",
+      "path": "/repos/{owner}/{repo}/releases",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1138,7 +1146,7 @@
       "name": "create_release",
       "description": "Create a new release with a tag, name, and release notes",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/releases",
+      "path": "/repos/{owner}/{repo}/releases",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1193,7 +1201,7 @@
       "name": "list_workflows",
       "description": "List GitHub Actions workflows in a repository",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/actions/workflows",
+      "path": "/repos/{owner}/{repo}/actions/workflows",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1226,7 +1234,7 @@
       "name": "list_workflow_runs",
       "description": "List recent runs for a specific workflow",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/actions/workflows/%7B%7Bworkflow_id%7D%7D/runs",
+      "path": "/repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1288,7 +1296,7 @@
       "name": "trigger_workflow",
       "description": "Manually trigger a workflow_dispatch workflow run",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/actions/workflows/%7B%7Bworkflow_id%7D%7D/dispatches",
+      "path": "/repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1325,7 +1333,7 @@
       "name": "create_webhook",
       "description": "Create a repository webhook to receive event notifications",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/hooks",
+      "path": "/repos/{owner}/{repo}/hooks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1390,7 +1398,7 @@
       "name": "list_webhooks",
       "description": "List webhooks configured for a repository",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/hooks",
+      "path": "/repos/{owner}/{repo}/hooks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1423,7 +1431,7 @@
       "name": "fork_repo",
       "description": "Fork a repository to the authenticated user's account or a specified organization",
       "method": "POST",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/forks",
+      "path": "/repos/{owner}/{repo}/forks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1454,7 +1462,7 @@
       "name": "star_repo",
       "description": "Star a repository for the authenticated user",
       "method": "PUT",
-      "path": "/user/starred/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D",
+      "path": "/user/starred/{owner}/{repo}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1477,7 +1485,7 @@
       "name": "unstar_repo",
       "description": "Remove a star from a repository",
       "method": "DELETE",
-      "path": "/user/starred/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D",
+      "path": "/user/starred/{owner}/{repo}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1500,7 +1508,7 @@
       "name": "compare_commits",
       "description": "Compare two commits, branches, or tags. Shows files changed and diff stats between base and head.",
       "method": "GET",
-      "path": "/repos/%7B%7Bowner%7D%7D/%7B%7Brepo%7D%7D/compare/%7B%7Bbasehead%7D%7D",
+      "path": "/repos/{owner}/{repo}/compare/{basehead}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1534,5 +1542,58 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-hub-signature-256",
+    "events": [
+      {
+        "name": "push",
+        "description": "Any push to a repository branch or tag"
+      },
+      {
+        "name": "pull_request",
+        "description": "Pull request opened, closed, merged, reopened, or synchronized"
+      },
+      {
+        "name": "issues",
+        "description": "Issue opened, edited, deleted, closed, reopened, assigned, or labeled"
+      },
+      {
+        "name": "issue_comment",
+        "description": "Comment created, edited, or deleted on an issue or pull request"
+      },
+      {
+        "name": "create",
+        "description": "Branch or tag created"
+      },
+      {
+        "name": "delete",
+        "description": "Branch or tag deleted"
+      },
+      {
+        "name": "release",
+        "description": "Release published, unpublished, created, edited, or deleted"
+      },
+      {
+        "name": "workflow_run",
+        "description": "GitHub Actions workflow run requested, completed, or in progress"
+      },
+      {
+        "name": "pull_request_review",
+        "description": "Pull request review submitted, edited, or dismissed"
+      },
+      {
+        "name": "star",
+        "description": "Repository starred or unstarred"
+      },
+      {
+        "name": "fork",
+        "description": "Repository forked"
+      },
+      {
+        "name": "deployment_status",
+        "description": "Deployment status updated"
+      }
+    ]
+  }
 }

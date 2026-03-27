@@ -17,7 +17,7 @@
       "bearer"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-Dux-Signature": "{{token}}"
     },
     "credential_fields": [
       {

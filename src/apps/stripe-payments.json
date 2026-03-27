@@ -23,7 +23,18 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Secret Key",
+        "description": "Your Stripe Secret Key (sk_live_ or sk_test_)"
+      },
+      {
+        "name": "publishableKey",
+        "label": "Publishable Key",
+        "description": "Your Stripe Publishable Key (pk_live_ or pk_test_)"
+      },
+      {
+        "name": "webhookSecret",
+        "label": "Webhook Secret",
+        "description": "Your Stripe Webhook Signing Secret"
       }
     ]
   },
@@ -90,7 +101,7 @@
       "name": "get_customer",
       "description": "Retrieve details of an existing Stripe customer by ID",
       "method": "GET",
-      "path": "/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -108,7 +119,7 @@
       "name": "update_customer",
       "description": "Update an existing Stripe customer's information",
       "method": "POST",
-      "path": "/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -146,7 +157,7 @@
       "name": "delete_customer",
       "description": "Permanently delete a Stripe customer and cancel all active subscriptions",
       "method": "DELETE",
-      "path": "/customers/%7B%7Bcustomer_id%7D%7D",
+      "path": "/customers/{customer_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -274,7 +285,7 @@
       "name": "get_payment_intent",
       "description": "Retrieve details of a payment intent by ID",
       "method": "GET",
-      "path": "/payment_intents/%7B%7Bpayment_intent_id%7D%7D",
+      "path": "/payment_intents/{payment_intent_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -382,7 +393,7 @@
       "name": "get_subscription",
       "description": "Retrieve details of a subscription by ID",
       "method": "GET",
-      "path": "/subscriptions/%7B%7Bsubscription_id%7D%7D",
+      "path": "/subscriptions/{subscription_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -400,7 +411,7 @@
       "name": "cancel_subscription",
       "description": "Cancel a subscription immediately. To cancel at period end instead, use Update Subscription with cancel_at_period_end: true.",
       "method": "DELETE",
-      "path": "/subscriptions/%7B%7Bsubscription_id%7D%7D",
+      "path": "/subscriptions/{subscription_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -418,7 +429,7 @@
       "name": "update_subscription",
       "description": "Update a subscription. Set cancel_at_period_end to true to schedule cancellation at the end of the billing period.",
       "method": "POST",
-      "path": "/subscriptions/%7B%7Bsubscription_id%7D%7D",
+      "path": "/subscriptions/{subscription_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -626,7 +637,7 @@
       "name": "attach_payment_method",
       "description": "Attach a payment method to a customer",
       "method": "POST",
-      "path": "/payment_methods/%7B%7Bpayment_method_id%7D%7D/attach",
+      "path": "/payment_methods/{payment_method_id}/attach",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -729,7 +740,7 @@
       "name": "get_invoice",
       "description": "Retrieve details of an invoice by ID",
       "method": "GET",
-      "path": "/invoices/%7B%7Binvoice_id%7D%7D",
+      "path": "/invoices/{invoice_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -843,5 +854,58 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "stripe-signature",
+    "events": [
+      {
+        "name": "payment_intent.succeeded",
+        "description": "Occurs when a PaymentIntent successfully completes a payment"
+      },
+      {
+        "name": "payment_intent.payment_failed",
+        "description": "Occurs when a PaymentIntent fails"
+      },
+      {
+        "name": "customer.created",
+        "description": "Occurs when a new customer is created"
+      },
+      {
+        "name": "customer.updated",
+        "description": "Occurs when a customer is updated"
+      },
+      {
+        "name": "customer.deleted",
+        "description": "Occurs when a customer is deleted"
+      },
+      {
+        "name": "invoice.paid",
+        "description": "Occurs when an invoice is paid"
+      },
+      {
+        "name": "invoice.payment_failed",
+        "description": "Occurs when an invoice payment fails"
+      },
+      {
+        "name": "customer.subscription.created",
+        "description": "Occurs when a new subscription is created"
+      },
+      {
+        "name": "customer.subscription.updated",
+        "description": "Occurs when a subscription is updated"
+      },
+      {
+        "name": "customer.subscription.deleted",
+        "description": "Occurs when a subscription is cancelled"
+      },
+      {
+        "name": "charge.succeeded",
+        "description": "Occurs when a charge succeeds"
+      },
+      {
+        "name": "charge.refunded",
+        "description": "Occurs when a charge is refunded"
+      }
+    ]
+  }
 }

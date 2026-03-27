@@ -23,6 +23,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
+      },
+      {
+        "name": "metadata",
+        "label": "metadata"
       }
     ],
     "oauth2": {
@@ -234,5 +246,30 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-mailchimp-signature",
+    "events": [
+      {
+        "name": "subscribe",
+        "description": "New subscriber added to audience"
+      },
+      {
+        "name": "unsubscribe",
+        "description": "Subscriber removed from audience"
+      },
+      {
+        "name": "campaign.sent",
+        "description": "Campaign sent to audience"
+      },
+      {
+        "name": "email.cleaned",
+        "description": "Email address cleaned from audience"
+      },
+      {
+        "name": "profile.updated",
+        "description": "Subscriber profile changed"
+      }
+    ]
+  }
 }

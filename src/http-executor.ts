@@ -30,8 +30,8 @@ export async function executeTool(
 ): Promise<ExecuteToolResult> {
   const { app, tool, credentials, input, timeout = 30000 } = opts;
 
-  // 1. Build the URL with path parameter interpolation
-  const url = buildUrl(app.base_url, tool.path, input);
+  // 1. Build the URL with path parameter + credential interpolation
+  const url = buildUrl(app.base_url, tool.path, input, credentials);
 
   // 2. Build headers from app auth config + credentials
   const headers = buildHeaders(app, credentials);
@@ -129,13 +129,23 @@ export async function executeTool(
 function buildUrl(
   baseUrl: string,
   path: string,
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
+  credentials?: ConnectionCredentials
 ): string {
-  // Replace {param} placeholders with actual values
   let resolved = path;
+
+  // Replace {{credential.X}} placeholders with credential values
+  if (credentials) {
+    resolved = resolved.replace(/\{\{credential\.(\w+)\}\}/g, (_match, key) => {
+      const value = credentials.fields?.[key] || (credentials as any)[key] || "";
+      return encodeURIComponent(String(value));
+    });
+  }
+
+  // Replace {param} placeholders with input values
   const paramRegex = /\{(\w+)\}/g;
   let match;
-  while ((match = paramRegex.exec(path)) !== null) {
+  while ((match = paramRegex.exec(resolved)) !== null) {
     const key = match[1];
     const value = input[key];
     if (value !== undefined) {

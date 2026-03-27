@@ -22,6 +22,16 @@
         "name": "token",
         "label": "Secret Key",
         "description": "Your Stripe Secret Key (sk_live_ or sk_test_)"
+      },
+      {
+        "name": "publishableKey",
+        "label": "Publishable Key",
+        "description": "Your Stripe Publishable Key (pk_live_ or pk_test_)"
+      },
+      {
+        "name": "webhookSecret",
+        "label": "Webhook Secret",
+        "description": "Your Stripe Webhook Signing Secret"
       }
     ]
   },
@@ -521,5 +531,58 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "stripe-signature",
+    "events": [
+      {
+        "name": "payment_intent.succeeded",
+        "description": "Occurs when a PaymentIntent successfully completes a payment"
+      },
+      {
+        "name": "payment_intent.payment_failed",
+        "description": "Occurs when a PaymentIntent fails"
+      },
+      {
+        "name": "customer.created",
+        "description": "Occurs when a new customer is created"
+      },
+      {
+        "name": "customer.updated",
+        "description": "Occurs when a customer is updated"
+      },
+      {
+        "name": "customer.deleted",
+        "description": "Occurs when a customer is deleted"
+      },
+      {
+        "name": "invoice.paid",
+        "description": "Occurs when an invoice is paid"
+      },
+      {
+        "name": "invoice.payment_failed",
+        "description": "Occurs when an invoice payment fails"
+      },
+      {
+        "name": "customer.subscription.created",
+        "description": "Occurs when a new subscription is created"
+      },
+      {
+        "name": "customer.subscription.updated",
+        "description": "Occurs when a subscription is updated"
+      },
+      {
+        "name": "customer.subscription.deleted",
+        "description": "Occurs when a subscription is cancelled"
+      },
+      {
+        "name": "charge.succeeded",
+        "description": "Occurs when a charge succeeds"
+      },
+      {
+        "name": "charge.refunded",
+        "description": "Occurs when a charge is refunded"
+      }
+    ]
+  }
 }

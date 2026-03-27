@@ -16,13 +16,13 @@
     "pinterest",
     "telegram"
   ],
-  "base_url": "https://socialcast.dev/api/social",
+  "base_url": "https://api.socialcast.dev",
   "auth": {
     "types": [
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
@@ -85,7 +85,7 @@
       "name": "get_account",
       "description": "Get details of a specific connected social media account by ID.",
       "method": "GET",
-      "path": "/accounts/%7B%7Bid%7D%7D",
+      "path": "/accounts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -145,7 +145,7 @@
       "name": "disconnect_account",
       "description": "Disconnect a social media account. The account will be marked as inactive.",
       "method": "DELETE",
-      "path": "/accounts/%7B%7Bid%7D%7D",
+      "path": "/accounts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -163,7 +163,7 @@
       "name": "list_pages",
       "description": "List available Facebook Pages and Instagram Business accounts for a connected Facebook/Instagram account. Used after OAuth to let the user pick which page or Instagram account to use.",
       "method": "GET",
-      "path": "/accounts/%7B%7Bid%7D%7D/pages",
+      "path": "/accounts/{id}/pages",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -181,7 +181,7 @@
       "name": "select_page",
       "description": "Finalize a Facebook or Instagram connection by selecting which Page or Instagram Business account to post to.",
       "method": "POST",
-      "path": "/accounts/%7B%7Bid%7D%7D/select-page",
+      "path": "/accounts/{id}/select-page",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -205,7 +205,7 @@
     },
     {
       "name": "create_post",
-      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links. To schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). Platform-specific overrides allow customizing content per platform (e.g., Reddit title, YouTube description, TikTok privacy).",
+      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York').",
       "method": "POST",
       "path": "/posts",
       "input_schema": {
@@ -217,7 +217,7 @@
           },
           "media_urls": {
             "type": "array",
-            "description": "Media attachments — array of objects with url, type (image/video), and optional alt_text",
+            "description": "Media attachments. Pass multiple images for carousel/album posts (Instagram up to 10, Facebook unlimited, TikTok up to 35). Each item needs url, type (image/video), and optional alt_text.",
             "items": {
               "type": "object",
               "properties": {
@@ -266,7 +266,7 @@
           },
           "platform_overrides": {
             "type": "object",
-            "description": "Per-platform overrides keyed by platform name. Only include platforms you want to customize. Available fields per platform: youtube: {title, description, tags (array), privacyStatus (public/unlisted/private), categoryId (default 22=People & Blogs)}. reddit: {title, subreddit, text, nsfw}. pinterest: {title, description, board_id}. tiktok: {title, text, privacyLevel}. linkedin: {text, visibility}. facebook: {text, title (video only)}. twitter: {text}. instagram: {text}. telegram: {text, chatId, parseMode}. All fields are optional — omitted fields fall back to the main post text.",
+            "description": "Per-platform overrides keyed by platform name. Only include platforms you want to customize. Available fields per platform: youtube: {title, description, tags (array), privacyStatus (public/unlisted/private), categoryId}. reddit: {title, subreddit, text, nsfw}. pinterest: {title, description, board_id}. tiktok: {title (photo posts only, max 90 chars), text (caption/description, falls back to main post text), privacyLevel (PUBLIC_TO_EVERYONE/MUTUAL_FOLLOW_FRIENDS/FOLLOWER_OF_CREATOR/SELF_ONLY), disableComment (bool), autoAddMusic (bool, photo posts only)}. linkedin: {text, visibility}. facebook: {text, title (video only)}. twitter: {text}. instagram: {text}. telegram: {text, chatId, parseMode}. All fields are optional — omitted fields fall back to the main post text.",
             "properties": {
               "twitter": {
                 "type": "object"
@@ -345,7 +345,7 @@
       "name": "get_post",
       "description": "Get a specific post with full per-platform results including platform post URLs, statuses, and errors.",
       "method": "GET",
-      "path": "/posts/%7B%7Bid%7D%7D",
+      "path": "/posts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -361,9 +361,9 @@
     },
     {
       "name": "update_post",
-      "description": "Update a post's text and sync changes to platforms that support editing (Facebook, YouTube, Telegram). Other platforms will be skipped.",
+      "description": "Update a post's text and platform-specific settings, then sync changes to platforms that support editing (Facebook, YouTube, Telegram). For YouTube: pass platform_overrides.youtube with title, description, tags, privacyStatus. For scheduled/failed posts: updates are saved locally for the next publish attempt. Other platforms will be skipped.",
       "method": "PUT",
-      "path": "/posts/%7B%7Bid%7D%7D",
+      "path": "/posts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -374,6 +374,10 @@
           "text": {
             "type": "string",
             "description": "New post text"
+          },
+          "platform_overrides": {
+            "type": "object",
+            "description": "Per-platform overrides. youtube: {title, description, tags (array), privacyStatus, categoryId}. tiktok: {title, text, privacyLevel, disableComment, autoAddMusic}. Other platforms use the main text field."
           }
         },
         "required": [
@@ -386,7 +390,7 @@
       "name": "delete_post",
       "description": "Delete a post record and attempt to remove it from platforms that support deletion (Facebook, YouTube, Pinterest, Telegram). Other platforms' posts will remain live.",
       "method": "DELETE",
-      "path": "/posts/%7B%7Bid%7D%7D",
+      "path": "/posts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -404,7 +408,7 @@
       "name": "reschedule_post",
       "description": "Reschedule a previously scheduled post to a new date/time. The post must be in 'scheduled' status. Updates the scheduled job and post record.",
       "method": "POST",
-      "path": "/posts/%7B%7Bid%7D%7D/reschedule",
+      "path": "/posts/{id}/reschedule",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -431,7 +435,7 @@
       "name": "cancel_scheduled_post",
       "description": "Cancel a scheduled post. The post must be in 'scheduled' status. The post will be moved back to 'draft' status and the scheduled job will be removed.",
       "method": "POST",
-      "path": "/posts/%7B%7Bid%7D%7D/cancel",
+      "path": "/posts/{id}/cancel",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -446,10 +450,28 @@
       }
     },
     {
+      "name": "retry_post",
+      "description": "Retry publishing a failed or partially failed post. Re-publishes only to the platforms that failed, keeping existing successful results intact. The post must be in 'failed' or 'partial' status.",
+      "method": "POST",
+      "path": "/posts/{id}/retry",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Post ID to retry"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
       "name": "get_post_analytics",
-      "description": "Fetch analytics and engagement metrics for a published post across all platforms. Returns impressions, reach, likes, comments, shares, views, saves, and clicks where available. Supported: Instagram, Facebook, YouTube, TikTok, Pinterest. No analytics API: Twitter, LinkedIn, Reddit, Telegram.",
+      "description": "Fetch analytics and engagement metrics for a published post across all platforms. Returns impressions, reach, likes, comments, shares, views, saves, clicks, quotes, and bookmarks where available. Supported: Instagram, Facebook, YouTube, TikTok, Pinterest, Twitter/X. No analytics API: LinkedIn, Reddit, Telegram.",
       "method": "GET",
-      "path": "/posts/%7B%7Bid%7D%7D/analytics",
+      "path": "/posts/{id}/analytics",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -464,10 +486,46 @@
       }
     },
     {
+      "name": "account_insights",
+      "description": "Get page-level insights and historical stats for a connected social account. Returns follower growth, reach, impressions, engagement metrics, and top content over a date range. Supported: Instagram (reach, followers, engagement, interactions), Facebook (page impressions, reach, engagement, fans), YouTube (subscribers, views, watch time), TikTok (followers, views, likes, shares), Twitter/X (followers, following, tweet count + recent tweet engagement), Pinterest (impressions, engagement, pin clicks, outbound clicks, saves + top pins). Unsupported: LinkedIn, Reddit, Telegram.",
+      "method": "GET",
+      "path": "/accounts/{id}/insights",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Social account ID to get insights for"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Start date in YYYY-MM-DD format (defaults to 7 days ago)"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date in YYYY-MM-DD format (defaults to today)"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week",
+              "days_28"
+            ],
+            "description": "Aggregation period (Instagram/Facebook only)",
+            "default": "day"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
       "name": "account_health",
       "description": "Check the connection health of one or all connected social accounts. Verifies that OAuth tokens are still valid by calling each platform's profile API. Pass a specific account ID or 'all' to check all active accounts.",
       "method": "GET",
-      "path": "/accounts/%7B%7Bid%7D%7D/health",
+      "path": "/accounts/{id}/health",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -669,5 +727,30 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-webhook-signature",
+    "events": [
+      {
+        "name": "social.comment.received",
+        "description": "New comment received on a post"
+      },
+      {
+        "name": "social.reply.received",
+        "description": "Reply received on a comment"
+      },
+      {
+        "name": "social.message.received",
+        "description": "Direct message received via Messenger"
+      },
+      {
+        "name": "social.comment.edited",
+        "description": "An existing comment was edited"
+      },
+      {
+        "name": "social.comment.deleted",
+        "description": "A comment was removed from a post"
+      }
+    ]
+  }
 }

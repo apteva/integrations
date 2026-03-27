@@ -14,17 +14,44 @@
   "base_url": "https://open.tiktokapis.com/v2",
   "auth": {
     "types": [
-      "bearer"
+      "bearer",
+      "oauth2"
     ],
     "headers": {
       "Authorization": "Bearer {{token}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "accessToken",
+        "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
-    ]
+    ],
+    "oauth2": {
+      "authorize_url": "https://www.tiktok.com/v2/auth/authorize",
+      "token_url": "https://open.tiktokapis.com/v2/oauth/token/",
+      "scopes": [
+        "user.info.basic",
+        "video.list",
+        "video.upload",
+        "video.publish",
+        "user.info.stats",
+        "user.info.profile"
+      ],
+      "client_id_required": true,
+      "pkce": false
+    }
   },
   "tools": [
     {
@@ -399,6 +426,84 @@
         },
         "required": [
           "filters"
+        ]
+      }
+    },
+    {
+      "name": "list_comments",
+      "description": "Get a paginated list of comments on a TikTok video. Returns comment text, like count, reply count, and creation time. Supports sorting by create_time_desc or like_count_desc.\n\nRequires scope: comment.list or comment.list.manage\n\nExample:\n{\n  \"video_id\": \"7123456789\",\n  \"max_count\": 20,\n  \"sort_order\": \"create_time_desc\"\n}",
+      "method": "GET",
+      "path": "/list-comments",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "description": "TikTok video ID to get comments for"
+          },
+          "max_count": {
+            "type": "integer",
+            "description": "Maximum comments per page (max 50)",
+            "default": 20
+          },
+          "cursor": {
+            "type": "integer",
+            "description": "Pagination cursor from previous response"
+          },
+          "sort_order": {
+            "type": "string",
+            "description": "Sort order for comments",
+            "enum": [
+              "create_time_desc",
+              "like_count_desc"
+            ],
+            "default": "create_time_desc"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated list of comment fields",
+            "default": "id,text,create_time,like_count,reply_count,parent_comment_id,video_id"
+          }
+        },
+        "required": [
+          "video_id"
+        ]
+      }
+    },
+    {
+      "name": "list_comment_replies",
+      "description": "Get a paginated list of replies to a specific comment on a TikTok video. Returns reply text, like count, and creation time.\n\nRequires scope: comment.list or comment.list.manage\n\nExample:\n{\n  \"video_id\": \"7123456789\",\n  \"comment_id\": \"7234567890\",\n  \"max_count\": 20\n}",
+      "method": "GET",
+      "path": "/list-comment-replies",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "description": "TikTok video ID the comment belongs to"
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "Parent comment ID to get replies for"
+          },
+          "max_count": {
+            "type": "integer",
+            "description": "Maximum replies per page (max 50)",
+            "default": 20
+          },
+          "cursor": {
+            "type": "integer",
+            "description": "Pagination cursor from previous response"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated list of reply fields",
+            "default": "id,text,create_time,like_count,parent_comment_id,video_id"
+          }
+        },
+        "required": [
+          "video_id",
+          "comment_id"
         ]
       }
     }

@@ -23,7 +23,7 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Token"
       }
     ]
   },
@@ -42,7 +42,7 @@
       "name": "get_campaign",
       "description": "Get details of a specific OptinMonster campaign by ID, including its configuration, display rules, and current status.",
       "method": "GET",
-      "path": "/campaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/campaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -105,7 +105,7 @@
       "name": "update_campaign",
       "description": "Update an existing OptinMonster campaign's settings, name, or status.",
       "method": "PUT",
-      "path": "/campaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/campaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -136,7 +136,7 @@
       "name": "delete_campaign",
       "description": "Delete an OptinMonster campaign.",
       "method": "DELETE",
-      "path": "/campaigns/%7B%7BcampaignId%7D%7D",
+      "path": "/campaigns/{campaignId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -154,7 +154,7 @@
       "name": "get_campaign_stats",
       "description": "Get conversion analytics for a specific campaign — impressions, conversions, conversion rate, and more.",
       "method": "GET",
-      "path": "/campaigns/%7B%7BcampaignId%7D%7D/stats",
+      "path": "/campaigns/{campaignId}/stats",
       "input_schema": {
         "type": "object",
         "properties": {

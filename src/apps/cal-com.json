@@ -171,7 +171,7 @@
       "name": "cancel_booking",
       "description": "Cancel an existing booking by its unique identifier. Optionally provide a cancellation reason. For seated bookings, provide a seatUid to cancel a specific attendee's seat. For recurring bookings, cancels all recurrences when using the recurring booking UID.",
       "method": "POST",
-      "path": "/bookings/%7B%7Bparam.bookingUid%7D%7D/cancel",
+      "path": "/bookings/{{param.bookingUid}}/cancel",
       "input_schema": {
         "type": "object",
         "properties": {

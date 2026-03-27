@@ -22,6 +22,18 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "scope",
+        "label": "scope"
       }
     ],
     "oauth2": {
@@ -218,5 +230,50 @@
         ]
       }
     }
-  ]
+  ],
+  "webhooks": {
+    "signature_header": "x-linear-signature",
+    "events": [
+      {
+        "name": "issue.created",
+        "description": "New issue created"
+      },
+      {
+        "name": "issue.updated",
+        "description": "Issue fields changed"
+      },
+      {
+        "name": "issue.removed",
+        "description": "Issue deleted"
+      },
+      {
+        "name": "comment.created",
+        "description": "New comment on issue"
+      },
+      {
+        "name": "comment.updated",
+        "description": "Comment edited"
+      },
+      {
+        "name": "project.created",
+        "description": "New project created"
+      },
+      {
+        "name": "project.updated",
+        "description": "Project details changed"
+      },
+      {
+        "name": "cycle.started",
+        "description": "Cycle started"
+      },
+      {
+        "name": "cycle.completed",
+        "description": "Cycle completed"
+      },
+      {
+        "name": "label.created",
+        "description": "New label created"
+      }
+    ]
+  }
 }

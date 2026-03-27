@@ -76,7 +76,7 @@
       "name": "get_event_type",
       "description": "Get detailed info about a specific event type including duration, location, color, and scheduling URL",
       "method": "GET",
-      "path": "/event_types/%7B%7Bevent_type_uuid%7D%7D",
+      "path": "/event_types/{event_type_uuid}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -145,7 +145,7 @@
       "name": "get_scheduled_event",
       "description": "Get details of a specific scheduled event including start/end time, location, status, and event type",
       "method": "GET",
-      "path": "/scheduled_events/%7B%7Bevent_uuid%7D%7D",
+      "path": "/scheduled_events/{event_uuid}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -163,7 +163,7 @@
       "name": "cancel_event",
       "description": "Cancel a scheduled event. Optionally provide a reason for cancellation.",
       "method": "POST",
-      "path": "/scheduled_events/%7B%7Bevent_uuid%7D%7D/cancellation",
+      "path": "/scheduled_events/{event_uuid}/cancellation",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -185,7 +185,7 @@
       "name": "list_invitees",
       "description": "List all invitees for a scheduled event — includes name, email, questions/answers, timezone, and cancellation info",
       "method": "GET",
-      "path": "/scheduled_events/%7B%7Bevent_uuid%7D%7D/invitees",
+      "path": "/scheduled_events/{event_uuid}/invitees",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -227,7 +227,7 @@
       "name": "mark_no_show",
       "description": "Mark an invitee as a no-show for a scheduled event",
       "method": "POST",
-      "path": "/scheduled_events/%7B%7Bevent_uuid%7D%7D/invitees/%7B%7Binvitee_uuid%7D%7D/no_show",
+      "path": "/scheduled_events/{event_uuid}/invitees/{invitee_uuid}/no_show",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -508,7 +508,7 @@
       "name": "delete_webhook",
       "description": "Delete a webhook subscription by its UUID",
       "method": "DELETE",
-      "path": "/webhook_subscriptions/%7B%7Bwebhook_uuid%7D%7D",
+      "path": "/webhook_subscriptions/{webhook_uuid}",
       "input_schema": {
         "type": "object",
         "properties": {

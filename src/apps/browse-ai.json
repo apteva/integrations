@@ -41,7 +41,7 @@
       "name": "get_robot",
       "description": "Retrieve detailed information about a specific robot by its ID. Returns the robot's name, configuration, input parameters, and creation date.",
       "method": "GET",
-      "path": "/robots/%7B%7Bparam.robot_id%7D%7D",
+      "path": "/robots/{{param.robot_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -59,7 +59,7 @@
       "name": "run_robot",
       "description": "Start a new task by running a robot with the specified input parameters. The robot will navigate to the target URL and extract data based on its configuration. Returns the created task object with its ID for tracking progress.",
       "method": "POST",
-      "path": "/robots/%7B%7Bparam.robot_id%7D%7D/tasks",
+      "path": "/robots/{{param.robot_id}}/tasks",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -88,7 +88,7 @@
       "name": "get_task",
       "description": "Retrieve the results and status of a specific task. Returns task status (successful, failed, in-progress), captured text data, screenshots, timestamps, and a debug video URL. Poll this endpoint to check if a running task has completed.",
       "method": "GET",
-      "path": "/robots/%7B%7Bparam.robot_id%7D%7D/tasks/%7B%7Bparam.task_id%7D%7D",
+      "path": "/robots/{{param.robot_id}}/tasks/{{param.task_id}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -111,7 +111,7 @@
       "name": "list_tasks",
       "description": "Retrieve a paginated list of tasks for a specific robot. Supports filtering by status and date range. Returns task IDs, statuses, timestamps, and extracted data summaries.",
       "method": "GET",
-      "path": "/robots/%7B%7Bparam.robot_id%7D%7D/tasks",
+      "path": "/robots/{{param.robot_id}}/tasks",
       "input_schema": {
         "type": "object",
         "properties": {

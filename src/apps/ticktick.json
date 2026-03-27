@@ -31,7 +31,7 @@
       "name": "find_tasks",
       "description": "Retrieve all tasks from a specific project in TickTick. Returns a list of task objects including their IDs, titles, content, due dates, priorities, and completion status. Use the projectId to scope results to a particular project.",
       "method": "GET",
-      "path": "/open/v1/project/%7B%7Bparam.projectId%7D%7D/data",
+      "path": "/open/v1/project/{{param.projectId}}/data",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -95,7 +95,7 @@
       "name": "update_task",
       "description": "Update an existing task in TickTick. Modify the title, content, due date, priority, or other properties of a task. Both taskId and projectId are required to identify the task. Returns the updated task object.",
       "method": "POST",
-      "path": "/open/v1/task/%7B%7Bparam.taskId%7D%7D",
+      "path": "/open/v1/task/{{param.taskId}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -146,7 +146,7 @@
       "name": "complete_task",
       "description": "Mark a task as complete in TickTick. Requires both the projectId and taskId to identify the task. The task will be moved to the completed state.",
       "method": "POST",
-      "path": "/open/v1/project/%7B%7Bparam.projectId%7D%7D/task/%7B%7Bparam.taskId%7D%7D/complete",
+      "path": "/open/v1/project/{{param.projectId}}/task/{{param.taskId}}/complete",
       "input_schema": {
         "type": "object",
         "properties": {

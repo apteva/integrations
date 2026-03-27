@@ -24,7 +24,7 @@
     "credential_fields": [
       {
         "name": "token",
-        "label": "API Key"
+        "label": "Token"
       }
     ]
   },

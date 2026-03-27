@@ -26,6 +26,14 @@
       {
         "name": "token",
         "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
       }
     ],
     "oauth2": {
@@ -424,7 +432,7 @@
       "name": "profiles_update",
       "description": "Edit a Skai profile's attributes such as name, settings, or publisher connections.",
       "method": "PUT",
-      "path": "/api/v1/profiles/%7B%7Bprofile_id%7D%7D",
+      "path": "/api/v1/profiles/{profile_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -567,7 +575,7 @@
       "name": "reports_async_status",
       "description": "Poll the status of an asynchronous report execution. Returns PENDING, RUNNING, COMPLETED, or FAILED.",
       "method": "GET",
-      "path": "/api/v1/reports/async/%7B%7Bexecution_id%7D%7D/status",
+      "path": "/api/v1/reports/async/{execution_id}/status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -585,7 +593,7 @@
       "name": "reports_async_download",
       "description": "Download the results of a completed asynchronous report.",
       "method": "GET",
-      "path": "/api/v1/reports/async/%7B%7Bexecution_id%7D%7D",
+      "path": "/api/v1/reports/async/{execution_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -603,7 +611,7 @@
       "name": "reports_columns",
       "description": "Get available column names for a given entity type. Use this to discover which metrics and dimensions can be included in reports.",
       "method": "GET",
-      "path": "/api/v1/reports/%7B%7Bentity%7D%7D/available_columns",
+      "path": "/api/v1/reports/{entity}/available_columns",
       "input_schema": {
         "type": "object",
         "properties": {

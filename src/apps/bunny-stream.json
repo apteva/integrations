@@ -16,20 +16,24 @@
       "api_key"
     ],
     "headers": {
-      "AccessKey": "{{token}}"
+      "AccessKey": "{{api_key}}"
     },
     "credential_fields": [
       {
         "name": "streamApiKey",
         "label": "Stream Api Key",
         "description": "Your Bunny Stream Account API Key (found in Account Settings > API)"
+      },
+      {
+        "name": "libraryId",
+        "label": "Library Id"
       }
     ]
   },
   "tools": [
     {
       "name": "list_libraries",
-      "description": "List all video libraries in your account",
+      "description": "List all video libraries in your account. Returns Id, Name, VideoCount, StorageUsage, and PullZoneUrl for each library. The Id field is the libraryId needed for constructing video embed/play URLs.",
       "method": "GET",
       "path": "/videolibrary",
       "input_schema": {
@@ -58,7 +62,7 @@
       "name": "get_library",
       "description": "Get detailed information about the video library",
       "method": "GET",
-      "path": "/videolibrary/%7B%7Bcredential.libraryId%7D%7D",
+      "path": "/videolibrary/{{credential.libraryId}}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -149,9 +153,9 @@
     },
     {
       "name": "list_videos",
-      "description": "List all videos in the library with filtering and pagination",
+      "description": "List videos in the library with pagination and filtering. Each video includes guid, title, status, length, views, and more.\n\nTo get play/embed URLs for a video, construct from guid and libraryId:\n- Embed: https://iframe.mediadelivery.net/embed/{libraryId}/{guid}\n- Player: https://player.mediadelivery.net/embed/{libraryId}/{guid}\n\nUse list_libraries to get your libraryId if needed.",
       "method": "GET",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/videos",
+      "path": "/library/{{credential.libraryId}}/videos",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -189,9 +193,9 @@
     },
     {
       "name": "get_video",
-      "description": "Get detailed information about a specific video including status, encoding progress, and metadata",
+      "description": "Get video details including status, encoding progress, resolution, duration, and metadata.\n\nNOTE: The API does not return play/embed URLs directly. Construct them from the response:\n- Embed iframe: https://iframe.mediadelivery.net/embed/{libraryId}/{guid}\n- New player: https://player.mediadelivery.net/embed/{libraryId}/{guid}\n- MP4 direct (if MP4 fallback enabled): https://{pullZoneUrl}.b-cdn.net/{guid}/play_720p.mp4 (or 360p, 480p, 1080p)\n- Thumbnail: https://vz-{libraryId}.b-cdn.net/{guid}/thumbnail.jpg\n\nThe guid field in the response is the video ID. The libraryId is your configured library ID — use list_libraries to find it if needed.",
       "method": "GET",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/videos/%7B%7BvideoId%7D%7D",
+      "path": "/library/{{credential.libraryId}}/videos/{videoId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -209,7 +213,7 @@
       "name": "create_video",
       "description": "Create a new video entry in the library (use fetch-video to add content from a URL)",
       "method": "POST",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/videos",
+      "path": "/library/{{credential.libraryId}}/videos",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -237,7 +241,7 @@
       "name": "update_video",
       "description": "Update video metadata including title, description, chapters, moments, and tags",
       "method": "POST",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/videos/%7B%7BvideoId%7D%7D",
+      "path": "/library/{{credential.libraryId}}/videos/{videoId}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -307,7 +311,7 @@
       "name": "list_collections",
       "description": "List all video collections in the library",
       "method": "GET",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/collections",
+      "path": "/library/{{credential.libraryId}}/collections",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -333,7 +337,7 @@
       "name": "create_collection",
       "description": "Create a new collection for organizing videos in the library",
       "method": "POST",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/collections",
+      "path": "/library/{{credential.libraryId}}/collections",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -353,7 +357,7 @@
       "name": "fetch_video",
       "description": "Fetch and upload a video from an external URL to Bunny Stream for processing",
       "method": "POST",
-      "path": "/library/%7B%7Bcredential.libraryId%7D%7D/videos/fetch",
+      "path": "/library/{{credential.libraryId}}/videos/fetch",
       "input_schema": {
         "type": "object",
         "properties": {

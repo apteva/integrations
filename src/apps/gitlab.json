@@ -23,6 +23,11 @@
         "name": "accessToken",
         "label": "Access Token",
         "description": "Your GitLab Personal Access Token"
+      },
+      {
+        "name": "instanceUrl",
+        "label": "Instance Url",
+        "description": "GitLab instance URL (default: https://gitlab.com)"
       }
     ]
   },
@@ -85,10 +90,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "title": {
             "type": "string",
             "description": "Issue title"
@@ -117,7 +118,6 @@
           }
         },
         "required": [
-          "project_id",
           "title"
         ]
       }
@@ -130,10 +130,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "state": {
             "type": "string",
             "enum": [
@@ -154,10 +150,7 @@
             "type": "number",
             "description": "Filter by assignee ID"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -168,10 +161,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "source_branch": {
             "type": "string",
             "description": "Source branch name"
@@ -201,7 +190,6 @@
           }
         },
         "required": [
-          "project_id",
           "source_branch",
           "target_branch",
           "title"
@@ -216,10 +204,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "state": {
             "type": "string",
             "enum": [
@@ -239,10 +223,7 @@
             ],
             "description": "Scope of merge requests"
           }
-        },
-        "required": [
-          "project_id"
-        ]
+        }
       }
     },
     {
@@ -253,10 +234,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "ref": {
             "type": "string",
             "description": "Branch or tag name"
@@ -267,7 +244,6 @@
           }
         },
         "required": [
-          "project_id",
           "ref"
         ]
       }
@@ -280,17 +256,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "pipeline_id": {
             "type": "number",
             "description": "Pipeline ID"
           }
         },
         "required": [
-          "project_id",
           "pipeline_id"
         ]
       }
@@ -303,17 +274,12 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "pipeline_id": {
             "type": "number",
             "description": "Pipeline ID"
           }
         },
         "required": [
-          "project_id",
           "pipeline_id"
         ]
       }
@@ -326,10 +292,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "branch": {
             "type": "string",
             "description": "Branch name"
@@ -340,7 +302,6 @@
           }
         },
         "required": [
-          "project_id",
           "branch",
           "ref"
         ]
@@ -354,10 +315,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "file_path": {
             "type": "string",
             "description": "File path in repository"
@@ -369,7 +326,6 @@
           }
         },
         "required": [
-          "project_id",
           "file_path"
         ]
       }
@@ -382,10 +338,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "workflow_content": {
             "type": "string",
             "description": "YAML content for .gitlab-ci.yml"
@@ -402,7 +354,6 @@
           }
         },
         "required": [
-          "project_id",
           "workflow_content"
         ]
       }
@@ -415,10 +366,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Project ID or path"
-          },
           "ref": {
             "type": "string",
             "description": "Branch, tag, or commit to deploy"
@@ -438,7 +385,6 @@
           }
         },
         "required": [
-          "project_id",
           "ref",
           "environment"
         ]

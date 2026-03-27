@@ -37,10 +37,6 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Filter tasks by project ID."
-          },
           "section_id": {
             "type": "string",
             "description": "Filter tasks by section ID."
@@ -67,12 +63,7 @@
       "path": "/rest/v2/sections",
       "input_schema": {
         "type": "object",
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "description": "Filter sections by project ID. If omitted, returns sections from all projects."
-          }
-        }
+        "properties": {}
       }
     },
     {
@@ -86,10 +77,6 @@
           "task_id": {
             "type": "string",
             "description": "The ID of the task to comment on. Either task_id or project_id is required."
-          },
-          "project_id": {
-            "type": "string",
-            "description": "The ID of the project to comment on. Either task_id or project_id is required."
           },
           "content": {
             "type": "string",
@@ -105,7 +92,7 @@
       "name": "move_task",
       "description": "Move a task to a different section by updating its section_id. You can also update other task properties at the same time such as content, description, labels, priority, and due date. Returns the updated task object.",
       "method": "POST",
-      "path": "/rest/v2/tasks/%7B%7Bparam.task_id%7D%7D",
+      "path": "/rest/v2/tasks/{{param.task_id}}",
       "input_schema": {
         "type": "object",
         "properties": {

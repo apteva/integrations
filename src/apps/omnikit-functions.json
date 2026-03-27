@@ -14,15 +14,16 @@
   "base_url": "https://api.omnikit.co",
   "auth": {
     "types": [
-      "bearer"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "X-API-Key": "{{api_key}}"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "API Key"
+        "name": "api_key",
+        "label": "Api Key",
+        "description": "Your OmniKit API key (starts with 'okt_'). The project is determined automatically from the key."
       }
     ]
   },
@@ -139,7 +140,7 @@
       "name": "get",
       "description": "Get detailed information about a specific serverless function including optional code and version history",
       "method": "GET",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D",
+      "path": "/functions/{function_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -165,7 +166,7 @@
       "name": "update",
       "description": "Update an existing serverless function's code, runtime, timeout, memory, or environment variables",
       "method": "PUT",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D",
+      "path": "/functions/{function_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -214,7 +215,7 @@
       "name": "delete",
       "description": "Delete a serverless function permanently",
       "method": "DELETE",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D",
+      "path": "/functions/{function_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -237,7 +238,7 @@
       "name": "deploy",
       "description": "Deploy a serverless function to make it available for invocation",
       "method": "POST",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D/deploy",
+      "path": "/functions/{function_id}/deploy",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -255,7 +256,7 @@
       "name": "invoke",
       "description": "Test invoke a deployed serverless function with input data",
       "method": "POST",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D/invoke",
+      "path": "/functions/{function_id}/invoke",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -282,7 +283,7 @@
       "name": "logs",
       "description": "Get execution logs and history for a serverless function with filtering by status, date range, and pagination",
       "method": "GET",
-      "path": "/functions/%7B%7Bfunction_id%7D%7D/logs",
+      "path": "/functions/{function_id}/logs",
       "input_schema": {
         "type": "object",
         "properties": {

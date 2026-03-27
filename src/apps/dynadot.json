@@ -23,6 +23,11 @@
         "name": "token",
         "label": "Api Key",
         "description": "Dynadot API key (generate at dynadot.com/account/domain/setting/api.html)"
+      },
+      {
+        "name": "apiKey",
+        "label": "Api Key",
+        "description": "Dynadot API key (generate at dynadot.com/account/domain/setting/api.html)"
       }
     ]
   },

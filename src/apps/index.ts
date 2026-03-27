@@ -20,6 +20,13 @@ function getAppsDir(): string {
 let cachedApps: Map<string, AppTemplate> | null = null;
 
 /**
+ * Clear the cached app templates so they are reloaded from disk on next access.
+ */
+export function resetAppCache(): void {
+  cachedApps = null;
+}
+
+/**
  * Load all app templates from the JSON files in the apps directory.
  * Results are cached after first load.
  */
