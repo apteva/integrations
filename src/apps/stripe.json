@@ -534,6 +534,18 @@
   ],
   "webhooks": {
     "signature_header": "stripe-signature",
+    "registration": {
+      "method": "POST",
+      "path": "/webhook_endpoints",
+      "url_field": "url",
+      "events_field": "enabled_events",
+      "content_type": "application/x-www-form-urlencoded",
+      "id_field": "id",
+      "delete_path": "/webhook_endpoints/{id}",
+      "delete_method": "DELETE",
+      "list_path": "/webhook_endpoints",
+      "list_field": "data"
+    },
     "events": [
       {
         "name": "payment_intent.succeeded",

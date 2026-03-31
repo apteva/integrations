@@ -924,6 +924,24 @@
   ],
   "webhooks": {
     "signature_header": "x-webhook-signature",
+    "registration": {
+      "method": "POST",
+      "path": "/webhooks-register",
+      "url_field": "endpoint_url",
+      "events_field": "event_types",
+      "secret_field": "secret_key",
+      "id_field": "webhook_id",
+      "extra": {
+        "name": "Apteva Webhook",
+        "direction": "outgoing",
+        "provider": "custom",
+        "auth_type": "hmac-sha256"
+      },
+      "delete_path": "/webhooks/{id}",
+      "delete_method": "DELETE",
+      "list_path": "/webhooks",
+      "list_field": "data"
+    },
     "events": [
       {
         "name": "content.created",
