@@ -531,6 +531,76 @@
         },
         "required": ["id"]
       }
+    },
+    {
+      "name": "crawl_errors",
+      "description": "Retrieve per-page errors for a crawl job. Use after crawl_status reports failures or when total > completed, to see exactly which URLs failed and why.",
+      "method": "GET",
+      "path": "/crawl/{id}/errors",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The crawl job id returned by firecrawl_crawl"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "batch_scrape_errors",
+      "description": "Retrieve per-URL errors for a batch scrape job. Use after batch_scrape_status reports failures.",
+      "method": "GET",
+      "path": "/batch/scrape/{id}/errors",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The batch scrape job id returned by firecrawl_batch_scrape"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "crawl_active",
+      "description": "List all crawl jobs currently running for this account. No arguments. Useful for monitoring without needing to track job ids yourself.",
+      "method": "GET",
+      "path": "/crawl/active",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "crawl_params_preview",
+      "description": "Preview what a crawl request would do — Firecrawl resolves the prompt/include/exclude/sitemap config into the actual normalized parameters and an estimated page count without spending credits. Use before launching expensive crawls.",
+      "method": "POST",
+      "path": "/crawl/params-preview",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The starting URL to crawl"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Natural-language description of what to crawl"
+          },
+          "limit": { "type": "integer" },
+          "maxDiscoveryDepth": { "type": "integer" },
+          "includePaths": { "type": "array", "items": { "type": "string" } },
+          "excludePaths": { "type": "array", "items": { "type": "string" } },
+          "sitemap": { "type": "string", "enum": ["skip", "include", "only"] },
+          "crawlEntireDomain": { "type": "boolean" },
+          "allowSubdomains": { "type": "boolean" },
+          "allowExternalLinks": { "type": "boolean" }
+        },
+        "required": ["url"]
+      }
     }
   ]
 }
