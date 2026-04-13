@@ -220,201 +220,71 @@
       }
     },
     {
-      "name": "download_file",
-      "description": "Get a download URL for a file",
-      "method": "GET",
-      "path": "/storage/files/{file_id}/download",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "file_id": {
-            "type": "integer",
-            "description": "ID of the file to download"
-          }
-        },
-        "required": [
-          "file_id"
-        ]
-      }
-    },
-    {
       "name": "search",
-      "description": "Advanced file search with filtering and sorting. For oldest/newest content use sort_by=uploaded_at (content date) with sort_order=asc/desc. created_at is the system upload timestamp, uploaded_at reflects the actual content date. For portrait/vertical videos: file_type=video, format=portrait. For landscape/horizontal: file_type=video, format=landscape. Supports filtering by type, format, dimensions, duration, size, dates, tags, content_rating, and more.",
+      "description": "Search files in storage. For oldest content: sort_by=uploaded_at, sort_order=asc. For newest: sort_by=uploaded_at, sort_order=desc. For portrait videos: file_type=video, format=portrait. For safe content: content_rating=sfw. For random files: sort_by=random.",
       "method": "GET",
       "path": "/storage/search",
       "input_schema": {
         "type": "object",
         "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query (searches file names, descriptions, and tags)"
-          },
-          "name_contains": {
-            "type": "string",
-            "description": "Search specifically in file names only"
-          },
           "file_type": {
             "type": "string",
-            "enum": [
-              "image",
-              "video",
-              "audio",
-              "document",
-              "archive",
-              "other"
-            ],
+            "enum": ["image", "video", "audio", "document"],
             "description": "Filter by file type"
-          },
-          "mime_type": {
-            "type": "string",
-            "description": "Filter by exact MIME type (e.g., video/mp4, image/png)"
-          },
-          "mime_type_prefix": {
-            "type": "string",
-            "description": "Filter by MIME type prefix (e.g., 'image/', 'video/')"
-          },
-          "extension": {
-            "type": "string",
-            "description": "Filter by file extension (e.g., mp4, jpg, pdf)"
           },
           "format": {
             "type": "string",
-            "enum": [
-              "portrait",
-              "landscape",
-              "square"
-            ],
-            "description": "Filter by aspect ratio format. portrait = height > width (vertical/mobile videos), landscape = width > height (horizontal/widescreen), square = equal dimensions"
+            "enum": ["portrait", "landscape", "square"],
+            "description": "Filter by aspect ratio. portrait = vertical/mobile, landscape = horizontal/widescreen"
+          },
+          "content_rating": {
+            "type": "string",
+            "enum": ["sfw", "nsfw", "suggestive", "adult", "explicit"],
+            "description": "Filter by content rating. sfw = safe only, nsfw = everything except safe"
           },
           "folder": {
             "type": "string",
-            "description": "Folder name, path, or slug to search in (resolves automatically, includes subfolders)"
+            "description": "Search within a folder by name (includes subfolders)"
           },
-          "folder_id": {
-            "type": "integer",
-            "description": "Filter by folder ID"
-          },
-          "bucket_id": {
-            "type": "integer",
-            "description": "Filter by storage bucket ID"
-          },
-          "tags": {
+          "search": {
             "type": "string",
-            "description": "Comma-separated tags to filter by (matches any)"
+            "description": "Search in file names, descriptions, and tags"
           },
-          "min_size": {
-            "type": "integer",
-            "description": "Minimum file size in bytes"
+          "uploaded_after": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Content from after this date (e.g. 2024-01-01T00:00:00Z). This is the original content date, not upload date."
           },
-          "max_size": {
-            "type": "integer",
-            "description": "Maximum file size in bytes"
-          },
-          "min_width": {
-            "type": "integer",
-            "description": "Minimum width in pixels (images/videos)"
-          },
-          "max_width": {
-            "type": "integer",
-            "description": "Maximum width in pixels (images/videos)"
-          },
-          "min_height": {
-            "type": "integer",
-            "description": "Minimum height in pixels (images/videos)"
-          },
-          "max_height": {
-            "type": "integer",
-            "description": "Maximum height in pixels (images/videos)"
-          },
-          "min_duration": {
-            "type": "number",
-            "description": "Minimum duration in seconds (video/audio)"
+          "uploaded_before": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Content from before this date. This is the original content date, not upload date."
           },
           "max_duration": {
             "type": "number",
             "description": "Maximum duration in seconds (video/audio)"
           },
-          "created_after": {
-            "type": "string",
-            "description": "Filter by system upload date (after). For content date filtering use uploaded_after instead."
-          },
-          "created_before": {
-            "type": "string",
-            "description": "Filter by system upload date (before). For content date filtering use uploaded_before instead."
-          },
-          "uploaded_after": {
-            "type": "string",
-            "description": "Filter by content date (after). This reflects when the content was originally from, not when it was added to the platform."
-          },
-          "uploaded_before": {
-            "type": "string",
-            "description": "Filter by content date (before). This reflects when the content was originally from, not when it was added to the platform."
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "uploading",
-              "processing",
-              "completed",
-              "failed"
-            ],
-            "description": "Filter by file processing status"
-          },
-          "access_level": {
-            "type": "string",
-            "enum": [
-              "public",
-              "private",
-              "restricted"
-            ],
-            "description": "Filter by access level"
-          },
-          "content_rating": {
-            "type": "string",
-            "enum": [
-              "sfw",
-              "nsfw",
-              "safe",
-              "suggestive",
-              "adult",
-              "explicit"
-            ],
-            "description": "Filter by content rating. 'sfw' = safe-for-work only, 'nsfw' = not safe for work"
-          },
-          "has_thumbnails": {
-            "type": "boolean",
-            "description": "Filter files that have/don't have thumbnails"
+          "min_duration": {
+            "type": "number",
+            "description": "Minimum duration in seconds (video/audio)"
           },
           "sort_by": {
             "type": "string",
-            "enum": [
-              "name",
-              "size",
-              "created_at",
-              "uploaded_at",
-              "file_type",
-              "extension",
-              "width",
-              "height",
-              "duration",
-              "random"
-            ],
-            "default": "created_at",
-            "description": "Sort field. Use 'uploaded_at' for content date (oldest/newest content). Use 'created_at' for system upload date. 'asc' for oldest/smallest first, 'desc' for newest/largest first. 'size' sorts by file size. 'random' for random order."
+            "enum": ["uploaded_at", "created_at", "name", "size", "duration", "random"],
+            "default": "uploaded_at",
+            "description": "Sort field. uploaded_at = content date (use for oldest/newest). random = random order."
           },
           "sort_order": {
             "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ],
+            "enum": ["asc", "desc"],
             "default": "desc",
-            "description": "Sort direction. 'asc' = ascending (oldest/smallest first), 'desc' = descending (newest/largest first)"
+            "description": "asc = oldest/smallest first, desc = newest/largest first"
           },
           "limit": {
             "type": "integer",
-            "default": 50,
-            "description": "Number of results to return (max 1000)"
+            "default": 10,
+            "maximum": 50,
+            "description": "Number of results to return (default 10, max 50)"
           },
           "offset": {
             "type": "integer",
@@ -473,46 +343,6 @@
         "required": [
           "content",
           "file_name"
-        ]
-      }
-    },
-    {
-      "name": "generate_presigned_url",
-      "description": "Generate a presigned URL for direct client-to-storage file upload. Use for large files instead of base64 upload. After upload, call confirm-upload to trigger processing.",
-      "method": "POST",
-      "path": "/storage/generate-presigned-url",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "file_name": {
-            "type": "string",
-            "description": "Name of the file to upload"
-          },
-          "mime_type": {
-            "type": "string",
-            "description": "MIME type of the file"
-          },
-          "size_bytes": {
-            "type": "integer",
-            "description": "File size in bytes"
-          },
-          "folder_id": {
-            "type": "integer",
-            "description": "Target folder ID"
-          },
-          "access_level": {
-            "type": "string",
-            "enum": [
-              "public",
-              "private"
-            ],
-            "default": "public",
-            "description": "File access level"
-          }
-        },
-        "required": [
-          "file_name",
-          "mime_type"
         ]
       }
     },

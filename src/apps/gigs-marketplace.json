@@ -16,18 +16,13 @@
       "api_key"
     ],
     "headers": {
-      "X-API-Key": "{{api_key}}"
+      "X-API-Key": "{{token}}"
     },
     "credential_fields": [
       {
-        "name": "api_key",
+        "name": "token",
         "label": "Api Key",
         "description": "Your Gigs API key"
-      },
-      {
-        "name": "userId",
-        "label": "User Id",
-        "description": "Default user ID for operations (can be overridden per request)"
       }
     ]
   },
@@ -59,6 +54,10 @@
             "description": "Deadline in ISO 8601 format (YYYY-MM-DD)",
             "format": "date"
           },
+          "project_id": {
+            "type": "integer",
+            "description": "Associated project ID"
+          },
           "template_id": {
             "type": "integer",
             "description": "Template ID to apply instructions from"
@@ -78,12 +77,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID creating the gig (client)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "title",
-          "userId"
+          "title"
         ]
       }
     },
@@ -97,7 +95,7 @@
         "properties": {
           "userId": {
             "type": "integer",
-            "description": "User ID for filtering"
+            "description": "Optional. User ID for audit trail / tracking"
           },
           "role": {
             "type": "string",
@@ -142,7 +140,7 @@
       "name": "get_gig_details",
       "description": "Get detailed information about a specific gig",
       "method": "GET",
-      "path": "/gigs/{id}",
+      "path": "/gigs/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -160,7 +158,7 @@
       "name": "assign_gig",
       "description": "Assign a gig to a worker (client only)",
       "method": "POST",
-      "path": "/gigs/{id}/assign",
+      "path": "/gigs/%7B%7Bid%7D%7D/assign",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -174,13 +172,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "Client user ID (must be gig owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "worker_id",
-          "userId"
+          "worker_id"
         ]
       }
     },
@@ -188,7 +185,7 @@
       "name": "update_gig_status",
       "description": "Update the status of a gig",
       "method": "PUT",
-      "path": "/gigs/{id}/status",
+      "path": "/gigs/%7B%7Bid%7D%7D/status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -210,13 +207,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID performing the update"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "status",
-          "userId"
+          "status"
         ]
       }
     },
@@ -224,7 +220,7 @@
       "name": "update_gig",
       "description": "Update gig details such as title, description, budget, deadline, or priority",
       "method": "PUT",
-      "path": "/gigs/{id}",
+      "path": "/gigs/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -269,7 +265,7 @@
       "name": "cancel_gig",
       "description": "Cancel a gig (client only)",
       "method": "DELETE",
-      "path": "/gigs/{id}",
+      "path": "/gigs/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -283,12 +279,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be client)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "id",
-          "userId"
+          "id"
         ]
       }
     },
@@ -352,13 +347,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID creating the instruction"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "name",
-          "content",
-          "userId"
+          "content"
         ]
       }
     },
@@ -380,7 +374,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "Filter by creator user ID"
+            "description": "Optional. User ID for audit trail / tracking"
           },
           "limit": {
             "type": "integer",
@@ -417,7 +411,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID to include their private instructions in results"
+            "description": "Optional. User ID for audit trail / tracking"
           },
           "limit": {
             "type": "integer",
@@ -467,12 +461,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID creating the template"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "name",
-          "userId"
+          "name"
         ]
       }
     },
@@ -494,7 +487,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "Filter by creator user ID"
+            "description": "Optional. User ID for audit trail / tracking"
           },
           "limit": {
             "type": "integer",
@@ -516,7 +509,7 @@
       "name": "apply_template_to_gig",
       "description": "Apply a template's instructions to a gig",
       "method": "POST",
-      "path": "/gigs/{id}/apply-template",
+      "path": "/gigs/%7B%7Bid%7D%7D/apply-template",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -530,13 +523,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID performing the action"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "template_id",
-          "userId"
+          "template_id"
         ]
       }
     },
@@ -544,7 +536,7 @@
       "name": "add_instruction_to_gig",
       "description": "Add an instruction from the instruction library to a gig. Use 'List Instructions' or 'Search Instructions' to find the library instruction_id.",
       "method": "POST",
-      "path": "/gigs/{id}/instructions",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -566,13 +558,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID performing the action (must be gig owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "instruction_id",
-          "userId"
+          "instruction_id"
         ]
       }
     },
@@ -580,7 +571,7 @@
       "name": "get_gig_instructions",
       "description": "Get all instructions attached to a gig. Returns gig_instructions records with their 'id' (needed for remove/complete/customize/reset operations), instruction details, completion status, and submitted files.",
       "method": "GET",
-      "path": "/gigs/{id}/instructions",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -598,7 +589,7 @@
       "name": "mark_instruction_complete",
       "description": "Mark a gig instruction as completed. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/{id}/instructions/{instructionId}/complete",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D/complete",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -612,13 +603,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID performing the action"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "instructionId",
-          "userId"
+          "instructionId"
         ]
       }
     },
@@ -626,7 +616,7 @@
       "name": "submit_work",
       "description": "Submit work files for a gig",
       "method": "POST",
-      "path": "/gigs/{id}/submissions",
+      "path": "/gigs/%7B%7Bid%7D%7D/submissions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -656,14 +646,13 @@
           },
           "userId": {
             "type": "integer",
-            "description": "Worker user ID submitting work"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
           "file_name",
-          "file_url",
-          "userId"
+          "file_url"
         ]
       }
     },
@@ -671,7 +660,7 @@
       "name": "get_submissions",
       "description": "Get all submissions for a gig",
       "method": "GET",
-      "path": "/gigs/{id}/submissions",
+      "path": "/gigs/%7B%7Bid%7D%7D/submissions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -689,7 +678,7 @@
       "name": "review_submission",
       "description": "Review and approve/reject a work submission (client only)",
       "method": "POST",
-      "path": "/gigs/{id}/submissions/{submissionId}/review",
+      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D/review",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -716,14 +705,13 @@
           },
           "userId": {
             "type": "integer",
-            "description": "Client user ID reviewing submission"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
           "submissionId",
-          "status",
-          "userId"
+          "status"
         ]
       }
     },
@@ -731,7 +719,7 @@
       "name": "request_revision",
       "description": "Request changes to a work submission",
       "method": "POST",
-      "path": "/gigs/{id}/submissions/{submissionId}/revision",
+      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D/revision",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -749,14 +737,13 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID requesting revision"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
           "submissionId",
-          "revision_notes",
-          "userId"
+          "revision_notes"
         ]
       }
     },
@@ -764,7 +751,7 @@
       "name": "get_gig_activity",
       "description": "Get activity log/history for a gig",
       "method": "GET",
-      "path": "/gigs/{id}/activity",
+      "path": "/gigs/%7B%7Bid%7D%7D/activity",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -796,6 +783,10 @@
             ],
             "default": "all"
           },
+          "project_id": {
+            "type": "integer",
+            "description": "Filter by project ID"
+          },
           "limit": {
             "type": "integer",
             "description": "Number of users to return",
@@ -816,7 +807,7 @@
       "name": "get_instruction",
       "description": "Get a single instruction from the library by ID",
       "method": "GET",
-      "path": "/instructions/{id}",
+      "path": "/instructions/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -826,7 +817,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID requesting the instruction"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
@@ -838,7 +829,7 @@
       "name": "update_instruction",
       "description": "Update an instruction's content, media, or settings",
       "method": "PUT",
-      "path": "/instructions/{id}",
+      "path": "/instructions/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -902,7 +893,7 @@
       "name": "delete_instruction",
       "description": "Delete an instruction from the library",
       "method": "DELETE",
-      "path": "/instructions/{id}",
+      "path": "/instructions/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -912,12 +903,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "id",
-          "userId"
+          "id"
         ]
       }
     },
@@ -925,7 +915,7 @@
       "name": "get_template",
       "description": "Get a template with its instructions",
       "method": "GET",
-      "path": "/templates/{id}",
+      "path": "/templates/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -935,7 +925,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID requesting the template"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
@@ -973,12 +963,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "id",
-          "userId"
+          "id"
         ]
       }
     },
@@ -986,7 +975,7 @@
       "name": "delete_template",
       "description": "Delete a gig template",
       "method": "DELETE",
-      "path": "/gigs/templates/{id}",
+      "path": "/gigs/templates/%7B%7Bid%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -996,12 +985,11 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
-          "id",
-          "userId"
+          "id"
         ]
       }
     },
@@ -1009,7 +997,7 @@
       "name": "clone_template",
       "description": "Create a copy of a template for customization",
       "method": "POST",
-      "path": "/gigs/templates/{id}/clone",
+      "path": "/gigs/templates/%7B%7Bid%7D%7D/clone",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1023,13 +1011,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID creating the clone"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "name",
-          "userId"
+          "name"
         ]
       }
     },
@@ -1037,7 +1024,7 @@
       "name": "add_instruction_to_template",
       "description": "Add an instruction from the library to a template",
       "method": "POST",
-      "path": "/templates/{id}/instructions",
+      "path": "/templates/%7B%7Bid%7D%7D/instructions",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1060,7 +1047,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be template owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
@@ -1074,7 +1061,7 @@
       "name": "remove_instruction_from_template",
       "description": "Remove an instruction from a template",
       "method": "DELETE",
-      "path": "/templates/{id}/instructions/{instructionId}",
+      "path": "/templates/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1088,7 +1075,7 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be template owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
@@ -1101,7 +1088,7 @@
       "name": "reorder_template_instructions",
       "description": "Reorder the instructions within a template",
       "method": "PUT",
-      "path": "/gigs/templates/{id}/instructions/reorder",
+      "path": "/gigs/templates/%7B%7Bid%7D%7D/instructions/reorder",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1126,13 +1113,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be template owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "instructions",
-          "userId"
+          "instructions"
         ]
       }
     },
@@ -1158,14 +1144,13 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be template owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
           "template_id",
-          "is_required",
-          "userId"
+          "is_required"
         ]
       }
     },
@@ -1173,7 +1158,7 @@
       "name": "remove_gig_instruction",
       "description": "Remove an instruction from a gig. Use 'Get Gig Instructions' first to find the gig_instructions record ID for the instruction you want to remove.",
       "method": "DELETE",
-      "path": "/gigs/{id}/instructions/{instructionId}",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1196,7 +1181,7 @@
       "name": "customize_gig_instruction",
       "description": "Customize an instruction for a specific gig with custom content or media. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/{id}/instructions/{instructionId}",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1222,13 +1207,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be gig owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "instructionId",
-          "userId"
+          "instructionId"
         ]
       }
     },
@@ -1271,7 +1255,7 @@
       "name": "delete_submission",
       "description": "Delete a work submission from a gig",
       "method": "DELETE",
-      "path": "/gigs/{id}/submissions/{submissionId}",
+      "path": "/gigs/%7B%7Bid%7D%7D/submissions/%7B%7BsubmissionId%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1285,13 +1269,12 @@
           },
           "userId": {
             "type": "integer",
-            "description": "User ID (must be submitter or gig owner)"
+            "description": "Optional. User ID for audit trail / tracking"
           }
         },
         "required": [
           "id",
-          "submissionId",
-          "userId"
+          "submissionId"
         ]
       }
     },
@@ -1299,17 +1282,22 @@
       "name": "complete_gig",
       "description": "Complete a gig by verifying all required instructions are done, creating a submissions folder, moving files, and updating status to completed",
       "method": "POST",
-      "path": "/gigs/{id}/complete",
+      "path": "/gigs/%7B%7Bid%7D%7D/complete",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "description": "Gig ID to complete"
+          },
+          "project_id": {
+            "type": "integer",
+            "description": "Project ID for storage operations (required for folder creation)"
           }
         },
         "required": [
-          "id"
+          "id",
+          "project_id"
         ]
       }
     },
@@ -1317,7 +1305,7 @@
       "name": "reset_instruction_status",
       "description": "Reset a gig instruction to not completed, clearing all submission data and files. Use 'Get Gig Instructions' first to find the gig_instructions record ID.",
       "method": "PUT",
-      "path": "/gigs/{id}/instructions/{instructionId}/reset",
+      "path": "/gigs/%7B%7Bid%7D%7D/instructions/%7B%7BinstructionId%7D%7D/reset",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1431,7 +1419,7 @@
       "name": "delete_user",
       "description": "Delete a user (model) from the gigs platform and their linked contact record. Only users belonging to the modeling project can be deleted.",
       "method": "DELETE",
-      "path": "/users/{user_id}",
+      "path": "/users/%7B%7Buser_id%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1449,7 +1437,7 @@
       "name": "update_user",
       "description": "Update a user (model) profile and contact details. Changes are automatically synced to the linked contact record. Supports phone, notes, tags, and custom attributes.",
       "method": "PUT",
-      "path": "/users/{user_id}",
+      "path": "/users/%7B%7Buser_id%7D%7D",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -1509,50 +1497,5 @@
         ]
       }
     }
-  ],
-  "webhooks": {
-    "signature_header": "x-webhook-signature",
-    "events": [
-      {
-        "name": "gig.created",
-        "description": "New gig created"
-      },
-      {
-        "name": "gig.assigned",
-        "description": "Gig assigned to a worker"
-      },
-      {
-        "name": "gig.status_updated",
-        "description": "Gig status manually changed"
-      },
-      {
-        "name": "gig.cancelled",
-        "description": "Gig cancelled"
-      },
-      {
-        "name": "gig.completed",
-        "description": "Gig completed"
-      },
-      {
-        "name": "gig.work_submitted",
-        "description": "Work submitted for a gig"
-      },
-      {
-        "name": "gig.submission_approved",
-        "description": "Submission approved"
-      },
-      {
-        "name": "gig.submission_rejected",
-        "description": "Submission rejected"
-      },
-      {
-        "name": "gig.revision_requested",
-        "description": "Revision requested on submission"
-      },
-      {
-        "name": "gig.instruction_completed",
-        "description": "Gig instruction marked complete"
-      }
-    ]
-  }
+  ]
 }

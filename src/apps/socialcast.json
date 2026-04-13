@@ -205,7 +205,7 @@
     },
     {
       "name": "create_post",
-      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York').",
+      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). IMPORTANT: Each call only accepts a single scheduled_for time that applies to ALL account_ids in that call. To schedule the same content at different times for different platforms (e.g., Instagram at 9am and Twitter at 12pm), you MUST make separate create_post calls — one per unique scheduled time, each with only the account_ids for that time slot.",
       "method": "POST",
       "path": "/posts",
       "input_schema": {
@@ -730,6 +730,18 @@
   ],
   "webhooks": {
     "signature_header": "x-webhook-signature",
+    "registration": {
+      "method": "POST",
+      "path": "/webhooks-register",
+      "url_field": "endpoint_url",
+      "events_field": "event_types",
+      "secret_field": "secret_key",
+      "id_field": "id",
+      "delete_path": "/webhooks/{id}",
+      "delete_method": "DELETE",
+      "list_path": "/webhooks",
+      "list_field": "data"
+    },
     "events": [
       {
         "name": "social.comment.received",
