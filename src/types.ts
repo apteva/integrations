@@ -85,6 +85,13 @@ export interface AppToolTemplate {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
   input_schema: Record<string, unknown>;
+  // Names of input fields that should be sent as URL query string
+  // parameters instead of being folded into the request body. Required
+  // for APIs that mix query+body on POST/PUT/PATCH (e.g. Google Sheets'
+  // values:append puts valueInputOption in the URL but the ValueRange in
+  // the body). Without this, http-executor sends every non-path field as
+  // body content and the API rejects the request.
+  query_params?: string[];
   response_path?: string; // JSONPath to extract from response
 }
 

@@ -46,15 +46,36 @@ export async function executeTool(
   // 4. Build auth query params (e.g. Pushover's ?token=xxx)
   const authQueryParams = buildAuthQueryParams(app, credentials);
 
-  // 5. For GET/DELETE, remaining params go to query string.
-  //    For POST/PUT/PATCH, remaining params go to body.
+  // 5. Split input into path-substituted, query-string, and body buckets.
+  //    - Path params: already substituted into `url` above; drop from the
+  //      remaining set so we don't echo them in body or query.
+  //    - tool.query_params: explicitly declared by the template; always
+  //      sent as URL query string regardless of HTTP method. Required for
+  //      APIs that mix query+body on POST/PUT (e.g. Google Sheets'
+  //      values:append puts valueInputOption in the URL but the
+  //      ValueRange object in the body).
+  //    - GET/DELETE: everything left over goes to query string.
+  //    - POST/PUT/PATCH: everything left over goes to body.
   const pathParams = extractPathParams(tool.path);
-  const remainingParams = Object.fromEntries(
-    Object.entries(input).filter(([k]) => !pathParams.includes(k))
-  );
+  const declaredQueryParams = tool.query_params || [];
+
+  const remainingParams: Record<string, unknown> = {};
+  const toolQueryParams: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input)) {
+    if (pathParams.includes(k)) continue;
+    if (declaredQueryParams.includes(k)) {
+      // Skip undefined / null so optional query fields don't show up
+      // in the URL as empty strings.
+      if (v !== undefined && v !== null && v !== "") {
+        toolQueryParams[k] = v;
+      }
+      continue;
+    }
+    remainingParams[k] = v;
+  }
 
   let finalUrl = url;
-  const allQueryParams = { ...authQueryParams };
+  const allQueryParams = { ...authQueryParams, ...toolQueryParams };
 
   if (tool.method === "GET" || tool.method === "DELETE") {
     Object.assign(allQueryParams, remainingParams);
@@ -79,11 +100,11 @@ export async function executeTool(
     }
   }
 
-  // Append query params to URL for GET/DELETE (or auth params for any method)
-  if (tool.method === "GET" || tool.method === "DELETE") {
-    const qs = buildQueryString(allQueryParams);
-    if (qs) finalUrl += `?${qs}`;
-  }
+  // Append query params to URL. For GET/DELETE this includes everything;
+  // for POST/PUT/PATCH it includes only auth + tool-declared query params
+  // (the body bucket is sent as a JSON body separately above).
+  const qs = buildQueryString(allQueryParams);
+  if (qs) finalUrl += (finalUrl.includes("?") ? "&" : "?") + qs;
 
   // 5. Execute the request
   try {
