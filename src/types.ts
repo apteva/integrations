@@ -75,8 +75,22 @@ export interface OAuthConfig {
   scopes: string[];
   client_id_required: boolean;
   pkce: boolean;
-  setup_url?: string; // URL to provider's developer console to create an OAuth app
-  setup_steps?: string[]; // Brief setup instructions shown in the UI
+  setup_url?: string;        // URL to provider's developer console to create an OAuth app
+  setup_steps?: string[];    // Brief setup instructions shown in the UI
+  // Extra static query parameters merged into the authorize URL after
+  // the standard ones (response_type, client_id, redirect_uri, scope,
+  // state, code_challenge*). Required by some providers to actually
+  // hand out a refresh_token. Examples:
+  //   Google:    { access_type: "offline", prompt: "consent",
+  //                include_granted_scopes: "true" }
+  //   Microsoft: { prompt: "consent" }
+  // Without access_type=offline + prompt=consent on Google, the FIRST
+  // authorization yields both access + refresh tokens but every
+  // SUBSEQUENT one (after revocation/re-link) yields only an access
+  // token — Google only emits the refresh_token on the very first
+  // consent and skips the consent screen by default for already-
+  // authorized apps.
+  extra_authorize_params?: Record<string, string>;
 }
 
 export interface AppToolTemplate {

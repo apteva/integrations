@@ -49,13 +49,18 @@
         "https://www.googleapis.com/auth/gmail.settings.basic"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": false,
+      "extra_authorize_params": {
+        "access_type": "offline",
+        "prompt": "consent",
+        "include_granted_scopes": "true"
+      }
     }
   },
   "tools": [
     {
       "name": "send_email",
-      "description": "Send an email message. Provide plain-text fields (to, subject, body) — the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML emails, use htmlBody instead of or alongside body.",
+      "description": "Send an email message. Provide plain-text fields (to, subject, body) \u2014 the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML emails, use htmlBody instead of or alongside body.",
       "method": "POST",
       "path": "/users/me/messages/send",
       "input_schema": {
@@ -111,7 +116,7 @@
     },
     {
       "name": "list_messages",
-      "description": "List email message IDs matching a query. Returns only message IDs and thread IDs — use gmail-get-message to fetch full content (subject, body, headers). Supports Gmail search syntax (e.g. 'from:user@example.com', 'is:unread', 'subject:hello', 'newer_than:2d', 'has:attachment')",
+      "description": "List email message IDs matching a query. Returns only message IDs and thread IDs \u2014 use gmail-get-message to fetch full content (subject, body, headers). Supports Gmail search syntax (e.g. 'from:user@example.com', 'is:unread', 'subject:hello', 'newer_than:2d', 'has:attachment')",
       "method": "GET",
       "path": "/users/me/messages",
       "input_schema": {
@@ -136,7 +141,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Label IDs to filter by — only messages matching ALL specified labels are returned (e.g. ['INBOX'], ['INBOX', 'UNREAD'], ['STARRED'])"
+            "description": "Label IDs to filter by \u2014 only messages matching ALL specified labels are returned (e.g. ['INBOX'], ['INBOX', 'UNREAD'], ['STARRED'])"
           },
           "includeSpamTrash": {
             "type": "boolean",
@@ -302,7 +307,7 @@
     },
     {
       "name": "list_threads",
-      "description": "List email thread IDs with optional search. Returns thread IDs and snippets — use gmail-get-thread to fetch full conversation messages",
+      "description": "List email thread IDs with optional search. Returns thread IDs and snippets \u2014 use gmail-get-thread to fetch full conversation messages",
       "method": "GET",
       "path": "/users/me/threads",
       "input_schema": {
@@ -327,7 +332,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Label IDs to filter by — only threads matching ALL specified labels (e.g. ['INBOX'], ['INBOX', 'UNREAD'])"
+            "description": "Label IDs to filter by \u2014 only threads matching ALL specified labels (e.g. ['INBOX'], ['INBOX', 'UNREAD'])"
           },
           "includeSpamTrash": {
             "type": "boolean",
@@ -635,7 +640,7 @@
     },
     {
       "name": "create_draft",
-      "description": "Create a new email draft. Provide plain-text fields (to, subject, body) — the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML drafts, use htmlBody.",
+      "description": "Create a new email draft. Provide plain-text fields (to, subject, body) \u2014 the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML drafts, use htmlBody.",
       "method": "POST",
       "path": "/users/me/drafts",
       "input_schema": {

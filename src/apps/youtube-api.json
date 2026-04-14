@@ -1,7 +1,7 @@
 {
   "slug": "youtube-api",
   "name": "YouTube",
-  "description": "YouTube Data API v3 — manage videos, channels, playlists, search, analytics, and content publishing via OAuth2",
+  "description": "YouTube Data API v3 \u2014 manage videos, channels, playlists, search, analytics, and content publishing via OAuth2",
   "logo": "https://www.youtube.com/s/desktop/28b0985e/img/favicon_144x144.png",
   "categories": [
     "youtube",
@@ -53,7 +53,12 @@
         "https://www.googleapis.com/auth/yt-analytics.readonly"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": false,
+      "extra_authorize_params": {
+        "access_type": "offline",
+        "prompt": "consent",
+        "include_granted_scopes": "true"
+      }
     }
   },
   "tools": [
@@ -269,7 +274,7 @@
     },
     {
       "name": "update_video",
-      "description": "Update video metadata (title, description, tags, privacy, category, schedule). IMPORTANT: To schedule a video for future publish, you MUST set privacyStatus to 'private' AND provide publishAt as ISO 8601 datetime. Scheduling does NOT work with 'unlisted' or 'public' status — YouTube requires the video to be 'private' first. You must provide the full snippet and/or status objects.",
+      "description": "Update video metadata (title, description, tags, privacy, category, schedule). IMPORTANT: To schedule a video for future publish, you MUST set privacyStatus to 'private' AND provide publishAt as ISO 8601 datetime. Scheduling does NOT work with 'unlisted' or 'public' status \u2014 YouTube requires the video to be 'private' first. You must provide the full snippet and/or status objects.",
       "method": "PUT",
       "path": "/videos",
       "input_schema": {
@@ -628,7 +633,7 @@
     },
     {
       "name": "list_playlist_items",
-      "description": "List videos in a playlist. Works with any playlist ID including a channel's uploads playlist (from Get My Channel → contentDetails.relatedPlaylists.uploads). Returns video IDs, titles, thumbnails, and positions.",
+      "description": "List videos in a playlist. Works with any playlist ID including a channel's uploads playlist (from Get My Channel \u2192 contentDetails.relatedPlaylists.uploads). Returns video IDs, titles, thumbnails, and positions.",
       "method": "GET",
       "path": "/playlistItems",
       "input_schema": {

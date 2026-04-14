@@ -51,7 +51,22 @@ export function getAuthorizationUrl(opts: OAuthStartOptions): string {
     params.set("state", opts.state);
   }
 
-  return `${oauth.authorize_url}?${params.toString()}`;
+  // Merge in provider-specific extras (e.g. Google's access_type=offline
+  // + prompt=consent which are required to actually receive a
+  // refresh_token on every consent, not just the first one). Standard
+  // params above are not allowed to be clobbered — flow-critical fields
+  // like response_type and client_id stay locked.
+  if (oauth.extra_authorize_params) {
+    for (const [k, v] of Object.entries(oauth.extra_authorize_params)) {
+      if (!params.has(k)) params.set(k, v);
+    }
+  }
+
+  // Use the right separator if the authorize_url already has a query
+  // string (rare but legal — some templates encode static prefilters
+  // there).
+  const sep = oauth.authorize_url.includes("?") ? "&" : "?";
+  return `${oauth.authorize_url}${sep}${params.toString()}`;
 }
 
 /**

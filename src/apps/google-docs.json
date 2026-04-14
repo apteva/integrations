@@ -44,7 +44,12 @@
         "https://www.googleapis.com/auth/documents.readonly"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": false,
+      "extra_authorize_params": {
+        "access_type": "offline",
+        "prompt": "consent",
+        "include_granted_scopes": "true"
+      }
     }
   },
   "tools": [
