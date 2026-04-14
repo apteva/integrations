@@ -214,29 +214,63 @@ function buildHeaders(
   return headers;
 }
 
+// Credential alias groups — see server/integrations.go for the canonical
+// description. Within each group, the first non-empty value found is
+// mirrored under every other name so a template using {{token}} resolves
+// correctly when the credential blob uses {{accessToken}}, {{apiToken}},
+// {{authToken}}, etc. This fixes ~48 templates that mix conventions.
+const credAliasGroups: string[][] = [
+  ["access_token", "accessToken", "token", "bearer_token", "auth_token", "authToken"],
+  ["api_key", "apiKey", "apikey", "api_token", "apiToken", "x_api_key"],
+  ["refresh_token", "refreshToken"],
+  ["token_type", "tokenType"],
+  ["expires_in", "expiresIn"],
+  ["client_id", "clientId"],
+  ["client_secret", "clientSecret"],
+];
+
+function normalizeCredentials(
+  credentials: ConnectionCredentials
+): Record<string, string> {
+  // Flatten the structured credentials into a plain map. The legacy
+  // structured fields (access_token, api_key, username, password) live at
+  // the top level; everything else is in `fields`.
+  const out: Record<string, string> = {};
+  if (credentials.access_token) out.access_token = credentials.access_token;
+  if (credentials.bearer_token) out.bearer_token = credentials.bearer_token;
+  if (credentials.api_key) out.api_key = credentials.api_key;
+  if (credentials.username) out.username = credentials.username;
+  if (credentials.password) out.password = credentials.password;
+  if (credentials.fields) {
+    for (const [k, v] of Object.entries(credentials.fields)) {
+      if (v) out[k] = String(v);
+    }
+  }
+
+  // Apply alias mirroring.
+  for (const group of credAliasGroups) {
+    let val = "";
+    for (const name of group) {
+      if (out[name]) {
+        val = out[name];
+        break;
+      }
+    }
+    if (!val) continue;
+    for (const name of group) {
+      if (!out[name]) out[name] = val;
+    }
+  }
+  return out;
+}
+
 function resolveTemplate(
   template: string,
   credentials: ConnectionCredentials
 ): string {
+  const norm = normalizeCredentials(credentials);
   return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
-    // Map common template vars to credential fields
-    switch (key) {
-      case "token":
-        return (
-          credentials.access_token ||
-          credentials.bearer_token ||
-          credentials.api_key ||
-          ""
-        );
-      case "api_key":
-        return credentials.api_key || "";
-      case "username":
-        return credentials.username || "";
-      case "password":
-        return credentials.password || "";
-      default:
-        return credentials.fields?.[key] || "";
-    }
+    return norm[key] || "";
   });
 }
 

@@ -10,7 +10,7 @@
     "entries",
     "submissions"
   ],
-  "base_url": "",
+  "base_url": "{{site_url}}/wp-json/gf/v2",
   "auth": {
     "types": [
       "bearer"

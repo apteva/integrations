@@ -10,7 +10,7 @@
     "editing",
     "generation"
   ],
-  "base_url": "",
+  "base_url": "https://api.pdf.co/v1",
   "auth": {
     "types": [
       "bearer"

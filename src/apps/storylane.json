@@ -1,7 +1,7 @@
 {
   "slug": "storylane",
   "name": "Storylane",
-  "description": "MCP server for Storylane interactive product demos — list demos, manage demo links with personalization and access controls",
+  "description": "MCP server for Storylane interactive product demos \u2014 list demos, manage demo links with personalization and access controls",
   "logo": "https://www.google.com/s2/favicons?domain=storylane.io&sz=128",
   "categories": [
     "demo-automation",
@@ -9,7 +9,7 @@
     "product-demos",
     "sales-enablement"
   ],
-  "base_url": "",
+  "base_url": "https://api.storylane.io/api/v1",
   "auth": {
     "types": [
       "bearer"
@@ -115,7 +115,7 @@
           },
           "email": {
             "type": "string",
-            "description": "Email for personalization — pre-fills email fields in the demo"
+            "description": "Email for personalization \u2014 pre-fills email fields in the demo"
           },
           "passcode": {
             "type": "string",

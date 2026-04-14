@@ -11,7 +11,7 @@
     "forecasting",
     "financial"
   ],
-  "base_url": "",
+  "base_url": "https://api.forecast.it/api/v1",
   "auth": {
     "types": [
       "bearer"

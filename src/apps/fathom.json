@@ -10,7 +10,7 @@
     "ai-assistant",
     "recordings"
   ],
-  "base_url": "",
+  "base_url": "https://api.fathom.video/external/v1",
   "auth": {
     "types": [
       "bearer"

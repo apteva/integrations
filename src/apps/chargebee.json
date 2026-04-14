@@ -12,7 +12,7 @@
     "saas",
     "revenue"
   ],
-  "base_url": "",
+  "base_url": "https://{{site}}.chargebee.com/api/v2",
   "auth": {
     "types": [
       "bearer"

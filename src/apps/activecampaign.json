@@ -10,7 +10,7 @@
     "email",
     "crm"
   ],
-  "base_url": "",
+  "base_url": "{{api_url}}/api/3",
   "auth": {
     "types": [
       "bearer"

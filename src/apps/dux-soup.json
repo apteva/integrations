@@ -1,7 +1,7 @@
 {
   "slug": "dux-soup",
   "name": "Dux-Soup",
-  "description": "MCP server for Dux-Soup LinkedIn automation — visit profiles, send connection requests, message contacts, manage campaigns, and control outreach queues",
+  "description": "MCP server for Dux-Soup LinkedIn automation \u2014 visit profiles, send connection requests, message contacts, manage campaigns, and control outreach queues",
   "logo": "https://www.google.com/s2/favicons?domain=dux-soup.com&sz=128",
   "categories": [
     "linkedin",
@@ -11,7 +11,7 @@
     "leads",
     "messaging"
   ],
-  "base_url": "",
+  "base_url": "https://app.dux-soup.com/xapi/remote/control",
   "auth": {
     "types": [
       "bearer"

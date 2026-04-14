@@ -10,7 +10,7 @@
     "finance",
     "payments"
   ],
-  "base_url": "",
+  "base_url": "https://api.xero.com/api.xro/2.0",
   "auth": {
     "types": [
       "bearer"

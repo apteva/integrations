@@ -12,7 +12,7 @@
     "analytics",
     "marketing"
   ],
-  "base_url": "",
+  "base_url": "https://ads-api.twitter.com/12",
   "auth": {
     "types": [
       "bearer",
@@ -66,7 +66,7 @@
         "dm.write"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true
     }
   },
   "tools": [

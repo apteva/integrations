@@ -10,7 +10,7 @@
     "articles",
     "reader"
   ],
-  "base_url": "",
+  "base_url": "https://rss-to-json-serverless-api.vercel.app",
   "auth": {
     "types": [
       "bearer"

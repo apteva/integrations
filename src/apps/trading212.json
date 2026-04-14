@@ -1,7 +1,7 @@
 {
   "slug": "trading212",
   "name": "Trading 212",
-  "description": "Trading 212 Public API — trade stocks and ETFs, manage orders, view positions and history. For Invest and Stocks ISA accounts only.",
+  "description": "Trading 212 Public API \u2014 trade stocks and ETFs, manage orders, view positions and history. For Invest and Stocks ISA accounts only.",
   "logo": "https://www.google.com/s2/favicons?domain=trading212.com&sz=128",
   "categories": [
     "trading",
@@ -11,7 +11,7 @@
     "portfolio",
     "brokerage"
   ],
-  "base_url": "",
+  "base_url": "https://live.trading212.com/api/v0",
   "auth": {
     "types": [
       "bearer"
@@ -335,7 +335,7 @@
     },
     {
       "name": "create_export",
-      "description": "Request a new CSV export of your trading data. The export is processed asynchronously — use list-exports to check status and get download link.",
+      "description": "Request a new CSV export of your trading data. The export is processed asynchronously \u2014 use list-exports to check status and get download link.",
       "method": "POST",
       "path": "/create-export",
       "input_schema": {

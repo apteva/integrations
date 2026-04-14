@@ -12,7 +12,7 @@
     "mqtt",
     "sensors"
   ],
-  "base_url": "",
+  "base_url": "https://api.arest.io",
   "auth": {
     "types": [
       "bearer"

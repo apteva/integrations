@@ -11,7 +11,7 @@
     "embedded",
     "arduino"
   ],
-  "base_url": "",
+  "base_url": "{{server_url}}/external/api",
   "auth": {
     "types": [
       "bearer"

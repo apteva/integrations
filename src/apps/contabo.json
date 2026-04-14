@@ -10,7 +10,7 @@
     "infrastructure",
     "storage"
   ],
-  "base_url": "",
+  "base_url": "https://api.contabo.com",
   "auth": {
     "types": [
       "bearer"

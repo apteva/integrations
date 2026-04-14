@@ -12,7 +12,7 @@
     "media",
     "analytics"
   ],
-  "base_url": "",
+  "base_url": "https://api.castbase.dev/v1",
   "auth": {
     "types": [
       "bearer"

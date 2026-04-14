@@ -1,7 +1,7 @@
 {
   "slug": "alchemy",
   "name": "Alchemy",
-  "description": "Blockchain node API + enhanced APIs — token balances, transfers, NFTs, and transaction data across Ethereum, Polygon, Arbitrum, Base, Solana.",
+  "description": "Blockchain node API + enhanced APIs \u2014 token balances, transfers, NFTs, and transaction data across Ethereum, Polygon, Arbitrum, Base, Solana.",
   "logo": "https://www.google.com/s2/favicons?domain=alchemy.com&sz=128",
   "categories": [
     "blockchain",
@@ -12,7 +12,7 @@
     "ethereum",
     "solana"
   ],
-  "base_url": "",
+  "base_url": "https://eth-mainnet.g.alchemy.com/v2",
   "auth": {
     "types": [
       "bearer"
@@ -54,7 +54,7 @@
     },
     {
       "name": "get_asset_transfers",
-      "description": "Get historical token transfers for an address — inbound, outbound, ERC20, ERC721, internal transactions.",
+      "description": "Get historical token transfers for an address \u2014 inbound, outbound, ERC20, ERC721, internal transactions.",
       "method": "POST",
       "path": "/get-asset-transfers",
       "input_schema": {

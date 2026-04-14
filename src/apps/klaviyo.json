@@ -10,7 +10,7 @@
     "campaigns",
     "automation"
   ],
-  "base_url": "",
+  "base_url": "https://a.klaviyo.com/api",
   "auth": {
     "types": [
       "bearer"

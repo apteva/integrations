@@ -10,7 +10,7 @@
     "files",
     "saas"
   ],
-  "base_url": "",
+  "base_url": "https://archive.org",
   "auth": {
     "types": [
       "bearer"

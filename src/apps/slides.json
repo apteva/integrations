@@ -12,7 +12,7 @@
     "charts",
     "documents"
   ],
-  "base_url": "",
+  "base_url": "https://slides.googleapis.com/v1",
   "auth": {
     "types": [
       "bearer"

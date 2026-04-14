@@ -10,7 +10,7 @@
     "marketing",
     "leads"
   ],
-  "base_url": "",
+  "base_url": "https://api.callrail.com/v3",
   "auth": {
     "types": [
       "bearer"

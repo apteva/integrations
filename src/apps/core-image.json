@@ -14,7 +14,7 @@
     "effects",
     "sharp"
   ],
-  "base_url": "",
+  "base_url": "https://api.core-image.com",
   "auth": {
     "types": [
       "bearer"

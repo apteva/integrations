@@ -10,7 +10,7 @@
     "collaboration",
     "workspaces"
   ],
-  "base_url": "",
+  "base_url": "https://app.asana.com/api/1.0",
   "auth": {
     "types": [
       "bearer"

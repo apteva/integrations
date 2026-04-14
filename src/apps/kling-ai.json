@@ -10,7 +10,7 @@
     "text-to-video",
     "image-to-video"
   ],
-  "base_url": "",
+  "base_url": "https://api.klingai.com",
   "auth": {
     "types": [
       "api_key"

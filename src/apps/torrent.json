@@ -11,7 +11,7 @@
     "p2p",
     "thepiratebay"
   ],
-  "base_url": "",
+  "base_url": "https://api.torrentapi.org/pubapi_v2.php",
   "auth": {
     "types": [
       "bearer"

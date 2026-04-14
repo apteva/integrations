@@ -10,7 +10,7 @@
     "business",
     "orders"
   ],
-  "base_url": "",
+  "base_url": "{{instance_url}}/sap/opu/odata/sap",
   "auth": {
     "types": [
       "bearer"

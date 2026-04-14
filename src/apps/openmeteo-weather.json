@@ -10,7 +10,7 @@
     "openmeteo",
     "no-auth"
   ],
-  "base_url": "",
+  "base_url": "https://api.open-meteo.com/v1",
   "auth": {
     "types": [
       "bearer"

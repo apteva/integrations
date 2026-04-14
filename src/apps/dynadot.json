@@ -10,7 +10,7 @@
     "dynadot",
     "bulk"
   ],
-  "base_url": "",
+  "base_url": "https://api.dynadot.com",
   "auth": {
     "types": [
       "bearer"

@@ -12,7 +12,7 @@
     "music",
     "speech-synthesis"
   ],
-  "base_url": "",
+  "base_url": "https://api.elevenlabs.io/v1",
   "auth": {
     "types": [
       "api_key"

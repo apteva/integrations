@@ -10,7 +10,7 @@
     "products",
     "orders"
   ],
-  "base_url": "",
+  "base_url": "{{site_url}}/wp-json/wc/v3",
   "auth": {
     "types": [
       "bearer"

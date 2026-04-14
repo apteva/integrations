@@ -12,7 +12,7 @@
     "extraction",
     "yt-dlp"
   ],
-  "base_url": "",
+  "base_url": "https://api.mediadownloader.com",
   "auth": {
     "types": [
       "bearer"

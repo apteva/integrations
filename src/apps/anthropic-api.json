@@ -10,7 +10,7 @@
     "chat",
     "conversation"
   ],
-  "base_url": "",
+  "base_url": "https://api.anthropic.com/v1",
   "auth": {
     "types": [
       "api_key"

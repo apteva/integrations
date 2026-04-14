@@ -10,7 +10,7 @@
     "time-management",
     "productivity"
   ],
-  "base_url": "",
+  "base_url": "https://api.calflow.com/v1",
   "auth": {
     "types": [
       "bearer"

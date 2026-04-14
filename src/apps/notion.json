@@ -42,7 +42,7 @@
       "token_url": "https://api.notion.com/v1/oauth/token",
       "scopes": [],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true
     }
   },
   "tools": [
@@ -170,7 +170,7 @@
           },
           "icon": {
             "type": "object",
-            "description": "Database icon. Example: { \"type\": \"emoji\", \"emoji\": \"📋\" }"
+            "description": "Database icon. Example: { \"type\": \"emoji\", \"emoji\": \"\ud83d\udccb\" }"
           },
           "cover": {
             "type": "object",
@@ -255,7 +255,7 @@
           },
           "icon": {
             "type": "object",
-            "description": "Page icon. Example: { \"type\": \"emoji\", \"emoji\": \"📄\" }"
+            "description": "Page icon. Example: { \"type\": \"emoji\", \"emoji\": \"\ud83d\udcc4\" }"
           },
           "cover": {
             "type": "object",

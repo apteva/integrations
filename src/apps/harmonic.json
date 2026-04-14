@@ -11,7 +11,7 @@
     "data",
     "linkedin"
   ],
-  "base_url": "",
+  "base_url": "https://api.harmonic.ai",
   "auth": {
     "types": [
       "api_key"

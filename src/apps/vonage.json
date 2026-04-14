@@ -11,7 +11,7 @@
     "phone",
     "communications"
   ],
-  "base_url": "",
+  "base_url": "https://api.nexmo.com",
   "auth": {
     "types": [
       "bearer"

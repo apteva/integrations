@@ -10,7 +10,7 @@
     "templates",
     "office"
   ],
-  "base_url": "",
+  "base_url": "https://api.docx.com",
   "auth": {
     "types": [
       "bearer"

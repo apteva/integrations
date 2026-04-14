@@ -14,7 +14,7 @@
     "backtesting",
     "ai-agent"
   ],
-  "base_url": "",
+  "base_url": "https://api.trading.com",
   "auth": {
     "types": [
       "bearer"

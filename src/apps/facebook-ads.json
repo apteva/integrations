@@ -1,7 +1,7 @@
 {
   "slug": "facebook-ads",
   "name": "Facebook Ads",
-  "description": "Facebook Ads Manager — campaign management, ad creation, audience targeting, creatives, lead forms, pixel tracking, and performance analytics via Meta Graph API",
+  "description": "Facebook Ads Manager \u2014 campaign management, ad creation, audience targeting, creatives, lead forms, pixel tracking, and performance analytics via Meta Graph API",
   "logo": "https://www.google.com/s2/favicons?domain=www.facebook.com&sz=128",
   "categories": [
     "facebook-ads",
@@ -10,7 +10,7 @@
     "marketing",
     "meta-ads"
   ],
-  "base_url": "",
+  "base_url": "https://graph.facebook.com/v21.0",
   "auth": {
     "types": [
       "bearer",
@@ -90,7 +90,7 @@
     },
     {
       "name": "campaign_create",
-      "description": "Create a Facebook campaign. special_ad_categories is REQUIRED (pass empty array [] if none). OBJECTIVES: OUTCOME_SALES (website purchases/conversions), OUTCOME_LEADS (lead generation forms), OUTCOME_TRAFFIC (website visits), OUTCOME_ENGAGEMENT (page likes, post engagement, event responses — use this for PAGE LIKES campaigns), OUTCOME_AWARENESS (reach/brand awareness), OUTCOME_APP_PROMOTION (app installs). PAGE LIKES CAMPAIGN: Use objective=OUTCOME_ENGAGEMENT, then on the ad set use optimization_goal=PAGE_LIKES with promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}. BUDGET: Setting daily_budget or lifetime_budget here enables Campaign Budget Optimization (CBO) — the campaign controls budget for ALL ad sets. If using CBO, ad sets must NOT set their own budget. bid_strategy options: LOWEST_COST_WITHOUT_CAP (recommended default, auto-bidding), COST_CAP (target cost per result), BID_CAP (max bid cap — ad sets MUST then set bid_amount). Examples: Page likes: {\"name\":\"Page Likes\",\"objective\":\"OUTCOME_ENGAGEMENT\",\"special_ad_categories\":[],\"daily_budget\":\"1000\",\"status\":\"PAUSED\"}. Sales with CBO: {\"name\":\"Sales\",\"objective\":\"OUTCOME_SALES\",\"special_ad_categories\":[],\"daily_budget\":\"1000\",\"bid_strategy\":\"LOWEST_COST_WITHOUT_CAP\",\"status\":\"PAUSED\"}. Traffic without CBO: {\"name\":\"Traffic\",\"objective\":\"OUTCOME_TRAFFIC\",\"special_ad_categories\":[],\"status\":\"PAUSED\"}",
+      "description": "Create a Facebook campaign. special_ad_categories is REQUIRED (pass empty array [] if none). OBJECTIVES: OUTCOME_SALES (website purchases/conversions), OUTCOME_LEADS (lead generation forms), OUTCOME_TRAFFIC (website visits), OUTCOME_ENGAGEMENT (page likes, post engagement, event responses \u2014 use this for PAGE LIKES campaigns), OUTCOME_AWARENESS (reach/brand awareness), OUTCOME_APP_PROMOTION (app installs). PAGE LIKES CAMPAIGN: Use objective=OUTCOME_ENGAGEMENT, then on the ad set use optimization_goal=PAGE_LIKES with promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}. BUDGET: Setting daily_budget or lifetime_budget here enables Campaign Budget Optimization (CBO) \u2014 the campaign controls budget for ALL ad sets. If using CBO, ad sets must NOT set their own budget. bid_strategy options: LOWEST_COST_WITHOUT_CAP (recommended default, auto-bidding), COST_CAP (target cost per result), BID_CAP (max bid cap \u2014 ad sets MUST then set bid_amount). Examples: Page likes: {\"name\":\"Page Likes\",\"objective\":\"OUTCOME_ENGAGEMENT\",\"special_ad_categories\":[],\"daily_budget\":\"1000\",\"status\":\"PAUSED\"}. Sales with CBO: {\"name\":\"Sales\",\"objective\":\"OUTCOME_SALES\",\"special_ad_categories\":[],\"daily_budget\":\"1000\",\"bid_strategy\":\"LOWEST_COST_WITHOUT_CAP\",\"status\":\"PAUSED\"}. Traffic without CBO: {\"name\":\"Traffic\",\"objective\":\"OUTCOME_TRAFFIC\",\"special_ad_categories\":[],\"status\":\"PAUSED\"}",
       "method": "POST",
       "path": "/campaign-create",
       "input_schema": {
@@ -210,7 +210,7 @@
     },
     {
       "name": "campaign_update",
-      "description": "Update campaign settings. Returns {success:true}. WARNING: Changing bid_strategy affects all ad sets — if switching to BID_CAP, all ad sets must have bid_amount set. If switching to LOWEST_COST_WITHOUT_CAP, ad sets should NOT have bid_amount. To activate, ALL components must be valid: campaign + ad set + ad + creative. NOTE: The API returns bid_strategy as LOWEST_COST_WITH_BID_CAP when reading, but for writing use BID_CAP.",
+      "description": "Update campaign settings. Returns {success:true}. WARNING: Changing bid_strategy affects all ad sets \u2014 if switching to BID_CAP, all ad sets must have bid_amount set. If switching to LOWEST_COST_WITHOUT_CAP, ad sets should NOT have bid_amount. To activate, ALL components must be valid: campaign + ad set + ad + creative. NOTE: The API returns bid_strategy as LOWEST_COST_WITH_BID_CAP when reading, but for writing use BID_CAP.",
       "method": "POST",
       "path": "/campaign-update",
       "input_schema": {
@@ -287,7 +287,7 @@
     },
     {
       "name": "adset_create",
-      "description": "Create a Facebook ad set. PREREQUISITE: ALWAYS call facebook-ads-campaign-list first to check the parent campaign's objective, bid_strategy, and daily_budget/lifetime_budget. OBJECTIVE → AD SET CONFIGURATION (use these exact combinations): (1) OUTCOME_SALES → optimization_goal=OFFSITE_CONVERSIONS, promoted_object={\"pixel_id\":\"YOUR_PIXEL_ID\",\"custom_event_type\":\"PURCHASE\"}, destination_type=WEBSITE. (2) OUTCOME_LEADS → optimization_goal=LEAD_GENERATION, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, destination_type=WEBSITE. (3) OUTCOME_TRAFFIC → optimization_goal=LINK_CLICKS, no promoted_object needed, destination_type=WEBSITE. (4) OUTCOME_ENGAGEMENT + PAGE LIKES → optimization_goal=PAGE_LIKES, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, billing_event=IMPRESSIONS, destination_type=ON_PAGE. (5) OUTCOME_ENGAGEMENT + POST ENGAGEMENT → optimization_goal=POST_ENGAGEMENT, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, billing_event=IMPRESSIONS. (6) OUTCOME_AWARENESS → optimization_goal=REACH, billing_event=IMPRESSIONS. BUDGET RULES: (1) If campaign has daily_budget or lifetime_budget (CBO mode) → do NOT set daily_budget or lifetime_budget on adset. (2) If campaign bid_strategy is LOWEST_COST_WITH_BID_CAP or BID_CAP → you MUST set bid_amount in cents. (3) If campaign bid_strategy is LOWEST_COST_WITHOUT_CAP → do NOT set bid_amount or bid_strategy. (4) If campaign has NO budget (no CBO) → you MUST set daily_budget or lifetime_budget AND bid_strategy. EU/DSA COMPLIANCE: If targeting EU, Taiwan, Singapore, or Australia, you MUST set dsa_beneficiary and dsa_payor — ads will be rejected without these. targeting format: {\"geo_locations\":{\"countries\":[\"US\"]},\"targeting_automation\":{\"advantage_audience\":0}}.",
+      "description": "Create a Facebook ad set. PREREQUISITE: ALWAYS call facebook-ads-campaign-list first to check the parent campaign's objective, bid_strategy, and daily_budget/lifetime_budget. OBJECTIVE \u2192 AD SET CONFIGURATION (use these exact combinations): (1) OUTCOME_SALES \u2192 optimization_goal=OFFSITE_CONVERSIONS, promoted_object={\"pixel_id\":\"YOUR_PIXEL_ID\",\"custom_event_type\":\"PURCHASE\"}, destination_type=WEBSITE. (2) OUTCOME_LEADS \u2192 optimization_goal=LEAD_GENERATION, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, destination_type=WEBSITE. (3) OUTCOME_TRAFFIC \u2192 optimization_goal=LINK_CLICKS, no promoted_object needed, destination_type=WEBSITE. (4) OUTCOME_ENGAGEMENT + PAGE LIKES \u2192 optimization_goal=PAGE_LIKES, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, billing_event=IMPRESSIONS, destination_type=ON_PAGE. (5) OUTCOME_ENGAGEMENT + POST ENGAGEMENT \u2192 optimization_goal=POST_ENGAGEMENT, promoted_object={\"page_id\":\"YOUR_PAGE_ID\"}, billing_event=IMPRESSIONS. (6) OUTCOME_AWARENESS \u2192 optimization_goal=REACH, billing_event=IMPRESSIONS. BUDGET RULES: (1) If campaign has daily_budget or lifetime_budget (CBO mode) \u2192 do NOT set daily_budget or lifetime_budget on adset. (2) If campaign bid_strategy is LOWEST_COST_WITH_BID_CAP or BID_CAP \u2192 you MUST set bid_amount in cents. (3) If campaign bid_strategy is LOWEST_COST_WITHOUT_CAP \u2192 do NOT set bid_amount or bid_strategy. (4) If campaign has NO budget (no CBO) \u2192 you MUST set daily_budget or lifetime_budget AND bid_strategy. EU/DSA COMPLIANCE: If targeting EU, Taiwan, Singapore, or Australia, you MUST set dsa_beneficiary and dsa_payor \u2014 ads will be rejected without these. targeting format: {\"geo_locations\":{\"countries\":[\"US\"]},\"targeting_automation\":{\"advantage_audience\":0}}.",
       "method": "POST",
       "path": "/adset-create",
       "input_schema": {
@@ -307,7 +307,7 @@
           },
           "daily_budget": {
             "type": "string",
-            "description": "Daily budget in CENTS as a string. '1000' = $10.00, '5000' = $50.00. ONLY set this if the parent campaign does NOT use Campaign Budget Optimization (CBO). If the campaign already has a daily_budget or lifetime_budget, do NOT set this — the campaign controls the budget. Use lifetime_budget instead if you need a fixed total spend with start/end dates."
+            "description": "Daily budget in CENTS as a string. '1000' = $10.00, '5000' = $50.00. ONLY set this if the parent campaign does NOT use Campaign Budget Optimization (CBO). If the campaign already has a daily_budget or lifetime_budget, do NOT set this \u2014 the campaign controls the budget. Use lifetime_budget instead if you need a fixed total spend with start/end dates."
           },
           "optimization_goal": {
             "type": "string",
@@ -325,7 +325,7 @@
               "POST_ENGAGEMENT",
               "VALUE"
             ],
-            "description": "What to optimize for. Must match campaign objective: OUTCOME_SALES→OFFSITE_CONVERSIONS, OUTCOME_LEADS→LEAD_GENERATION, OUTCOME_TRAFFIC→LINK_CLICKS, OUTCOME_ENGAGEMENT→PAGE_LIKES or POST_ENGAGEMENT (both require promoted_object with page_id), OUTCOME_AWARENESS→REACH."
+            "description": "What to optimize for. Must match campaign objective: OUTCOME_SALES\u2192OFFSITE_CONVERSIONS, OUTCOME_LEADS\u2192LEAD_GENERATION, OUTCOME_TRAFFIC\u2192LINK_CLICKS, OUTCOME_ENGAGEMENT\u2192PAGE_LIKES or POST_ENGAGEMENT (both require promoted_object with page_id), OUTCOME_AWARENESS\u2192REACH."
           },
           "billing_event": {
             "type": "string",
@@ -1114,7 +1114,7 @@
     },
     {
       "name": "insights_export_report",
-      "description": "Create an async insights report. Returns a report_run_id — poll it with GET /{report_run_id} to check status, then GET /{report_run_id}/insights for results.",
+      "description": "Create an async insights report. Returns a report_run_id \u2014 poll it with GET /{report_run_id} to check status, then GET /{report_run_id}/insights for results.",
       "method": "POST",
       "path": "/insights-export-report",
       "input_schema": {

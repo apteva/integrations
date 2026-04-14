@@ -1,7 +1,7 @@
 {
   "slug": "alpaca-trading",
   "name": "Alpaca",
-  "description": "MCP server for Alpaca — stock, options & crypto trading, real-time and historical market data, portfolio management, screener, news, and forex rates via the Alpaca REST API v2. Uses paper trading by default.",
+  "description": "MCP server for Alpaca \u2014 stock, options & crypto trading, real-time and historical market data, portfolio management, screener, news, and forex rates via the Alpaca REST API v2. Uses paper trading by default.",
   "logo": "https://www.google.com/s2/favicons?domain=alpaca.markets&sz=128",
   "categories": [
     "trading",
@@ -16,7 +16,7 @@
     "forex",
     "alpaca"
   ],
-  "base_url": "",
+  "base_url": "https://api.alpaca.markets/v2",
   "auth": {
     "types": [
       "api_key"
@@ -38,7 +38,7 @@
       {
         "name": "base_url",
         "label": "Base_url",
-        "description": "Default: https://paper-api.alpaca.markets — set to https://api.alpaca.markets for live trading"
+        "description": "Default: https://paper-api.alpaca.markets \u2014 set to https://api.alpaca.markets for live trading"
       }
     ]
   },

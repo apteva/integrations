@@ -10,7 +10,7 @@
     "cloudflare",
     "cdn"
   ],
-  "base_url": "",
+  "base_url": "https://api.cloudflare.com/client/v4",
   "auth": {
     "types": [
       "bearer"

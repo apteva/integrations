@@ -10,7 +10,7 @@
     "atlassian",
     "knowledge-base"
   ],
-  "base_url": "",
+  "base_url": "{{domain}}/wiki/rest/api",
   "auth": {
     "types": [
       "bearer"

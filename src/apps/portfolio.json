@@ -12,7 +12,7 @@
     "stocks",
     "dividends"
   ],
-  "base_url": "",
+  "base_url": "https://api.portfolio.com",
   "auth": {
     "types": [
       "api_key"

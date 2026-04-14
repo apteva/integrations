@@ -47,7 +47,7 @@
         "admin"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true
     }
   },
   "tools": [

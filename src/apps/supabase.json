@@ -10,7 +10,7 @@
     "postgres",
     "rest-api"
   ],
-  "base_url": "",
+  "base_url": "{{project_url}}/rest/v1",
   "auth": {
     "types": [
       "api_key"

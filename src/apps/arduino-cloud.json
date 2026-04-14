@@ -10,7 +10,7 @@
     "sensors",
     "embedded"
   ],
-  "base_url": "",
+  "base_url": "https://api2.arduino.cc",
   "auth": {
     "types": [
       "bearer",

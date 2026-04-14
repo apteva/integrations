@@ -1,20 +1,40 @@
 {
   "slug": "google-sheets",
   "name": "Google Sheets",
-  "description": "Google Sheets API v4 — read, write, append, clear, and batch-mutate spreadsheets. Includes the generic spreadsheets:batchUpdate endpoint which exposes every formatting / sheet-management / find-replace operation Google supports.",
+  "description": "Google Sheets API v4 \u2014 read, write, append, clear, and batch-mutate spreadsheets. Includes the generic spreadsheets:batchUpdate endpoint which exposes every formatting / sheet-management / find-replace operation Google supports.",
   "logo": "https://www.google.com/s2/favicons?domain=sheets.google.com&sz=128",
-  "categories": ["spreadsheets", "google", "data", "productivity"],
+  "categories": [
+    "spreadsheets",
+    "google",
+    "data",
+    "productivity"
+  ],
   "base_url": "https://sheets.googleapis.com/v4",
   "auth": {
-    "types": ["bearer", "oauth2"],
+    "types": [
+      "bearer",
+      "oauth2"
+    ],
     "headers": {
-      "Authorization": "Bearer {{accessToken}}"
+      "Authorization": "Bearer {{token}}"
     },
     "credential_fields": [
-      { "name": "accessToken", "label": "accessToken" },
-      { "name": "refreshToken", "label": "refreshToken" },
-      { "name": "expiresIn", "label": "expiresIn" },
-      { "name": "tokenType", "label": "tokenType" }
+      {
+        "name": "accessToken",
+        "label": "accessToken"
+      },
+      {
+        "name": "refreshToken",
+        "label": "refreshToken"
+      },
+      {
+        "name": "expiresIn",
+        "label": "expiresIn"
+      },
+      {
+        "name": "tokenType",
+        "label": "tokenType"
+      }
     ],
     "oauth2": {
       "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
@@ -47,31 +67,39 @@
           },
           "sheets": {
             "type": "array",
-            "items": { "type": "object" },
-            "description": "Optional initial sheet definitions. Each entry is a Sheet object — minimum { properties: { title: 'Sheet1' } }."
+            "items": {
+              "type": "object"
+            },
+            "description": "Optional initial sheet definitions. Each entry is a Sheet object \u2014 minimum { properties: { title: 'Sheet1' } }."
           }
         },
-        "required": ["properties"]
+        "required": [
+          "properties"
+        ]
       }
     },
     {
       "name": "get_spreadsheet",
-      "description": "Get spreadsheet metadata: sheet names, sheet IDs, named ranges, properties. Use the `fields` mask to limit response size — for just sheet names, set `fields=sheets.properties`.",
+      "description": "Get spreadsheet metadata: sheet names, sheet IDs, named ranges, properties. Use the `fields` mask to limit response size \u2014 for just sheet names, set `fields=sheets.properties`.",
       "method": "GET",
       "path": "/spreadsheets/{spreadsheetId}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "ranges": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Optional A1 ranges to include grid data for. Without this only metadata is returned."
           },
           "includeGridData": {
             "type": "boolean",
             "default": false,
-            "description": "Include cell values + formatting in the response. Heavy — only set when needed."
+            "description": "Include cell values + formatting in the response. Heavy \u2014 only set when needed."
           },
           "fields": {
             "type": "string",
@@ -79,42 +107,62 @@
             "description": "Comma-separated FieldMask to limit response size."
           }
         },
-        "required": ["spreadsheetId"]
+        "required": [
+          "spreadsheetId"
+        ]
       },
-      "query_params": ["ranges", "includeGridData", "fields"]
+      "query_params": [
+        "ranges",
+        "includeGridData",
+        "fields"
+      ]
     },
     {
       "name": "get_by_filter",
-      "description": "Get spreadsheet by data filters — narrows the response to specific A1 ranges, GridRanges, or developer-metadata-tagged cells without including the entire grid. Use this when you know which cells you want but don't have a single contiguous A1 range.",
+      "description": "Get spreadsheet by data filters \u2014 narrows the response to specific A1 ranges, GridRanges, or developer-metadata-tagged cells without including the entire grid. Use this when you know which cells you want but don't have a single contiguous A1 range.",
       "method": "POST",
       "path": "/spreadsheets/{spreadsheetId}:getByDataFilter",
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "dataFilters": {
             "type": "array",
-            "items": { "type": "object" },
+            "items": {
+              "type": "object"
+            },
             "description": "Array of DataFilter objects. Each is one of: { a1Range: 'Sheet1!A1:B10' }, { gridRange: { sheetId, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex } }, or { developerMetadataLookup: {...} }."
           },
-          "includeGridData": { "type": "boolean", "default": false }
+          "includeGridData": {
+            "type": "boolean",
+            "default": false
+          }
         },
-        "required": ["spreadsheetId", "dataFilters"]
+        "required": [
+          "spreadsheetId",
+          "dataFilters"
+        ]
       }
     },
     {
       "name": "batch_update",
-      "description": "Generic spreadsheet batchUpdate — the catch-all endpoint for every spreadsheet mutation Google supports. The agent passes a list of Request objects; each Request has exactly one operation key. Common operations: addSheet, deleteSheet, updateSheetProperties, updateSpreadsheetProperties, findReplace, insertDimension, deleteDimension, appendDimension, autoResizeDimensions, updateDimensionProperties, repeatCell (formatting), updateCells, mergeCells, unmergeCells, setBasicFilter, clearBasicFilter, addChart, addConditionalFormatRule, updateConditionalFormatRule, deleteConditionalFormatRule, setDataValidation, addProtectedRange, deleteProtectedRange, addNamedRange, deleteNamedRange, addBanding, deleteBanding, addFilterView, sortRange, cutPaste, copyPaste, randomizeRange, pasteData. Example for find/replace across all sheets: { spreadsheetId, requests: [{ findReplace: { find: 'old', replacement: 'new', allSheets: true, matchCase: false } }] }. See https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request for the full Request schema.",
+      "description": "Generic spreadsheet batchUpdate \u2014 the catch-all endpoint for every spreadsheet mutation Google supports. The agent passes a list of Request objects; each Request has exactly one operation key. Common operations: addSheet, deleteSheet, updateSheetProperties, updateSpreadsheetProperties, findReplace, insertDimension, deleteDimension, appendDimension, autoResizeDimensions, updateDimensionProperties, repeatCell (formatting), updateCells, mergeCells, unmergeCells, setBasicFilter, clearBasicFilter, addChart, addConditionalFormatRule, updateConditionalFormatRule, deleteConditionalFormatRule, setDataValidation, addProtectedRange, deleteProtectedRange, addNamedRange, deleteNamedRange, addBanding, deleteBanding, addFilterView, sortRange, cutPaste, copyPaste, randomizeRange, pasteData. Example for find/replace across all sheets: { spreadsheetId, requests: [{ findReplace: { find: 'old', replacement: 'new', allSheets: true, matchCase: false } }] }. See https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request for the full Request schema.",
       "method": "POST",
       "path": "/spreadsheets/{spreadsheetId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "requests": {
             "type": "array",
-            "items": { "type": "object" },
-            "description": "Array of Request objects. Each Request has exactly one operation key (e.g. addSheet, findReplace, repeatCell, …)."
+            "items": {
+              "type": "object"
+            },
+            "description": "Array of Request objects. Each Request has exactly one operation key (e.g. addSheet, findReplace, repeatCell, \u2026)."
           },
           "includeSpreadsheetInResponse": {
             "type": "boolean",
@@ -123,11 +171,19 @@
           },
           "responseRanges": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "responseIncludeGridData": { "type": "boolean", "default": false }
+          "responseIncludeGridData": {
+            "type": "boolean",
+            "default": false
+          }
         },
-        "required": ["spreadsheetId", "requests"]
+        "required": [
+          "spreadsheetId",
+          "requests"
+        ]
       }
     },
     {
@@ -138,26 +194,44 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
-          "range": { "type": "string", "description": "A1 notation, e.g. 'Sheet1!A1:D10' or 'Sheet1!A:A'." },
+          "spreadsheetId": {
+            "type": "string"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation, e.g. 'Sheet1!A1:D10' or 'Sheet1!A:A'."
+          },
           "valueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ],
             "default": "FORMATTED_VALUE",
             "description": "How values should be represented. FORMULA returns the literal cell formula instead of the computed value."
           },
           "dateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"],
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ],
             "default": "FORMATTED_STRING"
           },
           "majorDimension": {
             "type": "string",
-            "enum": ["ROWS", "COLUMNS"],
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
             "default": "ROWS"
           }
         },
-        "required": ["spreadsheetId", "range"]
+        "required": [
+          "spreadsheetId",
+          "range"
+        ]
       }
     },
     {
@@ -168,35 +242,62 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
-          "range": { "type": "string", "description": "A1 notation, e.g. 'Sheet1!A1:D10'." },
+          "spreadsheetId": {
+            "type": "string"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation, e.g. 'Sheet1!A1:D10'."
+          },
           "values": {
             "type": "array",
-            "items": { "type": "array" },
+            "items": {
+              "type": "array"
+            },
             "description": "2D array of rows. Each row is an array of cell values (strings, numbers, booleans, or formula strings starting with '=')."
           },
           "majorDimension": {
             "type": "string",
-            "enum": ["ROWS", "COLUMNS"],
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
             "default": "ROWS"
           },
           "valueInputOption": {
             "type": "string",
-            "enum": ["RAW", "USER_ENTERED"],
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
             "default": "USER_ENTERED",
             "description": "How input is interpreted. USER_ENTERED parses formulas, dates, percentages, etc. like a human typing into the UI. RAW writes the exact string."
           },
-          "includeValuesInResponse": { "type": "boolean", "default": false },
+          "includeValuesInResponse": {
+            "type": "boolean",
+            "default": false
+          },
           "responseValueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ]
           },
           "responseDateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ]
           }
         },
-        "required": ["spreadsheetId", "range", "values"]
+        "required": [
+          "spreadsheetId",
+          "range",
+          "values"
+        ]
       },
       "query_params": [
         "valueInputOption",
@@ -213,42 +314,69 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "range": {
             "type": "string",
             "description": "A1 notation of any cell in the table to append to. Google walks down the column to find the last data row."
           },
           "values": {
             "type": "array",
-            "items": { "type": "array" },
+            "items": {
+              "type": "array"
+            },
             "description": "2D array of rows to append."
           },
           "majorDimension": {
             "type": "string",
-            "enum": ["ROWS", "COLUMNS"],
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
             "default": "ROWS"
           },
           "valueInputOption": {
             "type": "string",
-            "enum": ["RAW", "USER_ENTERED"],
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
             "default": "USER_ENTERED"
           },
           "insertDataOption": {
             "type": "string",
-            "enum": ["OVERWRITE", "INSERT_ROWS"],
+            "enum": [
+              "OVERWRITE",
+              "INSERT_ROWS"
+            ],
             "default": "INSERT_ROWS"
           },
-          "includeValuesInResponse": { "type": "boolean", "default": false },
+          "includeValuesInResponse": {
+            "type": "boolean",
+            "default": false
+          },
           "responseValueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ]
           },
           "responseDateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ]
           }
         },
-        "required": ["spreadsheetId", "range", "values"]
+        "required": [
+          "spreadsheetId",
+          "range",
+          "values"
+        ]
       },
       "query_params": [
         "valueInputOption",
@@ -260,16 +388,24 @@
     },
     {
       "name": "clear_range",
-      "description": "Clear values from a single A1 range. Keeps formatting and other cell properties — only the values are wiped.",
+      "description": "Clear values from a single A1 range. Keeps formatting and other cell properties \u2014 only the values are wiped.",
       "method": "POST",
       "path": "/spreadsheets/{spreadsheetId}/values/{range}:clear",
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
-          "range": { "type": "string", "description": "A1 notation, e.g. 'Sheet1!A1:D10'." }
+          "spreadsheetId": {
+            "type": "string"
+          },
+          "range": {
+            "type": "string",
+            "description": "A1 notation, e.g. 'Sheet1!A1:D10'."
+          }
         },
-        "required": ["spreadsheetId", "range"]
+        "required": [
+          "spreadsheetId",
+          "range"
+        ]
       }
     },
     {
@@ -280,29 +416,46 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "ranges": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Array of A1 ranges, e.g. ['Sheet1!A1:B10', 'Sheet2!C1:C100']."
           },
           "valueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ],
             "default": "FORMATTED_VALUE"
           },
           "dateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"],
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ],
             "default": "FORMATTED_STRING"
           },
           "majorDimension": {
             "type": "string",
-            "enum": ["ROWS", "COLUMNS"],
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
             "default": "ROWS"
           }
         },
-        "required": ["spreadsheetId", "ranges"]
+        "required": [
+          "spreadsheetId",
+          "ranges"
+        ]
       }
     },
     {
@@ -313,29 +466,46 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "dataFilters": {
             "type": "array",
-            "items": { "type": "object" },
+            "items": {
+              "type": "object"
+            },
             "description": "Array of DataFilter objects."
           },
           "valueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ],
             "default": "FORMATTED_VALUE"
           },
           "dateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"],
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ],
             "default": "FORMATTED_STRING"
           },
           "majorDimension": {
             "type": "string",
-            "enum": ["ROWS", "COLUMNS"],
+            "enum": [
+              "ROWS",
+              "COLUMNS"
+            ],
             "default": "ROWS"
           }
         },
-        "required": ["spreadsheetId", "dataFilters"]
+        "required": [
+          "spreadsheetId",
+          "dataFilters"
+        ]
       }
     },
     {
@@ -346,29 +516,50 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "data": {
             "type": "array",
-            "items": { "type": "object" },
+            "items": {
+              "type": "object"
+            },
             "description": "Array of ValueRange objects. Example: [{ range: 'Sheet1!A1', values: [['hello']] }, { range: 'Sheet2!B2', values: [['world']] }]."
           },
           "valueInputOption": {
             "type": "string",
-            "enum": ["RAW", "USER_ENTERED"],
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
             "default": "USER_ENTERED",
             "description": "Required by the API. Note: lives in the BODY for batchUpdate (unlike single-range update where it's a query param)."
           },
-          "includeValuesInResponse": { "type": "boolean", "default": false },
+          "includeValuesInResponse": {
+            "type": "boolean",
+            "default": false
+          },
           "responseValueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ]
           },
           "responseDateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ]
           }
         },
-        "required": ["spreadsheetId", "data", "valueInputOption"]
+        "required": [
+          "spreadsheetId",
+          "data",
+          "valueInputOption"
+        ]
       }
     },
     {
@@ -379,28 +570,49 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "data": {
             "type": "array",
-            "items": { "type": "object" },
+            "items": {
+              "type": "object"
+            },
             "description": "Array of DataFilterValueRange objects. Example: [{ dataFilter: { a1Range: 'Sheet1!A1:B2' }, values: [['x','y'],['z','w']] }]."
           },
           "valueInputOption": {
             "type": "string",
-            "enum": ["RAW", "USER_ENTERED"],
+            "enum": [
+              "RAW",
+              "USER_ENTERED"
+            ],
             "default": "USER_ENTERED"
           },
-          "includeValuesInResponse": { "type": "boolean", "default": false },
+          "includeValuesInResponse": {
+            "type": "boolean",
+            "default": false
+          },
           "responseValueRenderOption": {
             "type": "string",
-            "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+            "enum": [
+              "FORMATTED_VALUE",
+              "UNFORMATTED_VALUE",
+              "FORMULA"
+            ]
           },
           "responseDateTimeRenderOption": {
             "type": "string",
-            "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+            "enum": [
+              "SERIAL_NUMBER",
+              "FORMATTED_STRING"
+            ]
           }
         },
-        "required": ["spreadsheetId", "data", "valueInputOption"]
+        "required": [
+          "spreadsheetId",
+          "data",
+          "valueInputOption"
+        ]
       }
     },
     {
@@ -411,14 +623,21 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "ranges": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Array of A1 ranges, e.g. ['Sheet1!A1:B10', 'Sheet2!C:C']."
           }
         },
-        "required": ["spreadsheetId", "ranges"]
+        "required": [
+          "spreadsheetId",
+          "ranges"
+        ]
       }
     },
     {
@@ -429,13 +648,20 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string" },
+          "spreadsheetId": {
+            "type": "string"
+          },
           "dataFilters": {
             "type": "array",
-            "items": { "type": "object" }
+            "items": {
+              "type": "object"
+            }
           }
         },
-        "required": ["spreadsheetId", "dataFilters"]
+        "required": [
+          "spreadsheetId",
+          "dataFilters"
+        ]
       }
     },
     {
@@ -446,17 +672,24 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "spreadsheetId": { "type": "string", "description": "Source spreadsheet ID." },
+          "spreadsheetId": {
+            "type": "string",
+            "description": "Source spreadsheet ID."
+          },
           "sheetId": {
             "type": "integer",
-            "description": "Numeric sheet ID of the tab to copy (NOT the sheet title). Get it from get_spreadsheet → sheets[].properties.sheetId."
+            "description": "Numeric sheet ID of the tab to copy (NOT the sheet title). Get it from get_spreadsheet \u2192 sheets[].properties.sheetId."
           },
           "destinationSpreadsheetId": {
             "type": "string",
             "description": "Target spreadsheet ID where the sheet will be copied to."
           }
         },
-        "required": ["spreadsheetId", "sheetId", "destinationSpreadsheetId"]
+        "required": [
+          "spreadsheetId",
+          "sheetId",
+          "destinationSpreadsheetId"
+        ]
       }
     }
   ]

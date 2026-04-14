@@ -11,7 +11,7 @@
     "embedded",
     "cloud"
   ],
-  "base_url": "",
+  "base_url": "{{server_url}}/v1",
   "auth": {
     "types": [
       "bearer",

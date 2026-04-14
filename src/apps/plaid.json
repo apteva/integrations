@@ -11,7 +11,7 @@
     "plaid",
     "payments"
   ],
-  "base_url": "",
+  "base_url": "https://production.plaid.com",
   "auth": {
     "types": [
       "bearer"

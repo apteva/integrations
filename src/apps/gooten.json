@@ -11,7 +11,7 @@
     "manufacturing",
     "dropshipping"
   ],
-  "base_url": "",
+  "base_url": "https://api.print.io",
   "auth": {
     "types": [
       "bearer"

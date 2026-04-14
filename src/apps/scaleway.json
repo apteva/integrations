@@ -10,7 +10,7 @@
     "infrastructure",
     "storage"
   ],
-  "base_url": "",
+  "base_url": "https://api.scaleway.com",
   "auth": {
     "types": [
       "bearer"

@@ -11,7 +11,7 @@
     "indices",
     "ig-markets"
   ],
-  "base_url": "",
+  "base_url": "https://api.ig.com/gateway/deal",
   "auth": {
     "types": [
       "bearer"

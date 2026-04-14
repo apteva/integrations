@@ -10,7 +10,7 @@
     "pages",
     "posts"
   ],
-  "base_url": "",
+  "base_url": "https://graph.facebook.com/v21.0",
   "auth": {
     "types": [
       "bearer",

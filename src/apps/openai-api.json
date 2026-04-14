@@ -14,7 +14,7 @@
     "transcription",
     "moderation"
   ],
-  "base_url": "",
+  "base_url": "https://api.openai.com/v1",
   "auth": {
     "types": [
       "bearer"

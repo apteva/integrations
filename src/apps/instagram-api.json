@@ -10,7 +10,7 @@
     "videos",
     "analytics"
   ],
-  "base_url": "",
+  "base_url": "https://graph.instagram.com",
   "auth": {
     "types": [
       "bearer",
@@ -425,7 +425,7 @@
     },
     {
       "name": "get_media_insights",
-      "description": "Get analytics and insights for a specific Instagram media post. Note: 'plays' metric was deprecated in 2025 — use 'views' instead.",
+      "description": "Get analytics and insights for a specific Instagram media post. Note: 'plays' metric was deprecated in 2025 \u2014 use 'views' instead.",
       "method": "GET",
       "path": "/get-media-insights",
       "input_schema": {

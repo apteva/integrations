@@ -9,7 +9,7 @@
     "registrar",
     "namecheap"
   ],
-  "base_url": "",
+  "base_url": "https://api.namecheap.com/xml.response",
   "auth": {
     "types": [
       "bearer"

@@ -12,7 +12,7 @@
     "media",
     "content"
   ],
-  "base_url": "",
+  "base_url": "{{site_url}}/wp-json/wp/v2",
   "auth": {
     "types": [
       "bearer"

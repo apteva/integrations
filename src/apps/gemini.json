@@ -14,7 +14,7 @@
     "imagen",
     "google-ai"
   ],
-  "base_url": "",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta",
   "auth": {
     "types": [
       "api_key"

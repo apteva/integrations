@@ -10,7 +10,7 @@
     "data-extraction",
     "actors"
   ],
-  "base_url": "",
+  "base_url": "https://api.apify.com/v2",
   "auth": {
     "types": [
       "bearer"

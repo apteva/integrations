@@ -10,7 +10,7 @@
     "helpdesk",
     "support"
   ],
-  "base_url": "",
+  "base_url": "https://{{domain}}.freshdesk.com/api/v2",
   "auth": {
     "types": [
       "bearer"

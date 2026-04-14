@@ -11,7 +11,7 @@
     "cloud",
     "virtual-machines"
   ],
-  "base_url": "",
+  "base_url": "https://ec2.{{region}}.amazonaws.com",
   "auth": {
     "types": [
       "bearer"

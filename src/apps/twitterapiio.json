@@ -11,7 +11,7 @@
     "posting",
     "twitterapiio"
   ],
-  "base_url": "",
+  "base_url": "https://api.twitterapi.io",
   "auth": {
     "types": [
       "bearer"

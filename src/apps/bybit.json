@@ -1,7 +1,7 @@
 {
   "slug": "bybit",
   "name": "Bybit",
-  "description": "Major crypto exchange — spot and derivatives market data, orderbooks, candles, tickers, and account management.",
+  "description": "Major crypto exchange \u2014 spot and derivatives market data, orderbooks, candles, tickers, and account management.",
   "logo": "https://www.google.com/s2/favicons?domain=bybit.com&sz=128",
   "categories": [
     "crypto",
@@ -10,7 +10,7 @@
     "derivatives",
     "perpetuals"
   ],
-  "base_url": "",
+  "base_url": "https://api.bybit.com",
   "auth": {
     "types": [
       "bearer"
@@ -144,7 +144,7 @@
     },
     {
       "name": "get_instruments",
-      "description": "Get trading pair specifications — lot sizes, price filters, leverage, and trading status.",
+      "description": "Get trading pair specifications \u2014 lot sizes, price filters, leverage, and trading status.",
       "method": "GET",
       "path": "/get-instruments",
       "input_schema": {

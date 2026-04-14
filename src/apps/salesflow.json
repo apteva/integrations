@@ -10,7 +10,7 @@
     "sales",
     "leads"
   ],
-  "base_url": "",
+  "base_url": "https://api.salesflow.io/v1",
   "auth": {
     "types": [
       "bearer"

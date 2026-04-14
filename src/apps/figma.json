@@ -10,7 +10,7 @@
     "ui",
     "comments"
   ],
-  "base_url": "",
+  "base_url": "https://api.figma.com/v1",
   "auth": {
     "types": [
       "bearer"

@@ -10,7 +10,7 @@
     "domains",
     "networking"
   ],
-  "base_url": "",
+  "base_url": "https://route53.amazonaws.com/2013-04-01",
   "auth": {
     "types": [
       "bearer"

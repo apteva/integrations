@@ -10,7 +10,7 @@
     "cloud",
     "sharing"
   ],
-  "base_url": "",
+  "base_url": "https://api.dropboxapi.com/2",
   "auth": {
     "types": [
       "bearer",
@@ -55,7 +55,7 @@
         "contacts.read"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true
     }
   },
   "tools": [

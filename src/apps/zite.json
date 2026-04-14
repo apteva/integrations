@@ -11,7 +11,7 @@
     "no-code",
     "fillout"
   ],
-  "base_url": "",
+  "base_url": "https://api.zite.io",
   "auth": {
     "types": [
       "bearer"

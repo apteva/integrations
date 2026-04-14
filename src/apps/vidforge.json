@@ -14,7 +14,7 @@
     "content-creation",
     "personas"
   ],
-  "base_url": "",
+  "base_url": "https://api.vidforge.com",
   "auth": {
     "types": [
       "bearer"

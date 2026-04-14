@@ -10,7 +10,7 @@
     "helpdesk",
     "crm"
   ],
-  "base_url": "",
+  "base_url": "{{subdomain}}.zendesk.com/api/v2",
   "auth": {
     "types": [
       "bearer"

@@ -11,7 +11,7 @@
     "collaboration",
     "no-code"
   ],
-  "base_url": "",
+  "base_url": "https://coda.io/apis/v1",
   "auth": {
     "types": [
       "bearer"

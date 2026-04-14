@@ -11,7 +11,7 @@
     "octopart",
     "supply-chain"
   ],
-  "base_url": "",
+  "base_url": "https://api.nexar.com",
   "auth": {
     "types": [
       "bearer"

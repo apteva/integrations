@@ -10,7 +10,7 @@
     "microsoft",
     "channels"
   ],
-  "base_url": "",
+  "base_url": "https://graph.microsoft.com/v1.0",
   "auth": {
     "types": [
       "bearer",
@@ -82,7 +82,10 @@
         "ChatMessage.Send"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true,
+      "extra_authorize_params": {
+        "prompt": "consent"
+      }
     }
   },
   "tools": [
