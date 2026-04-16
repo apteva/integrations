@@ -59,6 +59,16 @@
   },
   "tools": [
     {
+      "name": "get_profile",
+      "description": "Get the current user's Gmail profile including email address, total messages, total threads, and history ID",
+      "method": "GET",
+      "path": "/users/me/profile",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
       "name": "send_email",
       "description": "Send an email message. Provide plain-text fields (to, subject, body) \u2014 the system handles RFC 2822 encoding and UTF-8 character support automatically. For HTML emails, use htmlBody instead of or alongside body.",
       "method": "POST",
@@ -306,6 +316,27 @@
       }
     },
     {
+      "name": "batch_delete_messages",
+      "description": "Permanently delete multiple messages at once (bypasses trash, irreversible)",
+      "method": "POST",
+      "path": "/users/me/messages/batchDelete",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of message IDs to permanently delete (max 1000)"
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      }
+    },
+    {
       "name": "list_threads",
       "description": "List email thread IDs with optional search. Returns thread IDs and snippets \u2014 use gmail-get-thread to fetch full conversation messages",
       "method": "GET",
@@ -432,6 +463,24 @@
           "threadId": {
             "type": "string",
             "description": "Thread ID to restore"
+          }
+        },
+        "required": [
+          "threadId"
+        ]
+      }
+    },
+    {
+      "name": "delete_thread",
+      "description": "Permanently delete an entire thread and all its messages (bypasses trash, irreversible)",
+      "method": "DELETE",
+      "path": "/users/me/threads/{threadId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID to permanently delete"
           }
         },
         "required": [
@@ -687,6 +736,59 @@
       }
     },
     {
+      "name": "update_draft",
+      "description": "Update an existing draft's content (replaces the entire draft message). Provide plain-text fields — the system handles RFC 2822 encoding automatically.",
+      "method": "PUT",
+      "path": "/users/me/drafts/{draftId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "draftId": {
+            "type": "string",
+            "description": "Draft ID to update"
+          },
+          "to": {
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Email subject line"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text email body"
+          },
+          "htmlBody": {
+            "type": "string",
+            "description": "HTML email body (optional)"
+          },
+          "cc": {
+            "type": "string",
+            "description": "CC recipients (comma-separated)"
+          },
+          "bcc": {
+            "type": "string",
+            "description": "BCC recipients (comma-separated)"
+          },
+          "replyTo": {
+            "type": "string",
+            "description": "Reply-To address"
+          },
+          "threadId": {
+            "type": "string",
+            "description": "Thread ID if this draft is a reply"
+          }
+        },
+        "required": [
+          "draftId",
+          "to",
+          "subject",
+          "body"
+        ]
+      }
+    },
+    {
       "name": "delete_draft",
       "description": "Permanently delete a draft",
       "method": "DELETE",
@@ -742,6 +844,51 @@
         "required": [
           "messageId",
           "attachmentId"
+        ]
+      }
+    },
+    {
+      "name": "list_history",
+      "description": "List the history of changes to the mailbox since a given history ID. Returns messages added/deleted, labels added/removed. Use with getProfile to get the starting historyId.",
+      "method": "GET",
+      "path": "/users/me/history",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "startHistoryId": {
+            "type": "string",
+            "description": "History ID to start listing from (obtain from getProfile or a previous history response)"
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum history records to return",
+            "default": 100,
+            "maximum": 500
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token for pagination"
+          },
+          "labelId": {
+            "type": "string",
+            "description": "Only return history for this label ID"
+          },
+          "historyTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "messageAdded",
+                "messageDeleted",
+                "labelAdded",
+                "labelRemoved"
+              ]
+            },
+            "description": "Filter to specific history event types"
+          }
+        },
+        "required": [
+          "startHistoryId"
         ]
       }
     },
@@ -833,6 +980,24 @@
       }
     },
     {
+      "name": "get_filter",
+      "description": "Get a specific email filter rule by ID",
+      "method": "GET",
+      "path": "/users/me/settings/filters/{filterId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "filterId": {
+            "type": "string",
+            "description": "Filter ID to retrieve"
+          }
+        },
+        "required": [
+          "filterId"
+        ]
+      }
+    },
+    {
       "name": "delete_filter",
       "description": "Delete an email filter rule",
       "method": "DELETE",
@@ -892,6 +1057,318 @@
       "input_schema": {
         "type": "object",
         "properties": {}
+      }
+    },
+    {
+      "name": "get_vacation",
+      "description": "Get the current vacation/out-of-office auto-reply settings",
+      "method": "GET",
+      "path": "/users/me/settings/vacation",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "update_vacation",
+      "description": "Enable or disable vacation/out-of-office auto-reply and set its message",
+      "method": "PUT",
+      "path": "/users/me/settings/vacation",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "enableAutoReply": {
+            "type": "boolean",
+            "description": "Whether to enable the auto-reply"
+          },
+          "responseSubject": {
+            "type": "string",
+            "description": "Subject line for the auto-reply (optional, uses default if omitted)"
+          },
+          "responseBodyPlainText": {
+            "type": "string",
+            "description": "Plain text body of the auto-reply"
+          },
+          "responseBodyHtml": {
+            "type": "string",
+            "description": "HTML body of the auto-reply (optional)"
+          },
+          "restrictToContacts": {
+            "type": "boolean",
+            "description": "Only send auto-reply to people in contacts",
+            "default": false
+          },
+          "restrictToDomain": {
+            "type": "boolean",
+            "description": "Only send auto-reply to people in the same domain",
+            "default": false
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time in milliseconds since epoch (optional, starts immediately if omitted)"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time in milliseconds since epoch (optional, runs indefinitely if omitted)"
+          }
+        },
+        "required": [
+          "enableAutoReply"
+        ]
+      }
+    },
+    {
+      "name": "get_auto_forwarding",
+      "description": "Get the auto-forwarding setting for the account",
+      "method": "GET",
+      "path": "/users/me/settings/autoForwarding",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "update_auto_forwarding",
+      "description": "Update the auto-forwarding setting. A forwarding address must be verified before it can be used.",
+      "method": "PUT",
+      "path": "/users/me/settings/autoForwarding",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether to enable auto-forwarding"
+          },
+          "emailAddress": {
+            "type": "string",
+            "description": "Email address to forward to (must be a verified forwarding address)"
+          },
+          "disposition": {
+            "type": "string",
+            "description": "What to do with the original message after forwarding",
+            "enum": [
+              "leaveInInbox",
+              "archive",
+              "trash",
+              "markRead"
+            ]
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      }
+    },
+    {
+      "name": "list_forwarding_addresses",
+      "description": "List all verified forwarding addresses for the account",
+      "method": "GET",
+      "path": "/users/me/settings/forwardingAddresses",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_forwarding_address",
+      "description": "Add a new forwarding address. A verification email will be sent to the address.",
+      "method": "POST",
+      "path": "/users/me/settings/forwardingAddresses",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "forwardingEmail": {
+            "type": "string",
+            "description": "Email address to add as a forwarding address"
+          }
+        },
+        "required": [
+          "forwardingEmail"
+        ]
+      }
+    },
+    {
+      "name": "delete_forwarding_address",
+      "description": "Remove a forwarding address",
+      "method": "DELETE",
+      "path": "/users/me/settings/forwardingAddresses/{forwardingEmail}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "forwardingEmail": {
+            "type": "string",
+            "description": "Forwarding email address to delete"
+          }
+        },
+        "required": [
+          "forwardingEmail"
+        ]
+      }
+    },
+    {
+      "name": "list_send_as",
+      "description": "List all send-as aliases configured for the account (email addresses you can send from)",
+      "method": "GET",
+      "path": "/users/me/settings/sendAs",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_send_as",
+      "description": "Get details of a specific send-as alias",
+      "method": "GET",
+      "path": "/users/me/settings/sendAs/{sendAsEmail}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sendAsEmail": {
+            "type": "string",
+            "description": "The send-as email address to retrieve"
+          }
+        },
+        "required": [
+          "sendAsEmail"
+        ]
+      }
+    },
+    {
+      "name": "create_send_as",
+      "description": "Create a new send-as alias (another email address to send mail from). Requires verification unless it's the primary address.",
+      "method": "POST",
+      "path": "/users/me/settings/sendAs",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sendAsEmail": {
+            "type": "string",
+            "description": "The email address to send as"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name for this send-as address"
+          },
+          "replyToAddress": {
+            "type": "string",
+            "description": "Optional reply-to address"
+          },
+          "signature": {
+            "type": "string",
+            "description": "HTML signature for this send-as address"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether to make this the default send-as address",
+            "default": false
+          },
+          "treatAsAlias": {
+            "type": "boolean",
+            "description": "Whether to treat this as an alias (receives mail) or just a send-as address",
+            "default": true
+          }
+        },
+        "required": [
+          "sendAsEmail"
+        ]
+      }
+    },
+    {
+      "name": "update_send_as",
+      "description": "Update a send-as alias settings (display name, signature, reply-to, etc.)",
+      "method": "PATCH",
+      "path": "/users/me/settings/sendAs/{sendAsEmail}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sendAsEmail": {
+            "type": "string",
+            "description": "The send-as email address to update"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "replyToAddress": {
+            "type": "string",
+            "description": "Reply-to address"
+          },
+          "signature": {
+            "type": "string",
+            "description": "HTML signature"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether to make this the default"
+          }
+        },
+        "required": [
+          "sendAsEmail"
+        ]
+      }
+    },
+    {
+      "name": "delete_send_as",
+      "description": "Delete a send-as alias",
+      "method": "DELETE",
+      "path": "/users/me/settings/sendAs/{sendAsEmail}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sendAsEmail": {
+            "type": "string",
+            "description": "The send-as email address to delete"
+          }
+        },
+        "required": [
+          "sendAsEmail"
+        ]
+      }
+    },
+    {
+      "name": "list_delegates",
+      "description": "List all delegates for the account (people who can read, send, and delete mail on your behalf)",
+      "method": "GET",
+      "path": "/users/me/settings/delegates",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_delegate",
+      "description": "Add a delegate who can read, send, and delete mail on your behalf",
+      "method": "POST",
+      "path": "/users/me/settings/delegates",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "delegateEmail": {
+            "type": "string",
+            "description": "Email address of the delegate to add"
+          }
+        },
+        "required": [
+          "delegateEmail"
+        ]
+      }
+    },
+    {
+      "name": "delete_delegate",
+      "description": "Remove a delegate from the account",
+      "method": "DELETE",
+      "path": "/users/me/settings/delegates/{delegateEmail}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "delegateEmail": {
+            "type": "string",
+            "description": "Email address of the delegate to remove"
+          }
+        },
+        "required": [
+          "delegateEmail"
+        ]
       }
     }
   ]
