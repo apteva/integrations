@@ -54,15 +54,39 @@
   },
   "tools": [
     {
+      "name": "get_document",
+      "description": "Get the full content and metadata of a Google Doc by its document ID. Returns the document title, body content, headers, footers, footnotes, and all structural elements.",
+      "method": "GET",
+      "path": "/documents/{documentId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document to retrieve"
+          },
+          "includeTabsContent": {
+            "type": "boolean",
+            "description": "Whether to include content from all tabs. Default false returns only the first tab.",
+            "default": false
+          }
+        },
+        "required": [
+          "documentId"
+        ]
+      }
+    },
+    {
       "name": "create_document",
-      "description": "Create a new document",
+      "description": "Create a new blank Google Doc with a title",
       "method": "POST",
-      "path": "/create-document",
+      "path": "/documents",
       "input_schema": {
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "The title of the new document"
           }
         },
         "required": [
@@ -71,83 +95,116 @@
       }
     },
     {
-      "name": "copy_document",
-      "description": "Copy an existing document",
-      "method": "GET",
-      "path": "/copy-document",
+      "name": "insert_text",
+      "description": "Insert text at a specific position in a document. Use index 1 to insert at the beginning of the document body.",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
-          "title": {
-            "type": "string"
+          "text": {
+            "type": "string",
+            "description": "The text to insert"
+          },
+          "index": {
+            "type": "integer",
+            "description": "The zero-based index in the document body to insert at. Use 1 for the start of the body."
+          },
+          "segment_id": {
+            "type": "string",
+            "description": "Optional segment ID (header, footer, or footnote ID). Omit for the main document body."
           }
         },
         "required": [
-          "document_id"
-        ]
-      }
-    },
-    {
-      "name": "delete_document",
-      "description": "Delete a document",
-      "method": "DELETE",
-      "path": "/delete-document",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "document_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "document_id"
+          "documentId",
+          "text",
+          "index"
         ]
       }
     },
     {
       "name": "append_text",
-      "description": "Append text to a document",
-      "method": "GET",
-      "path": "/append-text",
+      "description": "Append text to the end of a document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
           "text": {
-            "type": "string"
+            "type": "string",
+            "description": "The text to append"
           }
         },
         "required": [
-          "document_id",
+          "documentId",
           "text"
         ]
       }
     },
     {
-      "name": "delete_text",
-      "description": "Delete text from a document",
-      "method": "DELETE",
-      "path": "/delete-text",
+      "name": "replace_text",
+      "description": "Find and replace all occurrences of a text string in the document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
-          "start_index": {
-            "type": "number"
+          "find": {
+            "type": "string",
+            "description": "The text to search for"
           },
-          "end_index": {
-            "type": "number"
+          "replace": {
+            "type": "string",
+            "description": "The text to replace with"
+          },
+          "match_case": {
+            "type": "boolean",
+            "description": "Whether the search should be case-sensitive",
+            "default": true
           }
         },
         "required": [
-          "document_id",
+          "documentId",
+          "find",
+          "replace"
+        ]
+      }
+    },
+    {
+      "name": "delete_text",
+      "description": "Delete text from a document by specifying a start and end index range",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "start_index": {
+            "type": "integer",
+            "description": "The start index of the range to delete"
+          },
+          "end_index": {
+            "type": "integer",
+            "description": "The end index of the range to delete (exclusive)"
+          }
+        },
+        "required": [
+          "documentId",
           "start_index",
           "end_index"
         ]
@@ -155,27 +212,31 @@
     },
     {
       "name": "format_text",
-      "description": "Format text in a document",
-      "method": "GET",
-      "path": "/format-text",
+      "description": "Apply text styling (bold, italic, underline, font size, color, etc.) to a range of text in a document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
           "start_index": {
-            "type": "number"
+            "type": "integer",
+            "description": "The start index of the text range"
           },
           "end_index": {
-            "type": "number"
+            "type": "integer",
+            "description": "The end index of the text range (exclusive)"
           },
           "style": {
-            "type": "object"
+            "type": "object",
+            "description": "Text style properties: bold, italic, underline, strikethrough, fontSize (object with magnitude/unit), foregroundColor (object with color.rgbColor), link (object with url), fontFamily, baselineOffset (SUPERSCRIPT, SUBSCRIPT, NONE)"
           }
         },
         "required": [
-          "document_id",
+          "documentId",
           "start_index",
           "end_index",
           "style"
@@ -184,27 +245,31 @@
     },
     {
       "name": "format_paragraph",
-      "description": "Format paragraphs",
-      "method": "GET",
-      "path": "/format-paragraph",
+      "description": "Apply paragraph styling (alignment, heading style, spacing, indentation) to a range in a document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
           "start_index": {
-            "type": "number"
+            "type": "integer",
+            "description": "The start index of the paragraph range"
           },
           "end_index": {
-            "type": "number"
+            "type": "integer",
+            "description": "The end index of the paragraph range (exclusive)"
           },
           "style": {
-            "type": "object"
+            "type": "object",
+            "description": "Paragraph style: namedStyleType (HEADING_1 through HEADING_6, TITLE, SUBTITLE, NORMAL_TEXT), alignment (START, CENTER, END, JUSTIFIED), lineSpacing, spaceAbove/spaceBelow (magnitude/unit), indentFirstLine, indentStart, indentEnd, direction (LEFT_TO_RIGHT, RIGHT_TO_LEFT)"
           }
         },
         "required": [
-          "document_id",
+          "documentId",
           "start_index",
           "end_index",
           "style"
@@ -212,71 +277,310 @@
       }
     },
     {
-      "name": "create_list",
-      "description": "Create a list in document",
+      "name": "insert_table",
+      "description": "Insert a table at a specific position in the document",
       "method": "POST",
-      "path": "/create-list",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
-          "items": {
-            "type": "array"
+          "rows": {
+            "type": "integer",
+            "description": "Number of rows in the table"
           },
-          "ordered": {
-            "type": "boolean"
+          "columns": {
+            "type": "integer",
+            "description": "Number of columns in the table"
+          },
+          "index": {
+            "type": "integer",
+            "description": "The index in the document body to insert the table at"
           }
         },
         "required": [
-          "document_id",
-          "items"
+          "documentId",
+          "rows",
+          "columns",
+          "index"
+        ]
+      }
+    },
+    {
+      "name": "insert_image",
+      "description": "Insert an inline image into the document from a URL",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "uri": {
+            "type": "string",
+            "description": "The URL of the image to insert. Must be publicly accessible."
+          },
+          "index": {
+            "type": "integer",
+            "description": "The index in the document body to insert the image at"
+          },
+          "width": {
+            "type": "number",
+            "description": "Optional width in points (1 inch = 72 points)"
+          },
+          "height": {
+            "type": "number",
+            "description": "Optional height in points (1 inch = 72 points)"
+          }
+        },
+        "required": [
+          "documentId",
+          "uri",
+          "index"
+        ]
+      }
+    },
+    {
+      "name": "insert_page_break",
+      "description": "Insert a page break at a specific position in the document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "index": {
+            "type": "integer",
+            "description": "The index in the document body to insert the page break at"
+          }
+        },
+        "required": [
+          "documentId",
+          "index"
+        ]
+      }
+    },
+    {
+      "name": "create_list",
+      "description": "Create a bulleted or numbered list from paragraphs in a document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "start_index": {
+            "type": "integer",
+            "description": "The start index of the paragraph range to convert to a list"
+          },
+          "end_index": {
+            "type": "integer",
+            "description": "The end index of the paragraph range to convert to a list"
+          },
+          "bullet_preset": {
+            "type": "string",
+            "description": "The bullet/numbering style",
+            "enum": [
+              "BULLET_DISC_CIRCLE_SQUARE",
+              "BULLET_DIAMONDX_ARROW3D_SQUARE",
+              "BULLET_CHECKBOX",
+              "BULLET_ARROW_DIAMOND_DISC",
+              "BULLET_STAR_CIRCLE_SQUARE",
+              "BULLET_ARROW3D_CIRCLE_SQUARE",
+              "BULLET_LEFTTRIANGLE_DIAMOND_DISC",
+              "NUMBERED_DECIMAL_ALPHA_ROMAN",
+              "NUMBERED_DECIMAL_ALPHA_ROMAN_PARENS",
+              "NUMBERED_DECIMAL_NESTED",
+              "NUMBERED_UPPERALPHA_ALPHA_ROMAN",
+              "NUMBERED_UPPERROMAN_UPPERALPHA_DECIMAL",
+              "NUMBERED_ZERODECIMAL_ALPHA_ROMAN"
+            ],
+            "default": "BULLET_DISC_CIRCLE_SQUARE"
+          }
+        },
+        "required": [
+          "documentId",
+          "start_index",
+          "end_index"
+        ]
+      }
+    },
+    {
+      "name": "remove_list",
+      "description": "Remove bullet/numbering from paragraphs, converting them back to normal text",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "start_index": {
+            "type": "integer",
+            "description": "The start index of the paragraph range"
+          },
+          "end_index": {
+            "type": "integer",
+            "description": "The end index of the paragraph range"
+          }
+        },
+        "required": [
+          "documentId",
+          "start_index",
+          "end_index"
         ]
       }
     },
     {
       "name": "add_header_footer",
-      "description": "Add header or footer",
-      "method": "GET",
-      "path": "/add-header-footer",
+      "description": "Add a header or footer to the document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
           },
           "type": {
             "type": "string",
             "enum": [
               "header",
               "footer"
-            ]
+            ],
+            "description": "Whether to add a header or footer"
           },
           "content": {
-            "type": "string"
+            "type": "string",
+            "description": "The text content for the header or footer"
           }
         },
         "required": [
-          "document_id",
+          "documentId",
           "type",
           "content"
         ]
       }
     },
     {
+      "name": "delete_header_footer",
+      "description": "Remove a header or footer from the document",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "header_id": {
+            "type": "string",
+            "description": "The ID of the header to delete (from get_document response). Provide either header_id or footer_id."
+          },
+          "footer_id": {
+            "type": "string",
+            "description": "The ID of the footer to delete (from get_document response). Provide either header_id or footer_id."
+          }
+        },
+        "required": [
+          "documentId"
+        ]
+      }
+    },
+    {
+      "name": "create_named_range",
+      "description": "Create a named range in the document for programmatic content anchoring and template placeholders",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the range (e.g. 'customer_name', 'address_block')"
+          },
+          "start_index": {
+            "type": "integer",
+            "description": "The start index of the range"
+          },
+          "end_index": {
+            "type": "integer",
+            "description": "The end index of the range"
+          }
+        },
+        "required": [
+          "documentId",
+          "name",
+          "start_index",
+          "end_index"
+        ]
+      }
+    },
+    {
+      "name": "replace_named_range",
+      "description": "Replace the content of a named range. Useful for filling in templates with dynamic data.",
+      "method": "POST",
+      "path": "/documents/{documentId}:batchUpdate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document"
+          },
+          "named_range_id": {
+            "type": "string",
+            "description": "The ID of the named range to replace. Use either named_range_id or name."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the named range to replace. Use either named_range_id or name."
+          },
+          "text": {
+            "type": "string",
+            "description": "The replacement text"
+          }
+        },
+        "required": [
+          "documentId",
+          "text"
+        ]
+      }
+    },
+    {
       "name": "export_document",
-      "description": "Export document to different format",
+      "description": "Export a Google Doc to a different format (PDF, DOCX, TXT, HTML). Uses the Drive API export endpoint.",
       "method": "GET",
       "path": "/export-document",
       "input_schema": {
         "type": "object",
         "properties": {
-          "document_id": {
-            "type": "string"
+          "documentId": {
+            "type": "string",
+            "description": "The ID of the document to export"
           },
           "format": {
             "type": "string",
+            "description": "The export format",
             "enum": [
               "pdf",
               "docx",
@@ -286,7 +590,7 @@
           }
         },
         "required": [
-          "document_id",
+          "documentId",
           "format"
         ]
       }

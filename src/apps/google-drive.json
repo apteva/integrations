@@ -66,7 +66,7 @@
         "properties": {
           "q": {
             "type": "string",
-            "description": "Search query using Drive query syntax. Examples: \"'FOLDER_ID' in parents\" to list folder contents, \"mimeType='application/vnd.google-apps.spreadsheet'\" to find sheets, \"name contains 'report'\" to search by name, \"modifiedTime > '2025-01-01'\" for recent files"
+            "description": "Search query using Drive query syntax. Examples: \"'FOLDER_ID' in parents\" to list folder contents, \"mimeType='application/vnd.google-apps.spreadsheet'\" to find sheets, \"name contains 'report'\" to search by name, \"modifiedTime > '2025-01-01'\" for recent files, \"trashed=true\" to list trashed files"
           },
           "pageSize": {
             "type": "integer",
@@ -92,13 +92,23 @@
             "type": "string",
             "description": "Spaces to search: drive, appDataFolder",
             "default": "drive"
+          },
+          "includeItemsFromAllDrives": {
+            "type": "boolean",
+            "description": "Whether to include files from shared drives",
+            "default": false
+          },
+          "supportsAllDrives": {
+            "type": "boolean",
+            "description": "Whether the request supports shared drives",
+            "default": true
           }
         }
       }
     },
     {
       "name": "get_file",
-      "description": "Get metadata for a specific file by ID",
+      "description": "Get metadata for a specific file by ID. Returns file name, MIME type, size, sharing links (webViewLink for browser, webContentLink for direct download), owners, and permissions.",
       "method": "GET",
       "path": "/drive/v3/files/{fileId}",
       "input_schema": {
@@ -111,7 +121,7 @@
           "fields": {
             "type": "string",
             "description": "Fields to return",
-            "default": "id,name,mimeType,size,modifiedTime,parents,webViewLink,createdTime,owners,permissions,description"
+            "default": "id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,createdTime,owners,permissions,description,shared,trashed,thumbnailLink"
           },
           "supportsAllDrives": {
             "type": "boolean",
@@ -125,8 +135,31 @@
       }
     },
     {
+      "name": "download_file",
+      "description": "Download the binary content of a non-Google Workspace file (images, audio, video, PDFs, etc.). For Google Workspace files (Docs, Sheets, Slides), use export_file instead.",
+      "method": "GET",
+      "path": "/drive/v3/files/{fileId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to download"
+          },
+          "alt": {
+            "type": "string",
+            "description": "Must be 'media' to download file content",
+            "default": "media"
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
       "name": "search_files",
-      "description": "Search for files in Google Drive by name, content, type, or other criteria",
+      "description": "Search for files in Google Drive by name, content, type, or other criteria. Returns file IDs, names, links, and metadata.",
       "method": "GET",
       "path": "/drive/v3/files",
       "input_schema": {
@@ -134,7 +167,7 @@
         "properties": {
           "q": {
             "type": "string",
-            "description": "Drive search query. Examples: \"name contains 'budget'\", \"fullText contains 'quarterly'\", \"mimeType='application/vnd.google-apps.spreadsheet'\", \"modifiedTime > '2025-01-01T00:00:00'\", \"'me' in owners\". Combine with 'and'/'or'."
+            "description": "Drive search query. Examples: \"name contains 'budget'\", \"fullText contains 'quarterly'\", \"mimeType='application/vnd.google-apps.spreadsheet'\", \"mimeType contains 'audio/'\", \"mimeType contains 'video/'\", \"mimeType='application/pdf'\", \"modifiedTime > '2025-01-01T00:00:00'\", \"'me' in owners\", \"sharedWithMe=true\", \"starred=true\". Combine with 'and'/'or'."
           },
           "pageSize": {
             "type": "integer",
@@ -150,7 +183,17 @@
           "fields": {
             "type": "string",
             "description": "Fields to return",
-            "default": "files(id,name,mimeType,size,modifiedTime,webViewLink,parents)"
+            "default": "files(id,name,mimeType,size,modifiedTime,webViewLink,webContentLink,parents,shared)"
+          },
+          "includeItemsFromAllDrives": {
+            "type": "boolean",
+            "description": "Whether to include files from shared drives",
+            "default": false
+          },
+          "supportsAllDrives": {
+            "type": "boolean",
+            "description": "Whether the request supports shared drives",
+            "default": true
           }
         },
         "required": [
@@ -185,6 +228,48 @@
         },
         "required": [
           "name"
+        ]
+      }
+    },
+    {
+      "name": "update_file",
+      "description": "Update a file's metadata (name, description, starred, etc.) and optionally its content",
+      "method": "PATCH",
+      "path": "/drive/v3/files/{fileId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to update"
+          },
+          "name": {
+            "type": "string",
+            "description": "New name for the file"
+          },
+          "description": {
+            "type": "string",
+            "description": "New description for the file"
+          },
+          "starred": {
+            "type": "boolean",
+            "description": "Whether to star the file"
+          },
+          "trashed": {
+            "type": "boolean",
+            "description": "Whether to move the file to trash (true) or restore it (false)"
+          },
+          "addParents": {
+            "type": "string",
+            "description": "Comma-separated parent folder IDs to add"
+          },
+          "removeParents": {
+            "type": "string",
+            "description": "Comma-separated parent folder IDs to remove"
+          }
+        },
+        "required": [
+          "fileId"
         ]
       }
     },
@@ -238,8 +323,130 @@
       }
     },
     {
+      "name": "list_permissions",
+      "description": "List all permissions (who has access) for a file or folder",
+      "method": "GET",
+      "path": "/drive/v3/files/{fileId}/permissions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "permissions(id,type,role,emailAddress,displayName,domain,expirationTime,deleted)"
+          },
+          "supportsAllDrives": {
+            "type": "boolean",
+            "description": "Support shared drives",
+            "default": true
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "update_permission",
+      "description": "Update an existing permission on a file (e.g. change role from reader to writer)",
+      "method": "PATCH",
+      "path": "/drive/v3/files/{fileId}/permissions/{permissionId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder"
+          },
+          "permissionId": {
+            "type": "string",
+            "description": "ID of the permission to update"
+          },
+          "role": {
+            "type": "string",
+            "description": "New role",
+            "enum": [
+              "reader",
+              "writer",
+              "commenter",
+              "owner"
+            ]
+          },
+          "expirationTime": {
+            "type": "string",
+            "description": "Optional expiration time in RFC 3339 format"
+          }
+        },
+        "required": [
+          "fileId",
+          "permissionId",
+          "role"
+        ]
+      }
+    },
+    {
+      "name": "delete_permission",
+      "description": "Remove a specific permission from a file (revoke someone's access)",
+      "method": "DELETE",
+      "path": "/drive/v3/files/{fileId}/permissions/{permissionId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder"
+          },
+          "permissionId": {
+            "type": "string",
+            "description": "ID of the permission to delete"
+          }
+        },
+        "required": [
+          "fileId",
+          "permissionId"
+        ]
+      }
+    },
+    {
+      "name": "trash_file",
+      "description": "Move a file or folder to the trash (can be restored later, unlike delete_file which is permanent)",
+      "method": "PATCH",
+      "path": "/drive/v3/files/{fileId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file or folder to trash"
+          },
+          "trashed": {
+            "type": "boolean",
+            "description": "Set to true to trash, false to restore from trash",
+            "default": true
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "empty_trash",
+      "description": "Permanently delete all files in the user's trash",
+      "method": "DELETE",
+      "path": "/drive/v3/files/trash",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
       "name": "delete_file",
-      "description": "Permanently delete a file or folder from Google Drive (skips trash)",
+      "description": "Permanently delete a file or folder from Google Drive (skips trash, cannot be undone). Use trash_file for recoverable deletion.",
       "method": "DELETE",
       "path": "/drive/v3/files/{fileId}",
       "input_schema": {
@@ -247,7 +454,7 @@
         "properties": {
           "fileId": {
             "type": "string",
-            "description": "ID of the file or folder to delete"
+            "description": "ID of the file or folder to permanently delete"
           }
         },
         "required": [
@@ -355,6 +562,118 @@
           "fileId",
           "mimeType"
         ]
+      }
+    },
+    {
+      "name": "create_comment",
+      "description": "Add a comment to a file in Google Drive",
+      "method": "POST",
+      "path": "/drive/v3/files/{fileId}/comments",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file to comment on"
+          },
+          "content": {
+            "type": "string",
+            "description": "The text content of the comment"
+          },
+          "anchor": {
+            "type": "string",
+            "description": "Optional anchor region for the comment (JSON string)"
+          }
+        },
+        "required": [
+          "fileId",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "list_comments",
+      "description": "List all comments on a file",
+      "method": "GET",
+      "path": "/drive/v3/files/{fileId}/comments",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Max comments to return (1-100)",
+            "default": 20,
+            "maximum": 100
+          },
+          "includeDeleted": {
+            "type": "boolean",
+            "description": "Include deleted comments",
+            "default": false
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "comments(id,content,author,createdTime,modifiedTime,resolved,replies)"
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "list_revisions",
+      "description": "List the revision history of a file (version history)",
+      "method": "GET",
+      "path": "/drive/v3/files/{fileId}/revisions",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "description": "ID of the file"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Max revisions to return (1-1000)",
+            "default": 100,
+            "maximum": 1000
+          },
+          "fields": {
+            "type": "string",
+            "description": "Fields to return",
+            "default": "revisions(id,modifiedTime,lastModifyingUser,size,mimeType,keepForever)"
+          }
+        },
+        "required": [
+          "fileId"
+        ]
+      }
+    },
+    {
+      "name": "generate_file_ids",
+      "description": "Pre-allocate file IDs for uploads. Useful when you need the file ID before creating the file.",
+      "method": "GET",
+      "path": "/drive/v3/files/generateIds",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of IDs to generate (1-1000)",
+            "default": 1,
+            "maximum": 1000
+          },
+          "space": {
+            "type": "string",
+            "description": "The space for the IDs",
+            "default": "drive"
+          }
+        }
       }
     },
     {
