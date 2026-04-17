@@ -118,6 +118,14 @@ export async function executeTool(
     const ct = response.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
       data = await response.json();
+    } else if (isBinaryContentType(ct)) {
+      const buffer = await response.arrayBuffer();
+      data = {
+        _binary: true,
+        base64: Buffer.from(buffer).toString("base64"),
+        mimeType: ct.split(";")[0].trim(),
+        size: buffer.byteLength,
+      };
     } else {
       data = await response.text();
     }
@@ -295,6 +303,26 @@ function buildQueryString(params: Record<string, unknown>): string {
     }
   }
   return parts.join("&");
+}
+
+const BINARY_MIME_PREFIXES = [
+  "audio/",
+  "video/",
+  "image/",
+  "application/octet-stream",
+  "application/pdf",
+  "application/zip",
+  "application/gzip",
+  "application/x-tar",
+  "application/vnd.openxmlformats",
+  "application/vnd.ms-",
+  "application/msword",
+  "font/",
+];
+
+function isBinaryContentType(contentType: string): boolean {
+  const ct = contentType.toLowerCase();
+  return BINARY_MIME_PREFIXES.some((prefix) => ct.startsWith(prefix) || ct.includes(prefix));
 }
 
 function extractPath(data: unknown, jsonPath: string): unknown {
