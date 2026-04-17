@@ -107,6 +107,14 @@ export interface AppToolTemplate {
   // body content and the API rejects the request.
   query_params?: string[];
   response_path?: string; // JSONPath to extract from response
+  // Name of an input field whose value is raw binary (or a core-rehydrated
+  // { _binary, base64, mimeType } envelope). When set AND that input is
+  // present, http-executor sends the decoded bytes as the HTTP request
+  // body with `Content-Type: application/octet-stream` (overridable via
+  // the envelope's mimeType), skipping the normal JSON-body serialization
+  // path. Used by endpoints like Deepgram's /v1/listen that accept a raw
+  // audio payload on the same URL as their JSON variant.
+  body_binary_param?: string;
 }
 
 // ============ Connections ============

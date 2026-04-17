@@ -11,7 +11,15 @@ export interface ExecuteToolOptions {
   credentials: ConnectionCredentials;
   input: Record<string, unknown>;
   timeout?: number;
+  // Maximum size, in bytes, accepted for a binary response. Larger
+  // payloads are rejected with success=false instead of being buffered
+  // into memory. Defaults to 25 MB. Only applies to the binary branch;
+  // JSON and text responses are not capped here (fetch itself bounds them
+  // via the server and the timeout).
+  maxBinaryBytes?: number;
 }
+
+const DEFAULT_MAX_BINARY_BYTES = 25 * 1024 * 1024;
 
 export interface ExecuteToolResult {
   success: boolean;
@@ -28,7 +36,14 @@ export interface ExecuteToolResult {
 export async function executeTool(
   opts: ExecuteToolOptions
 ): Promise<ExecuteToolResult> {
-  const { app, tool, credentials, input, timeout = 30000 } = opts;
+  const {
+    app,
+    tool,
+    credentials,
+    input,
+    timeout = 30000,
+    maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
+  } = opts;
 
   // 1. Build the URL with path parameter + credential interpolation
   const url = buildUrl(app.base_url, tool.path, input, credentials);
@@ -59,10 +74,22 @@ export async function executeTool(
   const pathParams = extractPathParams(tool.path);
   const declaredQueryParams = tool.query_params || [];
 
+  // Request-side binary body: if the template declared a `body_binary_param`
+  // and that input field is a _binary envelope (populated by the core
+  // blob-handle rehydration path for fields carrying blobref:// values),
+  // pull it aside BEFORE the normal query/body split so it doesn't leak
+  // into either bucket.
+  const binaryParam = tool.body_binary_param;
+  const binaryEnvelope =
+    binaryParam && isBinaryEnvelope(input[binaryParam])
+      ? (input[binaryParam] as Record<string, unknown>)
+      : null;
+
   const remainingParams: Record<string, unknown> = {};
   const toolQueryParams: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input)) {
     if (pathParams.includes(k)) continue;
+    if (binaryEnvelope && k === binaryParam) continue;
     if (declaredQueryParams.includes(k)) {
       // Skip undefined / null so optional query fields don't show up
       // in the URL as empty strings.
@@ -77,7 +104,24 @@ export async function executeTool(
   let finalUrl = url;
   const allQueryParams = { ...authQueryParams, ...toolQueryParams };
 
-  if (tool.method === "GET" || tool.method === "DELETE") {
+  if (binaryEnvelope) {
+    // Binary-body path: decode the envelope and send its bytes raw.
+    // The envelope's mimeType wins if provided; otherwise default to
+    // application/octet-stream (matches Deepgram's recommended shape).
+    const base64 = String(binaryEnvelope.base64 || "");
+    const mime =
+      String(binaryEnvelope.mimeType || "") || "application/octet-stream";
+    fetchOpts.body = Buffer.from(base64, "base64");
+    // Let the envelope's Content-Type override any template header.
+    // Strip casing variants first so we don't leave a stale one behind.
+    delete headers["Content-Type"];
+    delete headers["content-type"];
+    headers["Content-Type"] = mime;
+    fetchOpts.headers = headers;
+    // Any leftover non-binary, non-query input fields are ignored here —
+    // if a template mixes raw body with JSON fields it should put those
+    // in query_params, which is already the convention.
+  } else if (tool.method === "GET" || tool.method === "DELETE") {
     Object.assign(allQueryParams, remainingParams);
   } else {
     // For POST with query_params auth (like Pushover), merge auth + input into body
@@ -116,22 +160,72 @@ export async function executeTool(
 
     let data: unknown;
     const ct = response.headers.get("content-type") || "";
+    let isBinary = false;
     if (ct.includes("application/json")) {
-      data = await response.json();
+      // Parse JSON via text() so a malformed body doesn't collapse into
+      // the network-error catch (which would lose response.status). If
+      // the server sent us 500 with a broken error page labelled as
+      // JSON, the caller still sees status=500 plus the raw body.
+      const text = await response.text();
+      try {
+        data = text.length > 0 ? JSON.parse(text) : null;
+      } catch (err) {
+        return {
+          success: false,
+          status: response.status,
+          data: {
+            error: "invalid json response",
+            detail: err instanceof Error ? err.message : String(err),
+            raw: text.length > 2048 ? text.slice(0, 2048) + "…" : text,
+          },
+          headers: responseHeaders,
+        };
+      }
     } else if (isBinaryContentType(ct)) {
+      // Pre-reject oversize payloads via Content-Length when available so
+      // we don't buffer gigabytes into memory just to discover the cap.
+      const declared = Number(response.headers.get("content-length") || "0");
+      if (declared > maxBinaryBytes) {
+        return {
+          success: false,
+          status: response.status,
+          data: {
+            error: "binary response too large",
+            size: declared,
+            max: maxBinaryBytes,
+          },
+          headers: responseHeaders,
+        };
+      }
       const buffer = await response.arrayBuffer();
+      if (buffer.byteLength > maxBinaryBytes) {
+        return {
+          success: false,
+          status: response.status,
+          data: {
+            error: "binary response too large",
+            size: buffer.byteLength,
+            max: maxBinaryBytes,
+          },
+          headers: responseHeaders,
+        };
+      }
       data = {
         _binary: true,
         base64: Buffer.from(buffer).toString("base64"),
         mimeType: ct.split(";")[0].trim(),
         size: buffer.byteLength,
       };
+      isBinary = true;
     } else {
       data = await response.text();
     }
 
-    // Apply response_path extraction if defined
-    if (tool.response_path && data && typeof data === "object") {
+    // Apply response_path extraction if defined — but skip for binary
+    // envelopes. extractPath would walk into { _binary, base64, ... }
+    // looking for the template's path (e.g. "data") and silently return
+    // undefined, destroying the payload.
+    if (tool.response_path && data && typeof data === "object" && !isBinary) {
       data = extractPath(data, tool.response_path);
     }
 
@@ -320,9 +414,25 @@ const BINARY_MIME_PREFIXES = [
   "font/",
 ];
 
+// isBinaryEnvelope returns true if v is the shape the core blob-handle
+// rehydrator produces when replacing a blobref:// reference: an object
+// with `_binary: true`, `base64: string`, and optional mimeType/size.
+// Strings and anything else are rejected — a template that marks a
+// field as `body_binary_param` but gets a plain string input falls
+// through to the normal JSON body path (no surprises).
+function isBinaryEnvelope(v: unknown): boolean {
+  if (!v || typeof v !== "object") return false;
+  const o = v as Record<string, unknown>;
+  return o._binary === true && typeof o.base64 === "string";
+}
+
 function isBinaryContentType(contentType: string): boolean {
-  const ct = contentType.toLowerCase();
-  return BINARY_MIME_PREFIXES.some((prefix) => ct.startsWith(prefix) || ct.includes(prefix));
+  const ct = contentType.toLowerCase().trim();
+  // startsWith is sufficient — every entry in BINARY_MIME_PREFIXES is a
+  // real MIME prefix. The previous `|| ct.includes(prefix)` fallback
+  // produced false positives on headers that happened to mention a MIME
+  // substring in a parameter value.
+  return BINARY_MIME_PREFIXES.some((prefix) => ct.startsWith(prefix));
 }
 
 function extractPath(data: unknown, jsonPath: string): unknown {

@@ -72,16 +72,21 @@
       ]
     },
     {
-      "name": "listen_url",
-      "description": "Speech-to-text transcription on a pre-recorded audio file hosted at a public URL, using Deepgram's Nova models (default: nova-3, their latest and most accurate, multilingual). Deepgram fetches the URL, transcribes it, and returns a JSON result with words, punctuation, and optionally diarization, paragraphs, summaries, sentiment, and topics. Best for podcast/meeting/interview transcription where the audio is already uploaded somewhere reachable (S3, CDN, Drive public link, etc.). Override the default via the `model` parameter if you need a domain-tuned variant (nova-2-meeting, nova-2-phonecall) or Whisper.",
+      "name": "listen",
+      "description": "Speech-to-text transcription of pre-recorded audio via Deepgram's Nova models (default: nova-3, their latest and most accurate, multilingual). Accepts the audio two ways — pick exactly one: (a) `url` for a publicly-reachable HTTPS link Deepgram will fetch (best for S3/CDN/public Drive links), or (b) `audio` as a blobref:// handle returned by an upstream download tool when the file only exists in-process. Returns a JSON result with words, punctuation, and optionally diarization, paragraphs, summaries, sentiment, and topics. Override the default via `model` for domain-tuned variants (nova-2-meeting, nova-2-phonecall) or Whisper.",
       "method": "POST",
       "path": "/v1/listen",
+      "body_binary_param": "audio",
       "input_schema": {
         "type": "object",
         "properties": {
           "url": {
             "type": "string",
-            "description": "Publicly-reachable HTTPS URL of the audio file to transcribe. Deepgram fetches this directly."
+            "description": "Publicly-reachable HTTPS URL of the audio file to transcribe. Deepgram fetches this directly. Mutually exclusive with `audio`."
+          },
+          "audio": {
+            "type": "string",
+            "description": "A blobref:// handle produced by an upstream file-download tool (google-drive, dropbox, etc.). The runtime rehydrates the bytes and Deepgram receives them as the request body. Mutually exclusive with `url`. Do NOT base64-encode or inline raw bytes yourself."
           },
           "model": {
             "type": "string",
@@ -156,7 +161,7 @@
             "description": "Optional URL for async delivery. Deepgram POSTs the full JSON result here instead of returning it inline."
           }
         },
-        "required": ["url"]
+        "required": []
       },
       "query_params": [
         "model",
