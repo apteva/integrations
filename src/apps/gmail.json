@@ -2,7 +2,7 @@
   "slug": "gmail",
   "name": "Gmail",
   "description": "MCP server for Gmail - send, read, search emails, manage labels, drafts, threads, filters, and attachments via the Gmail REST API",
-  "logo": "https://www.google.com/s2/favicons?domain=gmail.com&sz=128",
+  "logo": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg",
   "categories": [
     "email",
     "google",

@@ -2,7 +2,7 @@
   "slug": "google-docs",
   "name": "Google Docs",
   "description": "MCP server for Google Docs - documents, formatting, collaboration",
-  "logo": "https://www.google.com/s2/favicons?domain=docs.google.com&sz=128",
+  "logo": "https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg",
   "categories": [
     "documents",
     "writing",

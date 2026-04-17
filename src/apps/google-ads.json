@@ -2,7 +2,7 @@
   "slug": "google-ads",
   "name": "Google Ads",
   "description": "Google Ads API v23 \u2014 manage campaigns, ad groups, ads, keywords, budgets, and run performance reports via GAQL queries",
-  "logo": "https://www.google.com/s2/favicons?domain=ads.google.com&sz=128",
+  "logo": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Ads_logo.svg",
   "categories": [
     "advertising",
     "marketing",

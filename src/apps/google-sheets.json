@@ -2,7 +2,7 @@
   "slug": "google-sheets",
   "name": "Google Sheets",
   "description": "Google Sheets API v4 \u2014 read, write, append, clear, and batch-mutate spreadsheets. Includes the generic spreadsheets:batchUpdate endpoint which exposes every formatting / sheet-management / find-replace operation Google supports.",
-  "logo": "https://www.google.com/s2/favicons?domain=sheets.google.com&sz=128",
+  "logo": "https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg",
   "categories": [
     "spreadsheets",
     "google",
