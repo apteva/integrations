@@ -1,0 +1,135 @@
+{
+  "slug": "mux",
+  "name": "Mux",
+  "description": "MCP server for Mux Video - assets, live streams, playback IDs, uploads, data",
+  "logo": "https://www.google.com/s2/favicons?domain=mux.com&sz=128",
+  "categories": ["video", "streaming", "media", "live"],
+  "base_url": "https://api.mux.com",
+  "auth": {
+    "types": ["basic"],
+    "headers": { "Authorization": "Basic {{basic}}" },
+    "credential_fields": [
+      { "name": "accessTokenId", "label": "Access Token ID" },
+      { "name": "secretKey", "label": "Secret Key" }
+    ]
+  },
+  "tools": [
+    {
+      "name": "create_asset",
+      "description": "Create a video asset from an input URL",
+      "method": "POST",
+      "path": "/video/v1/assets",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input": { "type": "array" },
+          "playback_policy": { "type": "array", "items": { "type": "string" } },
+          "encoding_tier": { "type": "string" },
+          "mp4_support": { "type": "string" },
+          "normalize_audio": { "type": "boolean" }
+        },
+        "required": ["input"]
+      }
+    },
+    {
+      "name": "list_assets",
+      "description": "List assets",
+      "method": "GET",
+      "path": "/video/v1/assets",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number" },
+          "page": { "type": "number" }
+        }
+      }
+    },
+    {
+      "name": "get_asset",
+      "description": "Get an asset",
+      "method": "GET",
+      "path": "/video/v1/assets/{asset_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "asset_id": { "type": "string" } },
+        "required": ["asset_id"]
+      }
+    },
+    {
+      "name": "delete_asset",
+      "description": "Delete an asset",
+      "method": "DELETE",
+      "path": "/video/v1/assets/{asset_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "asset_id": { "type": "string" } },
+        "required": ["asset_id"]
+      }
+    },
+    {
+      "name": "create_direct_upload",
+      "description": "Create a direct upload URL",
+      "method": "POST",
+      "path": "/video/v1/uploads",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "new_asset_settings": { "type": "object" },
+          "cors_origin": { "type": "string" },
+          "timeout": { "type": "number" }
+        },
+        "required": ["new_asset_settings"]
+      }
+    },
+    {
+      "name": "create_live_stream",
+      "description": "Create a live stream",
+      "method": "POST",
+      "path": "/video/v1/live-streams",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "playback_policy": { "type": "array" },
+          "new_asset_settings": { "type": "object" },
+          "reconnect_window": { "type": "number" },
+          "latency_mode": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "list_live_streams",
+      "description": "List live streams",
+      "method": "GET",
+      "path": "/video/v1/live-streams",
+      "input_schema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "create_playback_id",
+      "description": "Create a playback ID for an asset",
+      "method": "POST",
+      "path": "/video/v1/assets/{asset_id}/playback-ids",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "asset_id": { "type": "string" },
+          "policy": { "type": "string", "enum": ["public", "signed"] }
+        },
+        "required": ["asset_id", "policy"]
+      }
+    },
+    {
+      "name": "get_video_views",
+      "description": "List video views (Mux Data)",
+      "method": "GET",
+      "path": "/data/v1/video-views",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number" },
+          "filters": { "type": "array" },
+          "timeframe": { "type": "array" }
+        }
+      }
+    }
+  ]
+}

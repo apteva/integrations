@@ -10,6 +10,84 @@ export interface AppTemplate {
   base_url: string;
   tools: AppToolTemplate[];
   webhooks?: AppWebhookConfig;
+  // Opt-in: declare this app as part of a suite that shares one
+  // credential across many sub-apps and (optionally) fans out across
+  // projects discovered from an account-wide key. Multiple apps with
+  // the same `credential_group.id` share a single encrypted credential
+  // stored on a master `connections` row; child rows point at the
+  // master via `_master_id` in their JSON blob. Leave unset for
+  // standalone apps — existing behavior is unchanged.
+  credential_group?: CredentialGroup;
+  // Scope variants for the app's credentials. When present, takes
+  // precedence over `auth.credential_fields` + `auth.headers` for
+  // connection creation. An app may expose both `account` (master key
+  // that discovers + fans out to projects) and `project` (single
+  // project-bound key) or just one. When absent, `auth` is used
+  // unchanged — that's the legacy single-key path.
+  scopes?: AppScopes;
+}
+
+// ============ Credential groups (suites) ============
+
+export interface CredentialGroup {
+  /** Stable key used as the master connection's app_slug (prefixed with `_group:`). */
+  id: string;
+  /** Display name of the suite (e.g. "OmniKit", "SocialCast"). */
+  name: string;
+  /** Logo for the collapsed suite card in the catalog. */
+  logo?: string | null;
+  /** Marketing description shown on the connect screen. */
+  description?: string;
+  /**
+   * How to enumerate child projects from an account-wide credential.
+   * Called once at connect time and on explicit refresh; never during
+   * normal tool execution. All fields inherit from the owning
+   * AppTemplate when omitted (base_url, auth.headers).
+   */
+  discovery?: GroupDiscoveryConfig;
+}
+
+export interface GroupDiscoveryConfig {
+  list_projects: DiscoveryCall;
+}
+
+export interface DiscoveryCall {
+  method: "GET" | "POST";
+  /** Path relative to base_url (or the owning app's base_url). */
+  path: string;
+  /** Optional override of the app's base_url. */
+  base_url?: string;
+  /** Dot/[] path into the JSON response where the project array lives. */
+  response_path?: string;
+  /** Field on each project object that is its external id. */
+  id_field: string;
+  /** Field on each project object that is its human label. */
+  label_field: string;
+}
+
+export interface AppScopes {
+  /** Account-wide key that can see multiple projects. */
+  account?: AppScope;
+  /** Single-project key — legacy-equivalent shape. */
+  project?: AppScope;
+}
+
+export interface AppScope {
+  credential_fields: CredentialField[];
+  /** Auth headers for this scope; overrides AppAuthConfig.headers. */
+  auth_headers?: Record<string, string>;
+  /** Auth query params for this scope; overrides AppAuthConfig.query_params. */
+  auth_query?: Record<string, string>;
+  /** How a child project_id is injected into each request (account scope only). */
+  project_binding?: ProjectBinding;
+}
+
+export interface ProjectBinding {
+  type: "header" | "path_prefix" | "path_param";
+  /** Header name for `header`, path segment template for `path_prefix`, input field name for `path_param`. */
+  name: string;
+  /** Value template, e.g. "{{project_id}}". Resolved against the child connection metadata. */
+  value: string;
 }
 
 export interface AppWebhookConfig {
@@ -107,6 +185,15 @@ export interface AppToolTemplate {
   // body content and the API rejects the request.
   query_params?: string[];
   response_path?: string; // JSONPath to extract from response
+  // Dot-separated paths in the JSON response to strip before the
+  // agent sees the payload. Use `[]` to step into every element of
+  // an array (e.g. "results.channels[].alternatives[].words"). Runs
+  // after response_path so paths are relative to the already-extracted
+  // subtree. Unmatched paths are silent no-ops, so minor schema drift
+  // won't break the tool. Use this to prune metadata-heavy responses
+  // (per-word timestamps, re-serialised transcripts, diagnostic info)
+  // that would otherwise blow the agent's context window.
+  response_omit?: string[];
   // Name of an input field whose value is raw binary (or a core-rehydrated
   // { _binary, base64, mimeType } envelope). When set AND that input is
   // present, http-executor sends the decoded bytes as the HTTP request

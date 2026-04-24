@@ -137,7 +137,7 @@
     },
     {
       "name": "generate_image",
-      "description": "Generate or edit images with AI. IMPORTANT: You MUST set 'provider' to match your chosen model — provider='google' for gemini-* models, provider='openai' for dall-e-* models. If omitted, the backend does NOT auto-detect and will fail. For image editing or reference images, use model='gemini-3-pro-image-preview' with provider='google'. For text-only generation, dall-e-3 with provider='openai' works well.",
+      "description": "Generate or edit images with AI. Provider is auto-detected from the model name (gemini-* → google, dall-e-*/gpt-image-* → openai), so you can just pass a model. For image editing or reference images, use a Gemini model (e.g. gemini-3-pro-image-preview) and pass the 'images' array.",
       "method": "POST",
       "path": "/ai/generate/image",
       "input_schema": {
@@ -153,15 +153,32 @@
               "openai",
               "google"
             ],
-            "description": "REQUIRED. AI provider — MUST match your model choice. Set 'google' for gemini-* models, 'openai' for dall-e-* models. There is NO auto-detection — if you use a gemini model with provider='openai' (or omit provider), you will get an error."
+            "description": "Optional. AI provider. Auto-detected from the model name if omitted (gemini-* → google, dall-e-*/gpt-image-* → openai). Defaults to openai if neither provider nor model is set."
           },
           "model": {
             "type": "string",
-            "description": "Model ID. Options: 'dall-e-3' (OpenAI — set provider='openai'), 'gemini-3-pro-image-preview' (Google — set provider='google', supports reference images and editing). You MUST also set the provider field to match."
+            "description": "Optional model ID. Options: 'dall-e-3' (OpenAI), 'gpt-image-1' (OpenAI), 'gemini-2.5-flash-image' (Google, fast default), 'gemini-3-pro-image-preview' (Google, supports reference images + editing, best quality). If omitted, a default model for the provider is auto-selected from the catalog."
           },
           "images": {
             "type": "array",
-            "description": "Reference images for generation OR images to edit. Use for: (1) character/style consistency - pass reference photo to maintain appearance, (2) image editing - pass image to modify based on prompt. Format: [{url: 'https://...'}]. Requires model='gemini-3-pro-image-preview'."
+            "description": "Reference images for generation OR images to edit. Use for: (1) character/style consistency - pass a reference photo to maintain appearance, (2) image editing - pass an image to modify based on prompt. Requires a Gemini model (e.g. gemini-3-pro-image-preview). Google only — will error on OpenAI providers.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "HTTPS URL of the image (will be fetched and base64-encoded server-side). Supported types: image/png, image/jpeg, image/webp, image/gif."
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Base64-encoded image data. Alternative to url — provide one or the other."
+                },
+                "mimeType": {
+                  "type": "string",
+                  "description": "MIME type when using 'data' (e.g. image/png, image/jpeg). Defaults to image/png."
+                }
+              }
+            }
           },
           "size": {
             "type": "string",
@@ -208,9 +225,7 @@
           }
         },
         "required": [
-          "prompt",
-          "provider",
-          "model"
+          "prompt"
         ]
       }
     },
@@ -881,5 +896,53 @@
         ]
       }
     }
-  ]
+  ],
+  "credential_group": {
+    "id": "omnikit",
+    "name": "OmniKit",
+    "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+    "description": "One key unlocks the whole OmniKit suite. Account keys can manage many projects; project keys are scoped to one.",
+    "discovery": {
+      "list_projects": {
+        "method": "GET",
+        "path": "/projects",
+        "response_path": "data",
+        "id_field": "id",
+        "label_field": "name"
+      }
+    }
+  },
+  "scopes": {
+    "account": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Account API Key",
+          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      },
+      "project_binding": {
+        "type": "header",
+        "name": "X-Project-Id",
+        "value": "{{project_id}}"
+      }
+    },
+    "project": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Project API Key",
+          "description": "Starts with okt_ — already scoped to a single project.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      }
+    }
+  }
 }

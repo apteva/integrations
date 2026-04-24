@@ -365,5 +365,53 @@
         ]
       }
     }
-  ]
+  ],
+  "credential_group": {
+    "id": "omnikit",
+    "name": "OmniKit",
+    "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+    "description": "One key unlocks the whole OmniKit suite. Account keys can manage many projects; project keys are scoped to one.",
+    "discovery": {
+      "list_projects": {
+        "method": "GET",
+        "path": "/projects",
+        "response_path": "data",
+        "id_field": "id",
+        "label_field": "name"
+      }
+    }
+  },
+  "scopes": {
+    "account": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Account API Key",
+          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      },
+      "project_binding": {
+        "type": "header",
+        "name": "X-Project-Id",
+        "value": "{{project_id}}"
+      }
+    },
+    "project": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Project API Key",
+          "description": "Starts with okt_ — already scoped to a single project.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      }
+    }
+  }
 }

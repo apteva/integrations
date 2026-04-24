@@ -73,10 +73,17 @@
     },
     {
       "name": "listen",
-      "description": "Speech-to-text transcription of pre-recorded audio via Deepgram's Nova models (default: nova-3, their latest and most accurate, multilingual). Accepts the audio two ways — pick exactly one: (a) `url` for a publicly-reachable HTTPS link Deepgram will fetch (best for S3/CDN/public Drive links), or (b) `audio` as a blobref:// handle returned by an upstream download tool when the file only exists in-process. Returns a JSON result with words, punctuation, and optionally diarization, paragraphs, summaries, sentiment, and topics. Override the default via `model` for domain-tuned variants (nova-2-meeting, nova-2-phonecall) or Whisper.",
+      "description": "Speech-to-text transcription of pre-recorded audio via Deepgram's Nova models (default: nova-3, their latest and most accurate, multilingual). Accepts the audio two ways — pick exactly one: (a) `url` for a publicly-reachable HTTPS link Deepgram will fetch (best for S3/CDN/public Drive links), or (b) `audio` as a blobref:// handle returned by an upstream download tool. By default you get ONLY the transcript text + paragraph-level structure; per-word timestamps are always stripped server-side (they're typically 90%+ of Deepgram's payload and not needed for analysis). Do NOT enable paragraphs/utterances/diarize/topics/intents/sentiment/summarize unless you specifically need that extra data — each one balloons the response and risks blowing the agent's context window on audio >5 minutes. Override the default via `model` for domain-tuned variants (nova-2-meeting, nova-2-phonecall) or Whisper.",
       "method": "POST",
       "path": "/v1/listen",
       "body_binary_param": "audio",
+      "response_omit": [
+        "metadata.sha256",
+        "metadata.model_info",
+        "metadata.request_id",
+        "metadata.transaction_key",
+        "results.channels[].alternatives[].words"
+      ],
       "input_schema": {
         "type": "object",
         "properties": {
@@ -113,32 +120,32 @@
           },
           "diarize": {
             "type": "boolean",
-            "description": "Identify speaker changes and label each word with a speaker number. Use for multi-speaker content (interviews, meetings)."
+            "description": "Identify speaker changes and label each word with a speaker number. Adds speaker labels per-word — BLOATS the response significantly. Leave off unless you specifically need speaker attribution in multi-speaker content (interviews, meetings)."
           },
           "paragraphs": {
             "type": "boolean",
-            "description": "Segment the transcript into paragraphs based on speaker changes and pauses."
+            "description": "Segment the transcript into paragraphs based on speaker changes and pauses. Adds a nested structure that duplicates the transcript text with per-sentence timestamps — roughly doubles response size. Leave off unless you specifically need paragraph boundaries."
           },
           "utterances": {
             "type": "boolean",
-            "description": "Return per-utterance segments with start/end times. Lets you build timeline-aware transcripts."
+            "description": "Return per-utterance segments with start/end times. Adds another array re-serialising the same speech as time-stamped segments — bloats the response. Leave off unless you need per-utterance timing."
           },
           "summarize": {
             "type": "string",
             "enum": ["v2"],
-            "description": "Generate a summary of the transcript. Use 'v2' for the current summarizer."
+            "description": "Generate a summary of the transcript. Use 'v2' for the current summarizer. Adds a summary field but usually small enough not to matter."
           },
           "topics": {
             "type": "boolean",
-            "description": "Detect and label topics discussed in the audio."
+            "description": "Detect and label topics discussed in the audio. Adds a topics array — moderate response size impact."
           },
           "intents": {
             "type": "boolean",
-            "description": "Detect speaker intents (requests, commitments, questions)."
+            "description": "Detect speaker intents (requests, commitments, questions). Adds intents per utterance — moderate response size impact."
           },
           "sentiment": {
             "type": "boolean",
-            "description": "Score sentiment per utterance (positive / neutral / negative)."
+            "description": "Score sentiment per utterance (positive / neutral / negative). Adds sentiment labels per utterance — moderate response size impact."
           },
           "filler_words": {
             "type": "boolean",

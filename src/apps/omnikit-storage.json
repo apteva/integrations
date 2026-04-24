@@ -229,17 +229,32 @@
         "properties": {
           "file_type": {
             "type": "string",
-            "enum": ["image", "video", "audio", "document"],
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document"
+            ],
             "description": "Filter by file type"
           },
           "format": {
             "type": "string",
-            "enum": ["portrait", "landscape", "square"],
+            "enum": [
+              "portrait",
+              "landscape",
+              "square"
+            ],
             "description": "Filter by aspect ratio. portrait = vertical/mobile, landscape = horizontal/widescreen"
           },
           "content_rating": {
             "type": "string",
-            "enum": ["sfw", "nsfw", "suggestive", "adult", "explicit"],
+            "enum": [
+              "sfw",
+              "nsfw",
+              "suggestive",
+              "adult",
+              "explicit"
+            ],
             "description": "Filter by content rating. sfw = safe only, nsfw = everything except safe"
           },
           "folder": {
@@ -270,13 +285,23 @@
           },
           "sort_by": {
             "type": "string",
-            "enum": ["uploaded_at", "created_at", "name", "size", "duration", "random"],
+            "enum": [
+              "uploaded_at",
+              "created_at",
+              "name",
+              "size",
+              "duration",
+              "random"
+            ],
             "default": "uploaded_at",
             "description": "Sort field. uploaded_at = content date (use for oldest/newest). random = random order."
           },
           "sort_order": {
             "type": "string",
-            "enum": ["asc", "desc"],
+            "enum": [
+              "asc",
+              "desc"
+            ],
             "default": "desc",
             "description": "asc = oldest/smallest first, desc = newest/largest first"
           },
@@ -298,8 +323,8 @@
           },
           "include_storage_info": {
             "type": "boolean",
-            "default": false,
-            "description": "Include storage bucket info and full URLs"
+            "default": true,
+            "description": "Include storage bucket info and the full public/CDN URLs for each file. Enabled by default — disable only if you need a minimal response and will fetch files individually."
           },
           "include_thumbnails": {
             "type": "boolean",
@@ -759,5 +784,53 @@
         ]
       }
     }
-  ]
+  ],
+  "credential_group": {
+    "id": "omnikit",
+    "name": "OmniKit",
+    "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
+    "description": "One key unlocks the whole OmniKit suite. Account keys can manage many projects; project keys are scoped to one.",
+    "discovery": {
+      "list_projects": {
+        "method": "GET",
+        "path": "/projects",
+        "response_path": "data",
+        "id_field": "id",
+        "label_field": "name"
+      }
+    }
+  },
+  "scopes": {
+    "account": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Account API Key",
+          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      },
+      "project_binding": {
+        "type": "header",
+        "name": "X-Project-Id",
+        "value": "{{project_id}}"
+      }
+    },
+    "project": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Project API Key",
+          "description": "Starts with okt_ — already scoped to a single project.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      }
+    }
+  }
 }

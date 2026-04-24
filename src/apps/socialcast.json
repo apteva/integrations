@@ -100,110 +100,6 @@
       }
     },
     {
-      "name": "connect_account",
-      "description": "Initiate connecting a new social media account via OAuth. Returns an auth_url to redirect the user to for authorization. Supports: Twitter, Instagram, Facebook, LinkedIn, TikTok, YouTube, Reddit, Pinterest, Telegram.",
-      "method": "POST",
-      "path": "/accounts/connect",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "platform": {
-            "type": "string",
-            "enum": [
-              "twitter",
-              "instagram",
-              "facebook",
-              "linkedin",
-              "tiktok",
-              "youtube",
-              "reddit",
-              "pinterest",
-              "telegram"
-            ],
-            "description": "Platform to connect"
-          },
-          "redirect_url": {
-            "type": "string",
-            "description": "OAuth redirect URL after authorization completes"
-          },
-          "platform_metadata": {
-            "type": "object",
-            "description": "Platform-specific metadata (e.g., subreddit for Reddit, chatId for Telegram)"
-          },
-          "credential_data": {
-            "type": "object",
-            "description": "For API-key platforms like Telegram: { botToken: '...' }"
-          }
-        },
-        "required": [
-          "platform",
-          "redirect_url"
-        ]
-      }
-    },
-    {
-      "name": "disconnect_account",
-      "description": "Disconnect a social media account. The account will be marked as inactive.",
-      "method": "DELETE",
-      "path": "/accounts/{id}",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Account ID to disconnect"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      }
-    },
-    {
-      "name": "list_pages",
-      "description": "List available Facebook Pages and Instagram Business accounts for a connected Facebook/Instagram account. Used after OAuth to let the user pick which page or Instagram account to use.",
-      "method": "GET",
-      "path": "/accounts/{id}/pages",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Social account ID (must be a Facebook or Instagram account in needs_selection status)"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      }
-    },
-    {
-      "name": "select_page",
-      "description": "Finalize a Facebook or Instagram connection by selecting which Page or Instagram Business account to post to.",
-      "method": "POST",
-      "path": "/accounts/{id}/select-page",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Social account ID"
-          },
-          "page_id": {
-            "type": "string",
-            "description": "Facebook Page ID to select (for Facebook accounts)"
-          },
-          "instagram_account_id": {
-            "type": "string",
-            "description": "Instagram Business account ID to select (for Instagram accounts)"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      }
-    },
-    {
       "name": "create_post",
       "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). IMPORTANT: Each call only accepts a single scheduled_for time that applies to ALL account_ids in that call. To schedule the same content at different times for different platforms (e.g., Instagram at 9am and Twitter at 12pm), you MUST make separate create_post calls — one per unique scheduled time, each with only the account_ids for that time slot.",
       "method": "POST",
@@ -522,22 +418,6 @@
       }
     },
     {
-      "name": "account_health",
-      "description": "Check the connection health of one or all connected social accounts. Verifies that OAuth tokens are still valid by calling each platform's profile API. Pass a specific account ID or 'all' to check all active accounts.",
-      "method": "GET",
-      "path": "/accounts/{id}/health",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Account ID to check, or 'all' to check all active accounts",
-            "default": "all"
-          }
-        }
-      }
-    },
-    {
       "name": "list_inbox",
       "description": "List social inbox items — comments, replies, and DMs received on your connected accounts. Filter by platform, account, status, or type. Returns items sorted by most recent first with unread count.",
       "method": "GET",
@@ -587,33 +467,6 @@
             "default": 0
           }
         }
-      }
-    },
-    {
-      "name": "get_inbox_comments",
-      "description": "Fetch live comments for a specific post directly from the platform API (Facebook/Instagram). Returns threaded comments with reply counts, like counts, and reply capability flags.",
-      "method": "GET",
-      "path": "/inbox/comments",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "social_account_id": {
-            "type": "integer",
-            "description": "Social account ID that owns the post"
-          },
-          "platform_post_id": {
-            "type": "string",
-            "description": "The platform-specific post ID to fetch comments for"
-          },
-          "cursor": {
-            "type": "string",
-            "description": "Pagination cursor for next page of comments"
-          }
-        },
-        "required": [
-          "social_account_id",
-          "platform_post_id"
-        ]
       }
     },
     {
@@ -699,33 +552,6 @@
           }
         }
       }
-    },
-    {
-      "name": "delete_inbox_comment",
-      "description": "Delete a comment from a social platform (Facebook/Instagram). The comment will be removed from the platform and the inbox item marked as deleted.",
-      "method": "DELETE",
-      "path": "/inbox/comment",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "social_account_id": {
-            "type": "integer",
-            "description": "Social account ID that owns the comment"
-          },
-          "comment_id": {
-            "type": "string",
-            "description": "Platform comment ID to delete"
-          },
-          "inbox_item_id": {
-            "type": "integer",
-            "description": "Optional: inbox record ID to mark as deleted"
-          }
-        },
-        "required": [
-          "social_account_id",
-          "comment_id"
-        ]
-      }
     }
   ],
   "webhooks": {
@@ -764,5 +590,53 @@
         "description": "A comment was removed from a post"
       }
     ]
+  },
+  "credential_group": {
+    "id": "socialcast",
+    "name": "SocialCast",
+    "logo": "https://www.google.com/s2/favicons?domain=socialcast.dev&sz=128",
+    "description": "One key, many workspaces. Account keys list every workspace you own; workspace keys are scoped to one.",
+    "discovery": {
+      "list_projects": {
+        "method": "GET",
+        "path": "/workspaces",
+        "response_path": "data",
+        "id_field": "id",
+        "label_field": "name"
+      }
+    }
+  },
+  "scopes": {
+    "account": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Account API Key",
+          "description": "Lists every workspace. SocialCast issues these under Dashboard → API Keys → Account.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      },
+      "project_binding": {
+        "type": "header",
+        "name": "X-Workspace-Id",
+        "value": "{{project_id}}"
+      }
+    },
+    "project": {
+      "credential_fields": [
+        {
+          "name": "api_key",
+          "label": "Workspace API Key",
+          "description": "Scoped to a single workspace.",
+          "type": "password"
+        }
+      ],
+      "auth_headers": {
+        "X-API-Key": "{{api_key}}"
+      }
+    }
   }
 }
