@@ -137,7 +137,7 @@
     },
     {
       "name": "generate_image",
-      "description": "Generate or edit images with AI. Provider is auto-detected from the model name (gemini-* → google, dall-e-*/gpt-image-* → openai), so you can just pass a model. For image editing or reference images, use a Gemini model (e.g. gemini-3-pro-image-preview) and pass the 'images' array.",
+      "description": "Generate or edit images with AI. Provider is auto-detected from the model name (gemini-* → google, dall-e-*/gpt-image-* → openai), so you can just pass a model. For image editing or reference images, pass the 'images' array — supported by Google Gemini (gemini-2.5-flash-image, gemini-3-pro-image-preview) AND OpenAI gpt-image-1 / gpt-image-1.5 / gpt-image-2 (up to 16 reference images, optional 'mask' for inpainting). DALL-E 3 does NOT support reference images — use gpt-image-2 for OpenAI editing.",
       "method": "POST",
       "path": "/ai/generate/image",
       "input_schema": {
@@ -157,11 +157,11 @@
           },
           "model": {
             "type": "string",
-            "description": "Optional model ID. Options: 'dall-e-3' (OpenAI), 'gpt-image-1' (OpenAI), 'gemini-2.5-flash-image' (Google, fast default), 'gemini-3-pro-image-preview' (Google, supports reference images + editing, best quality). If omitted, a default model for the provider is auto-selected from the catalog."
+            "description": "Optional model ID. Options: 'dall-e-3' (OpenAI, text-only), 'gpt-image-1' / 'gpt-image-1.5' / 'gpt-image-2' (OpenAI, supports reference images + editing + masks; gpt-image-2 is the highest quality), 'gemini-2.5-flash-image' (Google, fast), 'gemini-3-pro-image-preview' (Google, supports reference images + editing). If omitted, a default model for the provider is auto-selected from the catalog."
           },
           "images": {
             "type": "array",
-            "description": "Reference images for generation OR images to edit. Use for: (1) character/style consistency - pass a reference photo to maintain appearance, (2) image editing - pass an image to modify based on prompt. Requires a Gemini model (e.g. gemini-3-pro-image-preview). Google only — will error on OpenAI providers.",
+            "description": "Reference images for generation OR images to edit. Use for: (1) character/style consistency - pass a reference photo to maintain appearance, (2) image editing - pass an image to modify based on prompt. Works with: Gemini (gemini-2.5-flash-image, gemini-3-pro-image-preview, max 14) and OpenAI gpt-image-* (up to 16). Will error on dall-e-3.",
             "items": {
               "type": "object",
               "properties": {
@@ -180,10 +180,18 @@
               }
             }
           },
+          "mask": {
+            "type": "object",
+            "description": "Optional PNG mask for inpainting (OpenAI gpt-image-* only). Same dimensions as the first input image. Transparent regions = areas to be edited.",
+            "properties": {
+              "url": { "type": "string", "description": "HTTPS URL of the mask PNG." },
+              "data": { "type": "string", "description": "Base64-encoded mask PNG." }
+            }
+          },
           "size": {
             "type": "string",
             "default": "1024x1024",
-            "description": "Image dimensions - ONLY for dall-e-3 (OpenAI). Values: 1024x1024, 1024x1792, 1792x1024. Ignored for Google models."
+            "description": "Image dimensions. dall-e-3: 1024x1024, 1024x1792, 1792x1024. gpt-image-* (incl. gpt-image-2): 1024x1024, 1024x1536, 1536x1024, auto. Ignored for Google models."
           },
           "aspectRatio": {
             "type": "string",
@@ -197,7 +205,7 @@
           "quality": {
             "type": "string",
             "default": "standard",
-            "description": "Quality tier. For image editing with 'images' param, use 'high'. OpenAI: standard, hd. Google: low, medium, high."
+            "description": "Quality tier. dall-e-3: standard | hd. gpt-image-*: low | medium | high | auto. Google: low | medium | high. For reference-image editing, prefer 'high'."
           },
           "style": {
             "type": "string",
@@ -664,7 +672,7 @@
     },
     {
       "name": "create_script",
-      "description": "Create a new script for audio/speech generation. Write text content, assign a voice, and configure output settings. Use generate-script to produce the audio.",
+      "description": "Create a new script for audio/speech generation. Write text content and (optionally) assign a voice. Call generate_script afterwards to render audio. The project is taken from the API key's scope.",
       "method": "POST",
       "path": "/ai/scripts",
       "input_schema": {
@@ -672,19 +680,24 @@
         "properties": {
           "title": {
             "type": "string",
-            "description": "Script title"
+            "description": "Script title (used in lists / search)"
           },
           "content": {
             "type": "string",
-            "description": "The text content to be converted to speech"
+            "description": "The text the voice will read"
           },
           "voiceId": {
-            "type": "string",
-            "description": "Voice ID from list-voices (optional, can set later)"
+            "type": "number",
+            "description": "Voice ID from list_voices. Optional — can be assigned later via update_script."
           },
           "voiceSettings": {
             "type": "object",
-            "description": "Voice settings: stability, similarity_boost, etc. (optional)"
+            "description": "Optional ElevenLabs voice tweaks: stability (0-1), similarityBoost (0-1), style (0-1).",
+            "properties": {
+              "stability": { "type": "number" },
+              "similarityBoost": { "type": "number" },
+              "style": { "type": "number" }
+            }
           },
           "outputType": {
             "type": "string",
@@ -704,12 +717,21 @@
     },
     {
       "name": "list_scripts",
-      "description": "List all scripts with optional filtering by status. Returns title, content preview, voice assignment, and generation status.",
+      "description": "List scripts in the current project (auto-scoped by the API key). Returns id, title, content preview, voice_id, status (draft|generating|completed|failed), output_url (when audio is rendered), and metadata (word_count, audio_duration_ms, etc.).",
       "method": "GET",
       "path": "/ai/scripts",
       "input_schema": {
         "type": "object",
         "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["draft", "generating", "completed", "failed"],
+            "description": "Optional status filter."
+          },
+          "search": {
+            "type": "string",
+            "description": "Optional title/content substring filter."
+          },
           "limit": {
             "type": "integer",
             "default": 50,
@@ -725,14 +747,14 @@
     },
     {
       "name": "get_script",
-      "description": "Get a script by ID with full content, voice settings, and generation history.",
+      "description": "Get a script by ID with full content, voice_id, voice_settings, status, output_url (audio URL when generated), and metadata (word_count, char_count, audio_duration_ms, last_generated, generation_latency_ms).",
       "method": "GET",
       "path": "/ai/scripts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": "number",
             "description": "Script ID"
           }
         },
@@ -743,14 +765,14 @@
     },
     {
       "name": "update_script",
-      "description": "Update a script's title, content, voice, or settings. Only provided fields are changed.",
+      "description": "Update a script's title, content, voice, or settings. Only provided fields are changed. Pass voiceId: null to clear the voice assignment.",
       "method": "PUT",
       "path": "/ai/scripts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": "number",
             "description": "Script ID"
           },
           "title": {
@@ -762,12 +784,17 @@
             "description": "New text content"
           },
           "voiceId": {
-            "type": "string",
-            "description": "New voice ID"
+            "type": ["number", "null"],
+            "description": "New voice ID. Pass null to unassign."
           },
           "voiceSettings": {
             "type": "object",
-            "description": "New voice settings"
+            "description": "New ElevenLabs voice tweaks: stability (0-1), similarityBoost (0-1), style (0-1).",
+            "properties": {
+              "stability": { "type": "number" },
+              "similarityBoost": { "type": "number" },
+              "style": { "type": "number" }
+            }
           }
         },
         "required": [
@@ -777,14 +804,14 @@
     },
     {
       "name": "delete_script",
-      "description": "Delete a script and its generated audio.",
+      "description": "Delete a script and its generated audio file (if any).",
       "method": "DELETE",
       "path": "/ai/scripts/{id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": "number",
             "description": "Script ID"
           }
         },
@@ -795,23 +822,32 @@
     },
     {
       "name": "generate_script",
-      "description": "Generate audio from a script using text-to-speech. Uses the script's assigned voice or an override.\n\nResponse includes: audio.url, audio.durationMs (milliseconds — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it is not accurate.",
+      "description": "Render a script to audio (ElevenLabs TTS). Uses the script's saved voice + voiceSettings unless overridden. Updates the script row in place: status → 'generating' then 'completed' (or 'failed'), and sets output_url + file_id when done.\n\nResponse includes: audio.url, audio.durationMs (ms — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it's not accurate.",
       "method": "POST",
       "path": "/ai/scripts/{id}/generate",
       "input_schema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "Script ID to generate audio for"
+            "type": "number",
+            "description": "Script ID to render"
           },
           "voiceId": {
-            "type": "string",
-            "description": "Override voice ID (optional, uses script's voice if not set)"
+            "type": "number",
+            "description": "Override the script's saved voice for this render only."
+          },
+          "voiceSettings": {
+            "type": "object",
+            "description": "Override the saved voice settings for this render only.",
+            "properties": {
+              "stability": { "type": "number" },
+              "similarityBoost": { "type": "number" },
+              "style": { "type": "number" }
+            }
           },
           "model": {
             "type": "string",
-            "description": "TTS model (optional)"
+            "description": "TTS model. eleven_multilingual_v2 (best, default), eleven_turbo_v2_5 (fast), eleven_flash_v2_5 (fastest)."
           },
           "outputFormat": {
             "type": "string",

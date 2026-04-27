@@ -101,7 +101,7 @@
     },
     {
       "name": "create_post",
-      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). IMPORTANT: Each call only accepts a single scheduled_for time that applies to ALL account_ids in that call. To schedule the same content at different times for different platforms (e.g., Instagram at 9am and Twitter at 12pm), you MUST make separate create_post calls — one per unique scheduled time, each with only the account_ids for that time slot.",
+      "description": "Create and publish a post to one or more connected social media platforms simultaneously. Supports text, images, videos, and links.\n\nMedia capabilities per platform:\n- Instagram: Single image, single video (Reel), STORY (single image or video), or CAROUSEL (2-10 images/videos mixed). Pass multiple items in media_urls for carousel.\n- Facebook: Text, single image, MULTI-PHOTO (2+ images posted as album), single video, STORY (photo or video), or link post.\n- Twitter/X: Text with up to 4 media attachments (images, GIFs, or 1 video). Media is uploaded automatically.\n- TikTok: Single video or PHOTO CAROUSEL (up to 35 images). Use overrides for privacy, comments, music.\n- YouTube: Single video upload with title, description, tags, privacy.\n- Pinterest: Single image with title, description, board, and link.\n- Reddit: Text (self) or link post to a subreddit.\n- LinkedIn: Text post with optional visibility setting.\n- Telegram: Text or single image with optional parse mode.\n\nStories: To publish as a Story (24h ephemeral), set platform_overrides.instagram.post_format='story' and/or platform_overrides.facebook.post_format='story'. Stories require a single image or video media item — captions are ignored by Meta. Instagram story video must be 9:16, 3-60s. Facebook story video must be 9:16, 1080x1920 recommended, 3-90s. Stories CAN be scheduled — our jobs engine fires the publish at the scheduled time (Meta itself doesn't accept scheduled_publish_time for stories, but external schedulers work fine).\n\nTo schedule a post for later, set scheduled_for to an ISO 8601 timestamp and optionally timezone (e.g., 'America/New_York'). IMPORTANT: Each call only accepts a single scheduled_for time that applies to ALL account_ids in that call. To schedule the same content at different times for different platforms (e.g., Instagram at 9am and Twitter at 12pm), you MUST make separate create_post calls — one per unique scheduled time, each with only the account_ids for that time slot.",
       "method": "POST",
       "path": "/posts",
       "input_schema": {
@@ -162,16 +162,33 @@
           },
           "platform_overrides": {
             "type": "object",
-            "description": "Per-platform overrides keyed by platform name. Only include platforms you want to customize. Available fields per platform: youtube: {title, description, tags (array), privacyStatus (public/unlisted/private), categoryId}. reddit: {title, subreddit, text, nsfw}. pinterest: {title, description, board_id}. tiktok: {title (photo posts only, max 90 chars), text (caption/description, falls back to main post text), privacyLevel (PUBLIC_TO_EVERYONE/MUTUAL_FOLLOW_FRIENDS/FOLLOWER_OF_CREATOR/SELF_ONLY), disableComment (bool), autoAddMusic (bool, photo posts only)}. linkedin: {text, visibility}. facebook: {text, title (video only)}. twitter: {text}. instagram: {text}. telegram: {text, chatId, parseMode}. All fields are optional — omitted fields fall back to the main post text.",
+            "description": "Per-platform overrides keyed by platform name. Only include platforms you want to customize. Available fields per platform: youtube: {title, description, tags (array), privacyStatus (public/unlisted/private), categoryId}. reddit: {title, subreddit, text, nsfw}. pinterest: {title, description, board_id}. tiktok: {title (photo posts only, max 90 chars), text (caption/description, falls back to main post text), privacyLevel (PUBLIC_TO_EVERYONE/MUTUAL_FOLLOW_FRIENDS/FOLLOWER_OF_CREATOR/SELF_ONLY), disableComment (bool), autoAddMusic (bool, photo posts only)}. linkedin: {text, visibility}. facebook: {text, title (video only), post_format (feed/story — 'story' publishes as a 24h Page story, requires single photo or video)}. twitter: {text}. instagram: {text, post_format (feed/story — 'story' publishes as a 24h Story, requires single image (JPEG) or video (9:16, 3-60s); caption is ignored by Meta)}. telegram: {text, chatId, parseMode}. All fields are optional — omitted fields fall back to the main post text.",
             "properties": {
               "twitter": {
                 "type": "object"
               },
               "instagram": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "text": { "type": "string", "description": "Override caption for Instagram (ignored when post_format=story)" },
+                  "post_format": {
+                    "type": "string",
+                    "enum": ["feed", "story"],
+                    "description": "Post format. 'feed' (default) = standard Feed/Reel post. 'story' = 24h Story (single image/video, 9:16; caption ignored by Meta)."
+                  }
+                }
               },
               "facebook": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "text": { "type": "string", "description": "Override message for Facebook" },
+                  "title": { "type": "string", "description": "Title for video posts" },
+                  "post_format": {
+                    "type": "string",
+                    "enum": ["feed", "story"],
+                    "description": "Post format. 'feed' (default) = standard Page feed post. 'story' = 24h Page Story (single photo or 9:16 video, 3-90s)."
+                  }
+                }
               },
               "linkedin": {
                 "type": "object"
@@ -365,7 +382,7 @@
     },
     {
       "name": "get_post_analytics",
-      "description": "Fetch analytics and engagement metrics for a published post across all platforms. Returns impressions, reach, likes, comments, shares, views, saves, clicks, quotes, and bookmarks where available. Supported: Instagram, Facebook, YouTube, TikTok, Pinterest, Twitter/X. No analytics API: LinkedIn, Reddit, Telegram.",
+      "description": "Fetch analytics and engagement metrics for a published post across all platforms. Returns impressions, reach, likes, comments, shares, views, saves, clicks, quotes, and bookmarks where available. For Instagram Stories specifically (post_format=story) returns the story metric set instead: views, reach, replies (DM replies to the story), profile_visits, follows, shares, navigation (taps forward/back/exit), and total_interactions. Supported: Instagram, Facebook, YouTube, TikTok, Pinterest, Twitter/X. No analytics API: LinkedIn, Reddit, Telegram.",
       "method": "GET",
       "path": "/posts/{id}/analytics",
       "input_schema": {
@@ -383,7 +400,7 @@
     },
     {
       "name": "account_insights",
-      "description": "Get page-level insights and historical stats for a connected social account. Returns follower growth, reach, impressions, engagement metrics, and top content over a date range. Supported: Instagram (reach, followers, engagement, interactions), Facebook (page impressions, reach, engagement, fans), YouTube (subscribers, views, watch time), TikTok (followers, views, likes, shares), Twitter/X (followers, following, tweet count + recent tweet engagement), Pinterest (impressions, engagement, pin clicks, outbound clicks, saves + top pins). Unsupported: LinkedIn, Reddit, Telegram.",
+      "description": "Get page-level insights and historical stats for a connected social account. Returns follower growth, reach, impressions, engagement metrics, and top content over a date range. Supported: Instagram (reach, followers, engagement, interactions), Facebook (page impressions, reach, engagement, fans, plus Content Monetization earnings when the page is enrolled — total + breakdown by Videos/Reels/Photos-Text-Stories/Extra Bonus), YouTube (subscribers, views, watch time), TikTok (followers, views, likes, shares), Twitter/X (followers, following, tweet count + recent tweet engagement), Pinterest (impressions, engagement, pin clicks, outbound clicks, saves + top pins). Unsupported: LinkedIn, Reddit, Telegram. The response includes a `monetization` field for Facebook accounts when applicable (null otherwise).",
       "method": "GET",
       "path": "/accounts/{id}/insights",
       "input_schema": {
@@ -452,9 +469,10 @@
             "enum": [
               "comment",
               "reply",
-              "message"
+              "message",
+              "story_reply"
             ],
-            "description": "Filter by item type (comment, reply to comment, or DM)"
+            "description": "Filter by item type. 'comment' = top-level comment on a feed post. 'reply' = reply to a comment. 'message' = DM. 'story_reply' = DM that references one of your Stories (Instagram only — appears when a viewer replies to or @-mentions a story)."
           },
           "limit": {
             "type": "integer",

@@ -1,7 +1,7 @@
 {
-  "slug": "learning-platform",
-  "name": "Learning Platform",
-  "description": "Complete learning and community platform - manage courses, enrollments, sections, lessons, certificates, communities, spaces, posts, and memberships",
+  "slug": "kalio",
+  "name": "Kalio",
+  "description": "Kalio — courses, communities, spaces, posts, enrollments, lessons, certificates, reviews, quizzes, assignments, and memberships in one platform",
   "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
   "categories": [
     "learning",
@@ -2238,6 +2238,165 @@
         "required": [
           "product_id"
         ]
+      }
+    },
+    {
+      "name": "kalio_refund_course",
+      "description": "Refund a course purchase; full refunds auto-revoke the enrollment",
+      "method": "POST",
+      "path": "/courses/{course_id}/refund",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "course_id": { "type": "integer", "description": "Course ID (path)" },
+          "order_id": { "type": "integer", "description": "Order ID to refund" },
+          "amount": { "type": "integer", "description": "Refund amount in cents (omit for full refund)" },
+          "reason": { "type": "string", "description": "Refund reason (e.g. requested_by_customer)" },
+          "revoke_enrollment": { "type": "boolean", "default": true, "description": "Revoke enrollment on full refund" }
+        },
+        "required": ["course_id", "order_id"]
+      }
+    },
+    {
+      "name": "kalio_create_review",
+      "description": "Create a 1–5 star review for a course (with optional sub-ratings)",
+      "method": "POST",
+      "path": "/courses/{course_id}/reviews",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "course_id": { "type": "integer", "description": "Course ID" },
+          "user_id": { "type": "integer", "description": "Reviewer user ID" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Overall rating" },
+          "title": { "type": "string", "description": "Review title" },
+          "body": { "type": "string", "description": "Review text" },
+          "content_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "instructor_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "value_rating": { "type": "integer", "minimum": 1, "maximum": 5 }
+        },
+        "required": ["course_id", "user_id", "rating"]
+      }
+    },
+    {
+      "name": "kalio_list_reviews",
+      "description": "List published reviews for a course with rating aggregate (avg + 1–5 distribution)",
+      "method": "GET",
+      "path": "/courses/{course_id}/reviews",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "course_id": { "type": "integer", "description": "Course ID" },
+          "user_id": { "type": "integer", "description": "Filter by reviewer" },
+          "limit": { "type": "integer", "default": 20 },
+          "offset": { "type": "integer", "default": 0 },
+          "sort": { "type": "string", "default": "created_at:desc" }
+        },
+        "required": ["course_id"]
+      }
+    },
+    {
+      "name": "kalio_update_review",
+      "description": "Update a review (author edits content; moderator can set status / response)",
+      "method": "PUT",
+      "path": "/reviews/{review_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "review_id": { "type": "integer", "description": "Review ID" },
+          "user_id": { "type": "integer", "description": "Author user ID (required for author edits)" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "title": { "type": "string" },
+          "body": { "type": "string" },
+          "content_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "instructor_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "value_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "status": { "type": "string", "description": "Moderator-only: published, hidden, deleted" },
+          "response_body": { "type": "string", "description": "Moderator response text" },
+          "response_by": { "type": "integer", "description": "Moderator user ID" }
+        },
+        "required": ["review_id"]
+      }
+    },
+    {
+      "name": "kalio_delete_review",
+      "description": "Soft-delete a course review (or hard-delete with hard=true)",
+      "method": "DELETE",
+      "path": "/reviews/{review_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "review_id": { "type": "integer", "description": "Review ID" },
+          "user_id": { "type": "integer", "description": "Author user ID (for permission check)" },
+          "hard": { "type": "boolean", "default": false, "description": "Permanent delete instead of soft delete" }
+        },
+        "required": ["review_id"]
+      }
+    },
+    {
+      "name": "kalio_submit_quiz",
+      "description": "Submit and auto-grade a quiz attempt for a lesson",
+      "method": "POST",
+      "path": "/lessons/{lesson_id}/quiz/submit",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "lesson_id": { "type": "integer", "description": "Lesson ID (must be lesson_type=quiz)" },
+          "user_id": { "type": "integer", "description": "Student user ID" },
+          "answers": { "type": "object", "description": "Map of question_id -> answer (string or array)" },
+          "time_spent_seconds": { "type": "integer", "default": 0 }
+        },
+        "required": ["lesson_id", "user_id", "answers"]
+      }
+    },
+    {
+      "name": "kalio_submit_assignment",
+      "description": "Submit an assignment for instructor grading",
+      "method": "POST",
+      "path": "/lessons/{lesson_id}/assignment/submit",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "lesson_id": { "type": "integer", "description": "Lesson ID (must be lesson_type=assignment)" },
+          "user_id": { "type": "integer", "description": "Student user ID" },
+          "submission_text": { "type": "string", "description": "Submission body" },
+          "submission_url": { "type": "string", "description": "External submission link" },
+          "attachments": { "type": "array", "items": { "type": "object" }, "description": "Attachment metadata array" }
+        },
+        "required": ["lesson_id", "user_id"]
+      }
+    },
+    {
+      "name": "kalio_grade_assignment",
+      "description": "Instructor grades an assignment submission",
+      "method": "POST",
+      "path": "/assignments/submissions/{submission_id}/grade",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "submission_id": { "type": "integer", "description": "Assignment submission ID" },
+          "graded_by": { "type": "integer", "description": "Grader user ID" },
+          "grade": { "type": "number", "description": "Numeric grade (typically 0-100)" },
+          "grade_label": { "type": "string", "description": "Letter grade or label" },
+          "instructor_feedback": { "type": "string", "description": "Feedback for the student" },
+          "status": { "type": "string", "default": "graded" },
+          "passing_grade": { "type": "number", "default": 70, "description": "Threshold to mark lesson complete" }
+        },
+        "required": ["submission_id", "graded_by", "grade"]
+      }
+    },
+    {
+      "name": "kalio_deliver_certificate",
+      "description": "Render a certificate to PDF and email it to the student",
+      "method": "POST",
+      "path": "/certificates/{certificate_id}/deliver",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "certificate_id": { "type": "integer", "description": "Certificate ID" },
+          "send_email": { "type": "boolean", "default": true, "description": "Email the rendered PDF to the student" },
+          "verification_base_url": { "type": "string", "description": "Override the verification URL host" }
+        },
+        "required": ["certificate_id"]
       }
     }
   ]
