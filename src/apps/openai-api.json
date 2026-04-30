@@ -115,6 +115,7 @@
       "description": "Generate images via /v1/images/generations. Supports current GPT Image family (gpt-image-2 default; gpt-image-1.5, gpt-image-1, gpt-image-1-mini legacy) and DALL·E 3 / DALL·E 2 (legacy). gpt-image-* always returns base64 (b64_json); DALL·E returns URLs by default.",
       "method": "POST",
       "path": "/images/generations",
+      "timeout_ms": 180000,
       "input_schema": {
         "type": "object",
         "properties": {

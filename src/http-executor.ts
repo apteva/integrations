@@ -41,7 +41,10 @@ export async function executeTool(
     tool,
     credentials,
     input,
-    timeout = 30000,
+    // Caller's explicit timeout wins; otherwise fall back to the tool's
+    // declared timeout_ms (for slow upstreams like image / video / long
+    // audio); finally the 30s default. Capped at 10 minutes.
+    timeout = Math.min(tool.timeout_ms ?? 30000, 600000),
     maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
   } = opts;
 

@@ -220,6 +220,11 @@ export interface AppToolTemplate {
   // body content and the API rejects the request.
   query_params?: string[];
   response_path?: string; // JSONPath to extract from response
+  // Override the default 30s HTTP timeout for this tool's upstream call.
+  // Capped server-side at 600s. Use for tools that legitimately take
+  // longer than 30s (image generation, video generation, long-audio
+  // transcription, etc).
+  timeout_ms?: number;
   // Dot-separated paths in the JSON response to strip before the
   // agent sees the payload. Use `[]` to step into every element of
   // an array (e.g. "results.channels[].alternatives[].words"). Runs
