@@ -57,4 +57,77 @@ for (const tool of ghMcp.tools) {
   console.log(`    Auth header: ${tool.http_config.headers["Authorization"]?.substring(0, 20)}...`);
 }
 
+// ─── Test 4: Remote MCP app generation (HubSpot hosted MCP) ───
+console.log("\n--- Remote MCP Generation (HubSpot hosted) ---");
+const hubspotMcp = getAppTemplate("hubspot-mcp");
+if (!hubspotMcp) throw new Error("hubspot-mcp app not found!");
+if (hubspotMcp.kind !== "remote_mcp") {
+  throw new Error(`expected kind=remote_mcp, got ${hubspotMcp.kind}`);
+}
+if (!hubspotMcp.mcp) throw new Error("hubspot-mcp missing mcp config");
+console.log(
+  `Loaded ${hubspotMcp.slug}: kind=${hubspotMcp.kind}, transport=${hubspotMcp.mcp.transport}, url=${hubspotMcp.mcp.url}`
+);
+
+const hsMcpConn: Connection = {
+  id: "test-conn-3",
+  app_slug: "hubspot-mcp",
+  app_name: "HubSpot (hosted MCP)",
+  name: "My HubSpot MCP",
+  auth_type: "oauth2",
+  credentials: { access_token: "fake_oauth_token_xyz" },
+  status: "active",
+  project_id: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+const hsMcpServer = generateMcpServer(hsMcpConn, hubspotMcp);
+if (hsMcpServer.type !== "remote") {
+  throw new Error(`expected type=remote, got ${hsMcpServer.type}`);
+}
+if (hsMcpServer.tools.length !== 0) {
+  throw new Error(
+    `remote MCP should have empty tools, got ${hsMcpServer.tools.length}`
+  );
+}
+if (!hsMcpServer.remote) throw new Error("remote descriptor missing");
+if (hsMcpServer.remote.url !== "https://mcp-eu1.hubspot.com/mcp") {
+  throw new Error(`unexpected url: ${hsMcpServer.remote.url}`);
+}
+const expectedAuth = "Bearer fake_oauth_token_xyz";
+if (hsMcpServer.remote.headers["Authorization"] !== expectedAuth) {
+  throw new Error(
+    `auth header mismatch: ${hsMcpServer.remote.headers["Authorization"]} vs ${expectedAuth}`
+  );
+}
+console.log(
+  `  remote: ${hsMcpServer.remote.transport} ${hsMcpServer.remote.url}`
+);
+console.log(
+  `  Authorization: ${hsMcpServer.remote.headers["Authorization"].substring(0, 25)}...`
+);
+
+// ─── Test 5: Remote MCP without mcp config should throw ───
+console.log("\n--- Remote MCP error handling ---");
+const broken = { ...hubspotMcp, mcp: undefined } as typeof hubspotMcp;
+let threw = false;
+try {
+  generateMcpServer(hsMcpConn, broken);
+} catch (err) {
+  threw = true;
+  console.log(`  correctly threw: ${(err as Error).message}`);
+}
+if (!threw) throw new Error("expected generator to throw on missing mcp");
+
+// ─── Test 6: Both `hubspot` and `hubspot-mcp` exist as choices ───
+console.log("\n--- Catalog has both REST and hosted-MCP HubSpot ---");
+const slugs = listApps().map((a) => a.slug);
+for (const need of ["hubspot", "hubspot-mcp"]) {
+  if (!slugs.includes(need)) {
+    throw new Error(`expected ${need} in catalog`);
+  }
+}
+console.log(`  ✓ both 'hubspot' (REST) and 'hubspot-mcp' (hosted) are listed`);
+
 console.log("\n✓ All smoke tests passed");

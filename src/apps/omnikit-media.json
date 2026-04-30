@@ -656,6 +656,30 @@
         "response_path": "data",
         "id_field": "id",
         "label_field": "name"
+      },
+      "api_lookup": {
+        "method": "GET",
+        "path": "/apis",
+        "response_path": "data",
+        "match_field": "base_path",
+        "match_value": "omnikit",
+        "id_field": "id"
+      },
+      "provision_project_key": {
+        "method": "POST",
+        "path": "/api-keys",
+        "body": {
+          "name": "Apteva \u00b7 {{label}}",
+          "api_id": "{{api_lookup_id}}",
+          "target_project_id": "{{external_project_id}}",
+          "scopes": [
+            "read",
+            "write"
+          ]
+        },
+        "response_key_path": "data.key",
+        "id_response_path": "data.id",
+        "credential_field": "api_key"
       }
     }
   },
@@ -665,7 +689,7 @@
         {
           "name": "api_key",
           "label": "Account API Key",
-          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "description": "Starts with okt_acc_ \u2014 operates across every project in the account.",
           "type": "password"
         }
       ],
@@ -683,7 +707,7 @@
         {
           "name": "api_key",
           "label": "Project API Key",
-          "description": "Starts with okt_ — already scoped to a single project.",
+          "description": "Starts with okt_ \u2014 already scoped to a single project.",
           "type": "password"
         }
       ],

@@ -137,7 +137,7 @@
     },
     {
       "name": "generate_image",
-      "description": "Generate or edit images with AI. Provider is auto-detected from the model name (gemini-* → google, dall-e-*/gpt-image-* → openai), so you can just pass a model. For image editing or reference images, pass the 'images' array — supported by Google Gemini (gemini-2.5-flash-image, gemini-3-pro-image-preview) AND OpenAI gpt-image-1 / gpt-image-1.5 / gpt-image-2 (up to 16 reference images, optional 'mask' for inpainting). DALL-E 3 does NOT support reference images — use gpt-image-2 for OpenAI editing.",
+      "description": "Generate or edit images with AI. Provider is auto-detected from the model name (gemini-* \u2192 google, dall-e-*/gpt-image-* \u2192 openai), so you can just pass a model. For image editing or reference images, pass the 'images' array \u2014 supported by Google Gemini (gemini-2.5-flash-image, gemini-3-pro-image-preview) AND OpenAI gpt-image-1 / gpt-image-1.5 / gpt-image-2 (up to 16 reference images, optional 'mask' for inpainting). DALL-E 3 does NOT support reference images \u2014 use gpt-image-2 for OpenAI editing.",
       "method": "POST",
       "path": "/ai/generate/image",
       "input_schema": {
@@ -153,7 +153,7 @@
               "openai",
               "google"
             ],
-            "description": "Optional. AI provider. Auto-detected from the model name if omitted (gemini-* → google, dall-e-*/gpt-image-* → openai). Defaults to openai if neither provider nor model is set."
+            "description": "Optional. AI provider. Auto-detected from the model name if omitted (gemini-* \u2192 google, dall-e-*/gpt-image-* \u2192 openai). Defaults to openai if neither provider nor model is set."
           },
           "model": {
             "type": "string",
@@ -171,7 +171,7 @@
                 },
                 "data": {
                   "type": "string",
-                  "description": "Base64-encoded image data. Alternative to url — provide one or the other."
+                  "description": "Base64-encoded image data. Alternative to url \u2014 provide one or the other."
                 },
                 "mimeType": {
                   "type": "string",
@@ -184,8 +184,14 @@
             "type": "object",
             "description": "Optional PNG mask for inpainting (OpenAI gpt-image-* only). Same dimensions as the first input image. Transparent regions = areas to be edited.",
             "properties": {
-              "url": { "type": "string", "description": "HTTPS URL of the mask PNG." },
-              "data": { "type": "string", "description": "Base64-encoded mask PNG." }
+              "url": {
+                "type": "string",
+                "description": "HTTPS URL of the mask PNG."
+              },
+              "data": {
+                "type": "string",
+                "description": "Base64-encoded mask PNG."
+              }
             }
           },
           "size": {
@@ -417,7 +423,7 @@
     },
     {
       "name": "generate_speech",
-      "description": "Generate speech/voiceover from text using ElevenLabs. Select a voice from list-voices (sync-voices first if empty).\n\nResponse includes: audio.url, audio.durationMs (milliseconds — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it is not accurate.",
+      "description": "Generate speech/voiceover from text using ElevenLabs. Select a voice from list-voices (sync-voices first if empty).\n\nResponse includes: audio.url, audio.durationMs (milliseconds \u2014 divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field \u2014 it is not accurate.",
       "method": "POST",
       "path": "/ai/generate/speech",
       "input_schema": {
@@ -688,15 +694,21 @@
           },
           "voiceId": {
             "type": "number",
-            "description": "Voice ID from list_voices. Optional — can be assigned later via update_script."
+            "description": "Voice ID from list_voices. Optional \u2014 can be assigned later via update_script."
           },
           "voiceSettings": {
             "type": "object",
             "description": "Optional ElevenLabs voice tweaks: stability (0-1), similarityBoost (0-1), style (0-1).",
             "properties": {
-              "stability": { "type": "number" },
-              "similarityBoost": { "type": "number" },
-              "style": { "type": "number" }
+              "stability": {
+                "type": "number"
+              },
+              "similarityBoost": {
+                "type": "number"
+              },
+              "style": {
+                "type": "number"
+              }
             }
           },
           "outputType": {
@@ -725,7 +737,12 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["draft", "generating", "completed", "failed"],
+            "enum": [
+              "draft",
+              "generating",
+              "completed",
+              "failed"
+            ],
             "description": "Optional status filter."
           },
           "search": {
@@ -784,16 +801,25 @@
             "description": "New text content"
           },
           "voiceId": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "description": "New voice ID. Pass null to unassign."
           },
           "voiceSettings": {
             "type": "object",
             "description": "New ElevenLabs voice tweaks: stability (0-1), similarityBoost (0-1), style (0-1).",
             "properties": {
-              "stability": { "type": "number" },
-              "similarityBoost": { "type": "number" },
-              "style": { "type": "number" }
+              "stability": {
+                "type": "number"
+              },
+              "similarityBoost": {
+                "type": "number"
+              },
+              "style": {
+                "type": "number"
+              }
             }
           }
         },
@@ -822,7 +848,7 @@
     },
     {
       "name": "generate_script",
-      "description": "Render a script to audio (ElevenLabs TTS). Uses the script's saved voice + voiceSettings unless overridden. Updates the script row in place: status → 'generating' then 'completed' (or 'failed'), and sets output_url + file_id when done.\n\nResponse includes: audio.url, audio.durationMs (ms — divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field — it's not accurate.",
+      "description": "Render a script to audio (ElevenLabs TTS). Uses the script's saved voice + voiceSettings unless overridden. Updates the script row in place: status \u2192 'generating' then 'completed' (or 'failed'), and sets output_url + file_id when done.\n\nResponse includes: audio.url, audio.durationMs (ms \u2014 divide by 1000 for seconds), audio.sizeBytes, audio.format, and voice info. Ignore the cost field \u2014 it's not accurate.",
       "method": "POST",
       "path": "/ai/scripts/{id}/generate",
       "input_schema": {
@@ -840,9 +866,15 @@
             "type": "object",
             "description": "Override the saved voice settings for this render only.",
             "properties": {
-              "stability": { "type": "number" },
-              "similarityBoost": { "type": "number" },
-              "style": { "type": "number" }
+              "stability": {
+                "type": "number"
+              },
+              "similarityBoost": {
+                "type": "number"
+              },
+              "style": {
+                "type": "number"
+              }
             }
           },
           "model": {
@@ -867,7 +899,7 @@
     },
     {
       "name": "sync_voices",
-      "description": "Sync premade voices from ElevenLabs into the local voice library. Run this first before listing voices — it populates the library with all available ElevenLabs voices. Only needs to be done once (or periodically to pick up new voices).",
+      "description": "Sync premade voices from ElevenLabs into the local voice library. Run this first before listing voices \u2014 it populates the library with all available ElevenLabs voices. Only needs to be done once (or periodically to pick up new voices).",
       "method": "POST",
       "path": "/ai/voices/sync",
       "input_schema": {
@@ -945,6 +977,30 @@
         "response_path": "data",
         "id_field": "id",
         "label_field": "name"
+      },
+      "api_lookup": {
+        "method": "GET",
+        "path": "/apis",
+        "response_path": "data",
+        "match_field": "base_path",
+        "match_value": "omnikit",
+        "id_field": "id"
+      },
+      "provision_project_key": {
+        "method": "POST",
+        "path": "/api-keys",
+        "body": {
+          "name": "Apteva \u00b7 {{label}}",
+          "api_id": "{{api_lookup_id}}",
+          "target_project_id": "{{external_project_id}}",
+          "scopes": [
+            "read",
+            "write"
+          ]
+        },
+        "response_key_path": "data.key",
+        "id_response_path": "data.id",
+        "credential_field": "api_key"
       }
     }
   },
@@ -954,7 +1010,7 @@
         {
           "name": "api_key",
           "label": "Account API Key",
-          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "description": "Starts with okt_acc_ \u2014 operates across every project in the account.",
           "type": "password"
         }
       ],
@@ -972,7 +1028,7 @@
         {
           "name": "api_key",
           "label": "Project API Key",
-          "description": "Starts with okt_ — already scoped to a single project.",
+          "description": "Starts with okt_ \u2014 already scoped to a single project.",
           "type": "password"
         }
       ],

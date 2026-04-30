@@ -219,7 +219,7 @@
     },
     {
       "name": "update_content_entry",
-      "description": "Update a content entry's fields. Now does a DEEP MERGE on the data object — only provided fields are changed, others are preserved.\n\nExample: { \"data\": { \"title\": \"New Title\" } } updates only the title. The content, excerpt, and all other fields stay untouched.\n\nFor surgical text edits within a large field (e.g., fixing a typo in a 5000-word article), use patch-content-field instead — it supports find/replace, append, prepend without resending the full content.",
+      "description": "Update a content entry's fields. Now does a DEEP MERGE on the data object \u2014 only provided fields are changed, others are preserved.\n\nExample: { \"data\": { \"title\": \"New Title\" } } updates only the title. The content, excerpt, and all other fields stay untouched.\n\nFor surgical text edits within a large field (e.g., fixing a typo in a 5000-word article), use patch-content-field instead \u2014 it supports find/replace, append, prepend without resending the full content.",
       "method": "PUT",
       "path": "/cms/entries/{id}",
       "input_schema": {
@@ -981,6 +981,30 @@
         "response_path": "data",
         "id_field": "id",
         "label_field": "name"
+      },
+      "api_lookup": {
+        "method": "GET",
+        "path": "/apis",
+        "response_path": "data",
+        "match_field": "base_path",
+        "match_value": "omnikit",
+        "id_field": "id"
+      },
+      "provision_project_key": {
+        "method": "POST",
+        "path": "/api-keys",
+        "body": {
+          "name": "Apteva \u00b7 {{label}}",
+          "api_id": "{{api_lookup_id}}",
+          "target_project_id": "{{external_project_id}}",
+          "scopes": [
+            "read",
+            "write"
+          ]
+        },
+        "response_key_path": "data.key",
+        "id_response_path": "data.id",
+        "credential_field": "api_key"
       }
     }
   },
@@ -990,7 +1014,7 @@
         {
           "name": "api_key",
           "label": "Account API Key",
-          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "description": "Starts with okt_acc_ \u2014 operates across every project in the account.",
           "type": "password"
         }
       ],
@@ -1008,7 +1032,7 @@
         {
           "name": "api_key",
           "label": "Project API Key",
-          "description": "Starts with okt_ — already scoped to a single project.",
+          "description": "Starts with okt_ \u2014 already scoped to a single project.",
           "type": "password"
         }
       ],

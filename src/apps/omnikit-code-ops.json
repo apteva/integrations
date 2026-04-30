@@ -1,7 +1,7 @@
 {
   "slug": "omnikit-code-ops",
   "name": "OmniKit Code Ops",
-  "description": "Operations & infrastructure via OmniKit — deployments (web, Docker, App Store, Play Store), custom domains & DNS, CI/CD pipelines, container management, and iOS/Android simulators.",
+  "description": "Operations & infrastructure via OmniKit \u2014 deployments (web, Docker, App Store, Play Store), custom domains & DNS, CI/CD pipelines, container management, and iOS/Android simulators.",
   "logo": "https://cdn.omnikit.co/cdn/project-10/public/10_1770556267491_eecb0n/603050903_10162713420734412_6016628635295692734_n.jpg",
   "categories": [
     "deployments",
@@ -1066,7 +1066,7 @@
     },
     {
       "name": "omnikit_ops_simulator_execute_command",
-      "description": "Execute a command on a simulator session — tap, swipe, type text, take screenshot, install/launch apps, get accessibility tree, record screen, and more.",
+      "description": "Execute a command on a simulator session \u2014 tap, swipe, type text, take screenshot, install/launch apps, get accessibility tree, record screen, and more.",
       "method": "POST",
       "path": "/simulator/sessions/{session_id}/commands",
       "input_schema": {
@@ -1135,7 +1135,7 @@
     },
     {
       "name": "omnikit_ops_simulator_pool_status",
-      "description": "Get the status of the simulator pool — available capacity, active sessions, and resource usage",
+      "description": "Get the status of the simulator pool \u2014 available capacity, active sessions, and resource usage",
       "method": "GET",
       "path": "/simulator/pool/status",
       "input_schema": {
@@ -1207,6 +1207,30 @@
         "response_path": "data",
         "id_field": "id",
         "label_field": "name"
+      },
+      "api_lookup": {
+        "method": "GET",
+        "path": "/apis",
+        "response_path": "data",
+        "match_field": "base_path",
+        "match_value": "omnikit",
+        "id_field": "id"
+      },
+      "provision_project_key": {
+        "method": "POST",
+        "path": "/api-keys",
+        "body": {
+          "name": "Apteva \u00b7 {{label}}",
+          "api_id": "{{api_lookup_id}}",
+          "target_project_id": "{{external_project_id}}",
+          "scopes": [
+            "read",
+            "write"
+          ]
+        },
+        "response_key_path": "data.key",
+        "id_response_path": "data.id",
+        "credential_field": "api_key"
       }
     }
   },
@@ -1216,7 +1240,7 @@
         {
           "name": "api_key",
           "label": "Account API Key",
-          "description": "Starts with okt_acc_ — operates across every project in the account.",
+          "description": "Starts with okt_acc_ \u2014 operates across every project in the account.",
           "type": "password"
         }
       ],
@@ -1234,7 +1258,7 @@
         {
           "name": "api_key",
           "label": "Project API Key",
-          "description": "Starts with okt_ — already scoped to a single project.",
+          "description": "Starts with okt_ \u2014 already scoped to a single project.",
           "type": "password"
         }
       ],

@@ -4,17 +4,27 @@ import type {
   Connection,
   GeneratedMcpServer,
   GeneratedMcpTool,
+  GeneratedRemoteMcp,
 } from "./types.js";
 
 /**
  * Generate an MCP server definition from a connection + its app template.
- * The generated server contains tools that map to HTTP API calls,
- * with credentials baked into the headers.
+ *
+ * For `kind: "rest"` (default) — tools are generated from `app.tools`,
+ * each becoming an HTTP-handler entry with credentials baked in.
+ *
+ * For `kind: "remote_mcp"` — no local tools. The descriptor returned
+ * carries the vendor's MCP URL + resolved auth headers so the caller
+ * (Apteva server) can register it with the instance's MCP gateway.
  */
 export function generateMcpServer(
   connection: Connection,
   app: AppTemplate
 ): GeneratedMcpServer {
+  if (app.kind === "remote_mcp") {
+    return generateRemoteMcpServer(connection, app);
+  }
+
   const tools: GeneratedMcpTool[] = app.tools.map((tool) =>
     generateMcpTool(app, tool, connection)
   );
@@ -24,6 +34,41 @@ export function generateMcpServer(
     type: "local",
     source: "local-integration",
     tools,
+  };
+}
+
+function generateRemoteMcpServer(
+  connection: Connection,
+  app: AppTemplate
+): GeneratedMcpServer {
+  if (!app.mcp) {
+    throw new Error(
+      `app ${app.slug} has kind=remote_mcp but no mcp.url declared`
+    );
+  }
+  // Default to the same Authorization: Bearer {{token}} pattern most
+  // OAuth-issued MCPs expect. Override per-app via app.mcp.auth_header.
+  const authHeader = app.mcp.auth_header ?? {
+    name: "Authorization",
+    value: "Bearer {{token}}",
+  };
+  const headers: Record<string, string> = {
+    [authHeader.name]: resolveCredentialTemplate(
+      authHeader.value,
+      connection.credentials
+    ),
+  };
+  const remote: GeneratedRemoteMcp = {
+    transport: app.mcp.transport,
+    url: app.mcp.url,
+    headers,
+  };
+  return {
+    name: `${app.slug}-${connection.id}`,
+    type: "remote",
+    source: "remote-integration",
+    tools: [],
+    remote,
   };
 }
 

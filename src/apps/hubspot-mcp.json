@@ -1,0 +1,55 @@
+{
+  "slug": "hubspot-mcp",
+  "name": "HubSpot (hosted MCP)",
+  "description": "HubSpot CRM via HubSpot's hosted MCP server. OAuth 2.1 + PKCE — vendor maintains the tool catalog. Use this when you don't need to extend or customize tools; pick the plain `hubspot` integration if you need the REST template with custom additions (notes/tasks/emails).",
+  "logo": "https://www.google.com/s2/favicons?domain=hubspot.com&sz=128",
+  "categories": [
+    "crm",
+    "hubspot",
+    "deals",
+    "contacts",
+    "sales",
+    "mcp"
+  ],
+  "kind": "remote_mcp",
+  "base_url": "https://mcp-eu1.hubspot.com",
+  "mcp": {
+    "transport": "http",
+    "url": "https://mcp-eu1.hubspot.com/mcp",
+    "auth_header": {
+      "name": "Authorization",
+      "value": "Bearer {{token}}"
+    }
+  },
+  "auth": {
+    "types": [
+      "oauth2"
+    ],
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "access_token"
+      },
+      {
+        "name": "refresh_token",
+        "label": "refresh_token"
+      },
+      {
+        "name": "expires_in",
+        "label": "expires_in"
+      },
+      {
+        "name": "token_type",
+        "label": "token_type"
+      }
+    ],
+    "oauth2": {
+      "authorize_url": "https://mcp-eu1.hubspot.com/oauth/authorize/user",
+      "token_url": "https://mcp-eu1.hubspot.com/oauth/token",
+      "scopes": [],
+      "client_id_required": true,
+      "pkce": true
+    }
+  },
+  "tools": []
+}

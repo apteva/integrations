@@ -10,6 +10,15 @@ export interface AppTemplate {
   base_url: string;
   tools: AppToolTemplate[];
   webhooks?: AppWebhookConfig;
+  // Integration kind. Defaults to "rest" when absent (every existing
+  // template in the catalog). "remote_mcp" means the vendor hosts an
+  // MCP server we proxy to instead of generating a local stdio MCP
+  // from the `tools` array — see `mcp` below for the connection
+  // details. For remote_mcp apps `tools` MAY be left empty (tools are
+  // discovered at connect-time via tools/list against the upstream),
+  // but suggested entries can still be declared as documentation.
+  kind?: AppKind;
+  mcp?: RemoteMcpConfig;
   // Opt-in: declare this app as part of a suite that shares one
   // credential across many sub-apps and (optionally) fans out across
   // projects discovered from an account-wide key. Multiple apps with
@@ -25,6 +34,32 @@ export interface AppTemplate {
   // project-bound key) or just one. When absent, `auth` is used
   // unchanged — that's the legacy single-key path.
   scopes?: AppScopes;
+}
+
+// ============ Remote MCP (vendor-hosted MCP servers) ============
+
+/**
+ * "rest" — legacy + default: tools are HTTP endpoints we call directly,
+ *           a local stdio MCP is generated per connection from `tools`.
+ * "remote_mcp" — vendor hosts an MCP server. After OAuth, we register
+ *           the vendor's URL with the instance's MCP gateway and proxy
+ *           tool calls through. The agent sees the vendor's tool list
+ *           verbatim, no local generation.
+ */
+export type AppKind = "rest" | "remote_mcp";
+
+export interface RemoteMcpConfig {
+  /** Wire format the vendor's MCP server speaks. */
+  transport: "http" | "sse";
+  /** Fully-qualified URL of the vendor's MCP endpoint. */
+  url: string;
+  /**
+   * Header name + template used to authenticate every MCP call to the
+   * upstream. Defaults to `Authorization: Bearer {{token}}` when
+   * absent. Same {{credential.X}}/{{token}}/{{api_key}} resolution as
+   * AppAuthConfig.headers.
+   */
+  auth_header?: { name: string; value: string };
 }
 
 // ============ Credential groups (suites) ============
@@ -254,9 +289,22 @@ export interface LocalTriggerConfig {
 
 export interface GeneratedMcpServer {
   name: string;
-  type: "local";
-  source: "local-integration";
+  /** "local" — tools were generated from a REST template. "remote" —
+   * vendor hosts the MCP, see `remote` for the upstream URL + headers. */
+  type: "local" | "remote";
+  source: "local-integration" | "remote-integration";
+  /** Generated tools. Always set for "local". For "remote" left empty
+   * (the upstream's tools/list is the source of truth). */
   tools: GeneratedMcpTool[];
+  /** Present only when `type === "remote"`. */
+  remote?: GeneratedRemoteMcp;
+}
+
+export interface GeneratedRemoteMcp {
+  transport: "http" | "sse";
+  url: string;
+  /** Resolved auth headers (credentials already substituted). */
+  headers: Record<string, string>;
 }
 
 export interface GeneratedMcpTool {

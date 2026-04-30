@@ -70,7 +70,12 @@
         "crm.schemas.contacts.read",
         "crm.schemas.contacts.write",
         "crm.schemas.deals.read",
-        "crm.schemas.deals.write"
+        "crm.schemas.deals.write",
+        "crm.objects.notes.read",
+        "crm.objects.notes.write",
+        "crm.objects.tasks.read",
+        "crm.objects.tasks.write",
+        "crm.objects.emails.read"
       ],
       "client_id_required": true,
       "pkce": false
@@ -687,6 +692,105 @@
         "required": [
           "name",
           "type"
+        ]
+      }
+    },
+    {
+      "name": "create_note",
+      "description": "Create a CRM note and associate it with a contact, deal, company or ticket. Use this to log agent findings (detected conflict, churn signal, lost-lead pattern) onto the relevant record.",
+      "method": "POST",
+      "path": "/crm/v3/objects/notes",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "description": "Note properties — must include `hs_note_body` (string) and `hs_timestamp` (epoch ms or ISO date)."
+          },
+          "associations": {
+            "type": "array",
+            "description": "Associations to attach the note to other records, e.g. [{ to: { id: '<contactId>' }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] }]. Type ids: 202=note→contact, 214=note→company, 216=note→deal, 228=note→ticket."
+          }
+        },
+        "required": [
+          "properties"
+        ]
+      }
+    },
+    {
+      "name": "create_task",
+      "description": "Create a CRM task (follow-up reminder for a rep) and associate it with a contact/deal/company.",
+      "method": "POST",
+      "path": "/crm/v3/objects/tasks",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "description": "Task properties — common fields: hs_task_subject, hs_task_body, hs_task_status (NOT_STARTED|IN_PROGRESS|COMPLETED|WAITING|DEFERRED), hs_task_priority (LOW|MEDIUM|HIGH), hs_task_type (TODO|CALL|EMAIL), hs_timestamp (due date, epoch ms), hubspot_owner_id."
+          },
+          "associations": {
+            "type": "array",
+            "description": "Associations to records. Type ids: 204=task→contact, 192=task→company, 216=task→deal, 226=task→ticket."
+          }
+        },
+        "required": [
+          "properties"
+        ]
+      }
+    },
+    {
+      "name": "list_contact_emails",
+      "description": "List the email engagement IDs associated with a contact. Pair with get_email to read prior conversation history when assessing churn / dissatisfaction signals.",
+      "method": "GET",
+      "path": "/crm/v3/objects/contacts/{contactId}/associations/emails",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "description": "HubSpot contact id"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        },
+        "required": [
+          "contactId"
+        ]
+      }
+    },
+    {
+      "name": "get_email",
+      "description": "Fetch a single email engagement (subject, body, direction, timestamps, status).",
+      "method": "GET",
+      "path": "/crm/v3/objects/emails/{emailId}",
+      "query_params": [
+        "properties",
+        "associations"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "emailId": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "string",
+            "description": "Comma-separated property names, e.g. \"hs_email_subject,hs_email_text,hs_email_direction,hs_email_status,hs_timestamp\""
+          },
+          "associations": {
+            "type": "string",
+            "description": "Comma-separated association types, e.g. \"contacts,deals\""
+          }
+        },
+        "required": [
+          "emailId"
         ]
       }
     }
