@@ -112,52 +112,72 @@
     },
     {
       "name": "generate_image",
-      "description": "Generate images using OpenAI's DALL-E models",
-      "method": "GET",
-      "path": "/generate-image",
+      "description": "Generate images via /v1/images/generations. Supports current GPT Image family (gpt-image-2 default; gpt-image-1.5, gpt-image-1, gpt-image-1-mini legacy) and DALL·E 3 / DALL·E 2 (legacy). gpt-image-* always returns base64 (b64_json); DALL·E returns URLs by default.",
+      "method": "POST",
+      "path": "/images/generations",
       "input_schema": {
         "type": "object",
         "properties": {
           "prompt": {
             "type": "string",
-            "description": "Text description of the image to generate"
+            "description": "Text description of the image to generate."
           },
           "model": {
             "type": "string",
-            "description": "The image generation model to use",
+            "description": "Image generation model. Defaults to gpt-image-2 (current SOTA). dall-e-3 / dall-e-2 retained for legacy callers.",
             "enum": [
-              "dall-e-2",
-              "dall-e-3"
+              "gpt-image-2",
+              "gpt-image-1.5",
+              "gpt-image-1",
+              "gpt-image-1-mini",
+              "dall-e-3",
+              "dall-e-2"
             ],
-            "default": "dall-e-3"
+            "default": "gpt-image-2"
           },
           "size": {
             "type": "string",
-            "description": "Size of the generated image",
-            "enum": [
-              "256x256",
-              "512x512",
-              "1024x1024",
-              "1792x1024",
-              "1024x1792"
-            ],
+            "description": "Image size. gpt-image-2: any WxH where each edge is a multiple of 16, max edge 3840, ratio ≤ 3:1, total pixels 655,360–8,294,400 (popular: 1024x1024, 1024x1536, 1536x1024, 2048x2048, 3840x2160, auto). gpt-image-1/1.5/mini: 1024x1024 | 1024x1536 | 1536x1024. dall-e-3: 1024x1024 | 1792x1024 | 1024x1792. dall-e-2: 256x256 | 512x512 | 1024x1024.",
             "default": "1024x1024"
           },
           "quality": {
             "type": "string",
-            "description": "Quality of the generated image",
+            "description": "Quality. gpt-image-*: low | medium | high | auto. dall-e-3: standard | hd. dall-e-2: not supported.",
+            "default": "auto"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Output format (gpt-image-* only). Ignored by DALL·E.",
             "enum": [
-              "standard",
-              "hd"
+              "png",
+              "jpeg",
+              "webp"
             ],
-            "default": "standard"
+            "default": "png"
+          },
+          "background": {
+            "type": "string",
+            "description": "Background handling (gpt-image-* only). 'auto' lets the model decide; 'transparent' forces RGBA output (png/webp only).",
+            "enum": [
+              "auto",
+              "transparent",
+              "opaque"
+            ]
           },
           "n": {
             "type": "integer",
-            "description": "Number of images to generate",
+            "description": "Number of images to generate.",
             "minimum": 1,
             "maximum": 10,
             "default": 1
+          },
+          "response_format": {
+            "type": "string",
+            "description": "DALL·E only — gpt-image-* always returns b64_json. Pick 'b64_json' for inline bytes (no signed URL roundtrip) or 'url' for an OpenAI-hosted URL with a 1-hour TTL.",
+            "enum": [
+              "url",
+              "b64_json"
+            ]
           }
         },
         "required": [
