@@ -10,7 +10,7 @@
     "videos",
     "analytics"
   ],
-  "base_url": "https://graph.instagram.com",
+  "base_url": "https://graph.facebook.com/v25.0",
   "auth": {
     "types": [
       "bearer",
@@ -38,8 +38,8 @@
       }
     ],
     "oauth2": {
-      "authorize_url": "https://api.instagram.com/oauth/authorize",
-      "token_url": "https://api.instagram.com/oauth/access_token",
+      "authorize_url": "https://www.facebook.com/v25.0/dialog/oauth",
+      "token_url": "https://graph.facebook.com/v25.0/oauth/access_token",
       "scopes": [
         "user_profile",
         "user_media",
@@ -58,12 +58,18 @@
   "tools": [
     {
       "name": "list_accounts",
-      "description": "List Instagram Business Accounts linked to Facebook Pages accessible via your token. Use this first to get the instagramAccountId needed for other Instagram tools.",
+      "description": "List Instagram Business Accounts linked to Facebook Pages accessible via your token. Use this first to get the instagramAccountId needed for other Instagram tools. Returns Facebook Pages with their linked instagram_business_account (id, username, profile_picture_url) and the page-level access_token needed for posting.",
       "method": "GET",
-      "path": "/list-accounts",
+      "path": "/me/accounts",
       "input_schema": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "fields": {
+            "type": "string",
+            "description": "Graph API fields selector",
+            "default": "name,access_token,instagram_business_account{id,username,profile_picture_url}"
+          }
+        }
       }
     },
     {
@@ -157,7 +163,7 @@
       "name": "create_media_container",
       "description": "Step 1 of 2 to publish on Instagram. Create a media container with image/video URL and caption. Returns containerId for step 2 (publish-media-container). For videos: use sync=true to wait for processing to complete automatically (recommended), or poll manually with get-container-status.\n\nFor CAROUSEL posts: 1) Create child containers with isCarouselItem=true (each with imageUrl or videoUrl, mediaType IMAGE or REELS). 2) Create parent carousel container via Graph API: POST /{instagramAccountId}/media with media_type=CAROUSEL, children={comma-separated child IDs}, and caption. 3) Publish the parent container with publish-media-container. Up to 10 items per carousel.",
       "method": "POST",
-      "path": "/create-media-container",
+      "path": "/{instagramAccountId}/media",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -236,6 +242,10 @@
             "type": "boolean",
             "description": "Whether this is a carousel item",
             "default": false
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_accounts → access_token). Required for IG Business writes."
           }
         },
         "required": [
@@ -245,9 +255,9 @@
     },
     {
       "name": "publish_media_container",
-      "description": "Step 2 of 2 to publish on Instagram. Publishes the container created in step 1. For videos, check status first with get-container-status to ensure processing is complete.",
-      "method": "GET",
-      "path": "/publish-media-container",
+      "description": "Step 2 of 2 to publish on Instagram. Publishes the container created in step 1. For videos, check status first with get-container-status to ensure processing is complete. Also requires access_token (page-level token from list_accounts → access_token) for IG Business writes.",
+      "method": "POST",
+      "path": "/{instagramAccountId}/media_publish",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -257,7 +267,15 @@
           },
           "containerId": {
             "type": "string",
-            "description": "The 'id' returned from create-media-container (step 1). This is the container ID to publish."
+            "description": "The 'id' returned from create-media-container (step 1). Sent as creation_id query param to Graph API."
+          },
+          "creation_id": {
+            "type": "string",
+            "description": "Alias for containerId — Graph API expects this field name. The Social app sends both for compatibility."
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_accounts). Required for IG Business writes."
           }
         },
         "required": [

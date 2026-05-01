@@ -96,9 +96,9 @@
     },
     {
       "name": "post_video",
-      "description": "Upload and post a video to a Facebook page using a publicly accessible URL. Uses graph-video.facebook.com for proper video handling. Videos must be under 1GB and 20 minutes.",
+      "description": "Upload and post a video to a Facebook page using a publicly accessible URL. Videos must be under 1GB and 20 minutes. Caller MUST include access_token=<page-level token from list_pages> — Facebook rejects user tokens for /videos writes (error 210).",
       "method": "POST",
-      "path": "/post-video",
+      "path": "/{pageId}/videos",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -121,6 +121,10 @@
           "thumb": {
             "type": "string",
             "description": "URL to custom thumbnail image"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token). Required: Facebook rejects user-level tokens for /videos writes."
           }
         },
         "required": [
