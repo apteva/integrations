@@ -55,9 +55,9 @@
   "tools": [
     {
       "name": "post_to_page",
-      "description": "Post text, links, or photos to a Facebook page. For IMAGE/PHOTO posts, use the 'image' parameter with a public URL - do NOT use 'link' for images. The 'link' parameter is only for sharing webpage URLs. For video uploads, use facebook-api-post-video instead.",
+      "description": "Post text, links, or photos to a Facebook page. For IMAGE/PHOTO posts, use the 'image' parameter with a public URL - do NOT use 'link' for images. The 'link' parameter is only for sharing webpage URLs. For video uploads, use facebook-api-post-video instead. Caller MUST also include access_token=<page-level token from list_pages> — Facebook rejects the user token for /feed writes (error 210).",
       "method": "POST",
-      "path": "/post-to-page",
+      "path": "/{pageId}/feed",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -83,6 +83,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token). Required: Facebook rejects user-level tokens for /feed writes."
           }
         },
         "required": [
