@@ -229,7 +229,7 @@
       "name": "list_pages",
       "description": "List all Facebook pages managed by the authenticated user with details like name, category, fan count, and verification status",
       "method": "GET",
-      "path": "/list-pages",
+      "path": "/me/accounts",
       "input_schema": {
         "type": "object",
         "properties": {
