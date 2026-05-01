@@ -95,6 +95,42 @@
       }
     },
     {
+      "name": "post_photo_to_page",
+      "description": "Upload and post a photo to a Facebook page using a publicly accessible image URL. Use this (not post_to_page) whenever you have an image — /feed only renders link previews and ignores image fields. Caller MUST include access_token=<page-level token from list_pages>.",
+      "method": "POST",
+      "path": "/{pageId}/photos",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Facebook page ID"
+          },
+          "url": {
+            "type": "string",
+            "description": "Publicly accessible image URL (Graph API will fetch + attach)."
+          },
+          "caption": {
+            "type": "string",
+            "description": "Caption text for the photo (rendered as the post body)."
+          },
+          "published": {
+            "type": "boolean",
+            "description": "Whether the photo is published immediately (true) or staged (false). Defaults to true.",
+            "default": true
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token). Required."
+          }
+        },
+        "required": [
+          "pageId",
+          "url"
+        ]
+      }
+    },
+    {
       "name": "post_video",
       "description": "Upload and post a video to a Facebook page using a publicly accessible URL. Videos must be under 1GB and 20 minutes. Caller MUST include access_token=<page-level token from list_pages> — Facebook rejects user tokens for /videos writes (error 210).",
       "method": "POST",
