@@ -167,9 +167,15 @@ export interface AppWebhookEvent {
 export interface AppAuthConfig {
   types: AuthType[];
   oauth2?: OAuthConfig;
+  aws_sigv4?: AwsSigv4Config;
   headers?: Record<string, string>; // e.g. { "Authorization": "Bearer {{token}}" }
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
   credential_fields?: CredentialField[]; // Describes what credentials the user must provide
+}
+
+export interface AwsSigv4Config {
+  /** AWS service name used in the credential scope (e.g. "ses", "lambda", "dynamodb"). */
+  service: string;
 }
 
 export interface CredentialField {
@@ -180,7 +186,7 @@ export interface CredentialField {
   type?: "password" | "text"; // Default "password"
 }
 
-export type AuthType = "api_key" | "bearer" | "basic" | "oauth2";
+export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "aws_sigv4";
 
 export interface OAuthConfig {
   authorize_url: string;

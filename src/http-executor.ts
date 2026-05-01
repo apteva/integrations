@@ -4,6 +4,8 @@ import type {
   Connection,
   ConnectionCredentials,
 } from "./types.js";
+import { signAwsRequest } from "./aws-sigv4.js";
+import { xmlToJson } from "./xml-to-json.js";
 
 export interface ExecuteToolOptions {
   app: AppTemplate;
@@ -153,6 +155,48 @@ export async function executeTool(
   const qs = buildQueryString(allQueryParams);
   if (qs) finalUrl += (finalUrl.includes("?") ? "&" : "?") + qs;
 
+  // AWS SigV4 signing — must happen AFTER the body and final URL are
+  // built (the signature covers both). Skipped silently if the auth
+  // type isn't aws_sigv4 or required credentials are missing; the
+  // request will fail downstream with the AWS-side auth error rather
+  // than a confusing local exception.
+  if (
+    app.auth.types?.includes("aws_sigv4") &&
+    app.auth.aws_sigv4?.service
+  ) {
+    const norm = normalizeCredentials(credentials);
+    const accessKeyId = norm.access_key_id || norm.accessKeyId;
+    const secretAccessKey = norm.secret_access_key || norm.secretAccessKey;
+    const region = norm.region;
+    const sessionToken = norm.session_token || norm.sessionToken;
+    if (accessKeyId && secretAccessKey && region) {
+      const bodyForSigning =
+        typeof fetchOpts.body === "string"
+          ? fetchOpts.body
+          : fetchOpts.body instanceof Buffer
+            ? fetchOpts.body
+            : undefined;
+      const sigHeaders = signAwsRequest({
+        method: tool.method,
+        url: finalUrl,
+        headers,
+        body: bodyForSigning,
+        service: app.auth.aws_sigv4.service,
+        region,
+        accessKeyId,
+        secretAccessKey,
+        sessionToken,
+      });
+      // Strip any pre-existing Authorization (the bearer template won't
+      // apply here, but defensive — and the casing-variant cleanup
+      // mirrors the binary-body Content-Type handling above).
+      delete headers["Authorization"];
+      delete headers["authorization"];
+      Object.assign(headers, sigHeaders);
+      fetchOpts.headers = headers;
+    }
+  }
+
   // 5. Execute the request
   try {
     const response = await fetch(finalUrl, fetchOpts);
@@ -220,6 +264,14 @@ export async function executeTool(
         size: buffer.byteLength,
       };
       isBinary = true;
+    } else if (ct.includes("xml")) {
+      // Legacy XML-RPC-style APIs (Namecheap, Akismet) return XML on
+      // application/xml or text/xml. Parse to JSON so agents see a
+      // real object instead of a text blob. If parsing fails, fall
+      // back to the raw text.
+      const text = await response.text();
+      const parsed = xmlToJson(text);
+      data = parsed !== null ? parsed : text;
     } else {
       data = await response.text();
     }
@@ -258,14 +310,25 @@ function buildUrl(
   input: Record<string, unknown>,
   credentials?: ConnectionCredentials
 ): string {
+  let resolvedBase = baseUrl;
   let resolved = path;
 
-  // Replace {{credential.X}} placeholders with credential values
+  // Replace {{credential.X}} placeholders with credential values, in
+  // both base_url and path. The base_url substitution is what lets
+  // regional services (e.g. AWS SES at email.{{credential.region}}.amazonaws.com)
+  // resolve their hostname from the connection's stored credentials.
+  // Hostnames must NOT be percent-encoded; only the path placeholders
+  // are URI-encoded (a region like "us-east-1" is already URL-safe).
   if (credentials) {
-    resolved = resolved.replace(/\{\{credential\.(\w+)\}\}/g, (_match, key) => {
-      const value = credentials.fields?.[key] || (credentials as any)[key] || "";
-      return encodeURIComponent(String(value));
-    });
+    const credValue = (key: string): string => {
+      return credentials.fields?.[key] || (credentials as any)[key] || "";
+    };
+    resolvedBase = resolvedBase.replace(/\{\{credential\.(\w+)\}\}/g, (_m, key) =>
+      String(credValue(key))
+    );
+    resolved = resolved.replace(/\{\{credential\.(\w+)\}\}/g, (_m, key) =>
+      encodeURIComponent(String(credValue(key)))
+    );
   }
 
   // Replace {param} placeholders with input values
@@ -278,7 +341,7 @@ function buildUrl(
       resolved = resolved.replace(`{${key}}`, encodeURIComponent(String(value)));
     }
   }
-  return `${baseUrl.replace(/\/$/, "")}${resolved}`;
+  return `${resolvedBase.replace(/\/$/, "")}${resolved}`;
 }
 
 function extractPathParams(path: string): string[] {

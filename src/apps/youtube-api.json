@@ -18,7 +18,8 @@
       "oauth2"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "Bearer {{token}}",
+      "Content-Type": "application/json"
     },
     "credential_fields": [
       {
@@ -66,7 +67,7 @@
       "name": "get_my_channel",
       "description": "Get the authenticated user's YouTube channel info including subscriber count, video count, uploads playlist ID, branding, and description",
       "method": "GET",
-      "path": "/channels",
+      "path": "/channels?mine=true",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -75,7 +76,10 @@
             "description": "Comma-separated parts to include",
             "default": "snippet,contentDetails,statistics,brandingSettings"
           }
-        }
+        },
+        "required": [
+          "part"
+        ]
       }
     },
     {
@@ -97,15 +101,16 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "part"
         ]
       }
     },
     {
       "name": "update_channel",
-      "description": "Update YouTube channel branding settings (title, description, keywords). Provide the full brandingSettings object.",
+      "description": "Update YouTube channel branding (the public 'About' description, title, keywords, country, etc.). ⚠️ DESTRUCTIVE OVERWRITE: this call overrides ALL mutable properties in brandingSettings.channel — any field you omit gets CLEARED. Safe pattern: first call get_my_channel with part='brandingSettings' to read current values, then send the full brandingSettings.channel object back with only the fields you want to change modified. Description max 1000 chars. Note: snippet.description is read-only via the API; the public 'About' description is brandingSettings.channel.description.",
       "method": "PUT",
-      "path": "/channels",
+      "path": "/channels?part=brandingSettings",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -115,19 +120,38 @@
           },
           "brandingSettings": {
             "type": "object",
-            "description": "Branding settings object with 'channel' sub-object containing title, description, keywords, etc.",
+            "description": "Full brandingSettings object. The 'channel' sub-object's mutable fields are title, description, keywords, country, defaultLanguage, unsubscribedTrailer, trackingAnalyticsAccountId. Omitted fields will be CLEARED — always merge over the current values returned by get_my_channel.",
             "properties": {
               "channel": {
                 "type": "object",
                 "properties": {
                   "title": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Channel title (max 100 chars)"
                   },
                   "description": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Public 'About' description shown on the channel page (max 1000 chars)"
                   },
                   "keywords": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Space-separated keywords (quote multi-word phrases)"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "ISO 3166-1 alpha-2 country code (e.g. US, GB)"
+                  },
+                  "defaultLanguage": {
+                    "type": "string",
+                    "description": "BCP-47 language code (e.g. en, fr)"
+                  },
+                  "unsubscribedTrailer": {
+                    "type": "string",
+                    "description": "Video ID of the channel trailer for unsubscribed visitors"
+                  },
+                  "trackingAnalyticsAccountId": {
+                    "type": "string",
+                    "description": "Google Analytics tracking ID"
                   }
                 }
               }
@@ -144,7 +168,7 @@
       "name": "search",
       "description": "Search for videos, channels, or playlists on YouTube. Supports filtering by duration, date range, channel, category, and sort order.",
       "method": "GET",
-      "path": "/search",
+      "path": "/search?part=snippet",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -224,7 +248,7 @@
       "name": "get_trending",
       "description": "Get the most popular/trending videos on YouTube for a specific region",
       "method": "GET",
-      "path": "/videos",
+      "path": "/videos?chart=mostPopular&part=snippet,statistics,contentDetails",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -268,7 +292,8 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "part"
         ]
       }
     },
@@ -276,7 +301,7 @@
       "name": "update_video",
       "description": "Update video metadata (title, description, tags, privacy, category, schedule). IMPORTANT: To schedule a video for future publish, you MUST set privacyStatus to 'private' AND provide publishAt as ISO 8601 datetime. Scheduling does NOT work with 'unlisted' or 'public' status \u2014 YouTube requires the video to be 'private' first. You must provide the full snippet and/or status objects.",
       "method": "PUT",
-      "path": "/videos",
+      "path": "/videos?part=snippet,status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -373,7 +398,7 @@
       "name": "rate_video",
       "description": "Like, dislike, or remove rating from a YouTube video",
       "method": "POST",
-      "path": "/videos/rate",
+      "path": "/videos/rate?id={id}&rating={rating}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -394,81 +419,6 @@
         "required": [
           "id",
           "rating"
-        ]
-      }
-    },
-    {
-      "name": "upload_video",
-      "description": "Upload a video to YouTube from a URL using resumable upload. Video is downloaded from the URL and uploaded to YouTube.",
-      "method": "POST",
-      "path": "/upload-video",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "videoUrl": {
-            "type": "string",
-            "description": "URL of the video file to upload"
-          },
-          "title": {
-            "type": "string",
-            "description": "Video title"
-          },
-          "description": {
-            "type": "string",
-            "description": "Video description"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Video tags"
-          },
-          "categoryId": {
-            "type": "string",
-            "description": "Video category ID",
-            "default": "22"
-          },
-          "privacyStatus": {
-            "type": "string",
-            "enum": [
-              "private",
-              "public",
-              "unlisted"
-            ],
-            "default": "private"
-          },
-          "madeForKids": {
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "required": [
-          "videoUrl",
-          "title"
-        ]
-      }
-    },
-    {
-      "name": "set_thumbnail",
-      "description": "Set a custom thumbnail for a YouTube video from an image URL",
-      "method": "GET",
-      "path": "/set-thumbnail",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "videoId": {
-            "type": "string",
-            "description": "YouTube video ID"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "description": "URL of thumbnail image to upload"
-          }
-        },
-        "required": [
-          "videoId",
-          "thumbnailUrl"
         ]
       }
     },
@@ -496,8 +446,16 @@
           "pageToken": {
             "type": "string",
             "description": "Page token for pagination"
+          },
+          "part": {
+            "type": "string",
+            "description": "Comma-separated parts to include",
+            "default": "snippet,contentDetails,status"
           }
-        }
+        },
+        "required": [
+          "part"
+        ]
       }
     },
     {
@@ -519,7 +477,8 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "part"
         ]
       }
     },
@@ -527,7 +486,7 @@
       "name": "create_playlist",
       "description": "Create a new YouTube playlist",
       "method": "POST",
-      "path": "/playlists",
+      "path": "/playlists?part=snippet,status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -573,7 +532,7 @@
       "name": "update_playlist",
       "description": "Update a YouTube playlist's title, description, or privacy status",
       "method": "PUT",
-      "path": "/playlists",
+      "path": "/playlists?part=snippet,status",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -651,10 +610,16 @@
           "pageToken": {
             "type": "string",
             "description": "Page token for pagination"
+          },
+          "part": {
+            "type": "string",
+            "description": "Comma-separated parts to include",
+            "default": "snippet,contentDetails,status"
           }
         },
         "required": [
-          "playlistId"
+          "playlistId",
+          "part"
         ]
       }
     },
@@ -662,7 +627,7 @@
       "name": "add_to_playlist",
       "description": "Add a video to a YouTube playlist at an optional position",
       "method": "POST",
-      "path": "/playlistItems",
+      "path": "/playlistItems?part=snippet",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -754,10 +719,16 @@
           "pageToken": {
             "type": "string",
             "description": "Page token for pagination"
+          },
+          "part": {
+            "type": "string",
+            "description": "Comma-separated parts to include",
+            "default": "snippet,replies"
           }
         },
         "required": [
-          "videoId"
+          "videoId",
+          "part"
         ]
       }
     },
@@ -765,7 +736,7 @@
       "name": "post_comment",
       "description": "Post a top-level comment on a YouTube video",
       "method": "POST",
-      "path": "/commentThreads",
+      "path": "/commentThreads?part=snippet",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -809,51 +780,6 @@
       }
     },
     {
-      "name": "get_analytics",
-      "description": "Get YouTube Analytics data for your channel. Query views, watch time, subscribers, revenue, and more with date ranges and dimensions.\n\nCommon metrics: views, estimatedMinutesWatched, averageViewDuration, likes, comments, shares, subscribersGained, subscribersLost\n\nDimensions: day, month, video, country, ageGroup, gender",
-      "method": "GET",
-      "path": "/v2/reports",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "startDate": {
-            "type": "string",
-            "description": "Start date (YYYY-MM-DD)"
-          },
-          "endDate": {
-            "type": "string",
-            "description": "End date (YYYY-MM-DD)"
-          },
-          "metrics": {
-            "type": "string",
-            "description": "Comma-separated metrics",
-            "default": "views,estimatedMinutesWatched,averageViewDuration,likes,comments,shares"
-          },
-          "dimensions": {
-            "type": "string",
-            "description": "Dimension for grouping (e.g. day, video, country)"
-          },
-          "filters": {
-            "type": "string",
-            "description": "Filter expression (e.g. video==VIDEO_ID)"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order (e.g. -views for descending)"
-          },
-          "maxResults": {
-            "type": "integer",
-            "description": "Max results",
-            "default": 25
-          }
-        },
-        "required": [
-          "startDate",
-          "endDate"
-        ]
-      }
-    },
-    {
       "name": "list_subscriptions",
       "description": "List the authenticated user's YouTube subscriptions or subscriptions to a specific channel",
       "method": "GET",
@@ -888,8 +814,16 @@
           "pageToken": {
             "type": "string",
             "description": "Page token for pagination"
+          },
+          "part": {
+            "type": "string",
+            "description": "Comma-separated parts to include",
+            "default": "snippet,contentDetails"
           }
-        }
+        },
+        "required": [
+          "part"
+        ]
       }
     }
   ]
