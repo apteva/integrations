@@ -9,7 +9,7 @@
     "messaging",
     "transactional"
   ],
-  "base_url": "https://email.{{credential.region}}.amazonaws.com",
+  "base_url": "https://email.{{region}}.amazonaws.com",
   "auth": {
     "types": [
       "aws_sigv4"
