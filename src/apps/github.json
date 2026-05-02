@@ -76,6 +76,30 @@
       "pkce": false
     }
   },
+  "ui_components": [
+    {
+      "name": "issue-card",
+      "entry": "/ui/IssueCard.mjs",
+      "slots": ["chat.message_attachment"],
+      "props_schema": {
+        "type": "object",
+        "required": ["repo", "issue_number"],
+        "properties": {
+          "repo": { "type": "string", "description": "owner/name (e.g. acme-corp/billing-service)" },
+          "issue_number": { "type": "integer", "description": "Issue number (#NN)" },
+          "title": { "type": "string", "description": "Issue title — pass from get_issue response" },
+          "state": { "type": "string", "description": "open or closed" },
+          "state_reason": { "type": "string", "description": "completed | not_planned | reopened" },
+          "user_login": { "type": "string", "description": "Author login" },
+          "user_avatar_url": { "type": "string", "description": "Author avatar URL" },
+          "labels": { "type": "string", "description": "Comma-separated label names" },
+          "assignees": { "type": "string", "description": "Comma-separated assignee logins" },
+          "comments": { "type": "integer", "description": "Comments count" }
+        }
+      },
+      "preview_props": { "preview": true }
+    }
+  ],
   "tools": [
     {
       "name": "get_authenticated_user",

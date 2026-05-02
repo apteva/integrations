@@ -34,6 +34,38 @@ export interface AppTemplate {
   // project-bound key) or just one. When absent, `auth` is used
   // unchanged — that's the legacy single-key path.
   scopes?: AppScopes;
+  // Optional UI components an integration can render in the chat
+  // panel. Mirrors apps' `provides.ui_components` — each entry maps
+  // to a built React module under integrations/dist/ui/<slug>/<file>
+  // and is advertised to the agent by the channels MCP. Components
+  // appear in chat when the agent calls
+  // respond(components=[{app:"<slug>", name:"<component-name>", props:{…}}]).
+  ui_components?: UIComponent[];
+}
+
+// ============ UI Components (chat-attachment cards) ============
+
+export interface UIComponent {
+  /** Stable name used by the agent in respond(components=[…]). */
+  name: string;
+  /** Built module path under /api/integrations/<slug>/<entry>. */
+  entry: string;
+  /** Render slots this component opts into. The chat MCP filters
+   *  the AVAILABLE COMPONENTS catalog by the chat.message_attachment
+   *  slot before showing it to the agent. */
+  slots?: string[];
+  /** JSON-Schema-shaped props contract. Required key list +
+   *  property types are surfaced in the agent-facing description. */
+  props_schema?: {
+    type?: "object";
+    required?: string[];
+    properties?: Record<string, { type?: string; description?: string }>;
+  };
+  /** Soft preview convention: when the dashboard's app-detail panel
+   *  mounts this component for visual preview, it spreads these
+   *  props. The component decides what synthetic state to render —
+   *  typically a `preview: true` boolean flag. */
+  preview_props?: Record<string, unknown>;
 }
 
 // ============ Remote MCP (vendor-hosted MCP servers) ============
