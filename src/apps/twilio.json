@@ -14,26 +14,30 @@
   "base_url": "https://api.twilio.com/2010-04-01",
   "auth": {
     "types": [
-      "bearer"
+      "basic"
     ],
     "headers": {
-      "Authorization": "Bearer {{token}}"
+      "Authorization": "Basic {{basic_auth}}",
+      "Content-Type": "application/x-www-form-urlencoded"
     },
     "credential_fields": [
       {
         "name": "account_sid",
-        "label": "Account_sid",
-        "description": "Your Twilio Account SID"
+        "label": "Account SID",
+        "description": "Your Twilio Account SID (used as the HTTP Basic username)",
+        "required": true
       },
       {
         "name": "auth_token",
-        "label": "Auth_token",
-        "description": "Your Twilio Auth Token"
+        "label": "Auth Token",
+        "description": "Your Twilio Auth Token (used as the HTTP Basic password)",
+        "required": true,
+        "type": "password"
       },
       {
         "name": "phone_number",
-        "label": "Phone_number",
-        "description": "Your Twilio Phone Number"
+        "label": "Default Phone Number",
+        "description": "Optional default From number in E.164 (e.g. +15551234567)"
       }
     ]
   },
@@ -42,7 +46,7 @@
       "name": "send_sms",
       "description": "Send an SMS or MMS message via Twilio. Supports text, media attachments, content templates, and status callbacks.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
+      "path": "/Accounts/{{account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -85,7 +89,7 @@
       "name": "send_whatsapp",
       "description": "Send a WhatsApp message via Twilio. Use whatsapp: prefix on phone numbers. For business-initiated conversations (user hasn't messaged you in 24h), you MUST use a ContentSid (approved template) instead of Body. Free-form Body only works within the 24-hour window after the user messages you.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
+      "path": "/Accounts/{{account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -151,7 +155,7 @@
       "name": "get_message",
       "description": "Retrieve details of a specific message by SID.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Messages/{MessageSid}.json",
+      "path": "/Accounts/{{account_sid}}/Messages/{MessageSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -169,7 +173,7 @@
       "name": "list_messages",
       "description": "List sent and received messages with optional filters.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Messages.json",
+      "path": "/Accounts/{{account_sid}}/Messages.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -197,7 +201,7 @@
       "name": "delete_message",
       "description": "Delete a message by SID. This removes the message body and media but keeps the log entry.",
       "method": "DELETE",
-      "path": "/Accounts/{{credential.account_sid}}/Messages/{MessageSid}.json",
+      "path": "/Accounts/{{account_sid}}/Messages/{MessageSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -215,7 +219,7 @@
       "name": "make_call",
       "description": "Initiate an outbound phone call. Provide either a TwiML URL or inline TwiML instructions.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/Calls.json",
+      "path": "/Accounts/{{account_sid}}/Calls.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -267,7 +271,7 @@
       "name": "get_call",
       "description": "Retrieve details of a specific call by SID.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Calls/{CallSid}.json",
+      "path": "/Accounts/{{account_sid}}/Calls/{CallSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -285,7 +289,7 @@
       "name": "list_calls",
       "description": "List call logs with optional filters for status, date, and phone numbers.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Calls.json",
+      "path": "/Accounts/{{account_sid}}/Calls.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -327,7 +331,7 @@
       "name": "update_call",
       "description": "Modify an in-progress call — redirect to new TwiML, end the call, or pause/resume recording.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/Calls/{CallSid}.json",
+      "path": "/Accounts/{{account_sid}}/Calls/{CallSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -361,7 +365,7 @@
       "name": "list_phone_numbers",
       "description": "List all phone numbers in your Twilio account with their capabilities and configuration.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers.json",
+      "path": "/Accounts/{{account_sid}}/IncomingPhoneNumbers.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -385,7 +389,7 @@
       "name": "buy_phone_number",
       "description": "Purchase a phone number for your Twilio account.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers.json",
+      "path": "/Accounts/{{account_sid}}/IncomingPhoneNumbers.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -415,7 +419,7 @@
       "name": "update_phone_number",
       "description": "Update configuration for a phone number — webhooks, friendly name, voice/SMS settings.",
       "method": "POST",
-      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
+      "path": "/Accounts/{{account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -449,7 +453,7 @@
       "name": "release_phone_number",
       "description": "Release (delete) a phone number from your Twilio account.",
       "method": "DELETE",
-      "path": "/Accounts/{{credential.account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
+      "path": "/Accounts/{{account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -467,7 +471,7 @@
       "name": "search_available_numbers",
       "description": "Search for available phone numbers to purchase by country, area code, or capabilities.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/AvailablePhoneNumbers/{Country}/Local.json",
+      "path": "/Accounts/{{account_sid}}/AvailablePhoneNumbers/{Country}/Local.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -513,7 +517,7 @@
       "name": "search_toll_free_numbers",
       "description": "Search for available toll-free phone numbers to purchase.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/AvailablePhoneNumbers/{Country}/TollFree.json",
+      "path": "/Accounts/{{account_sid}}/AvailablePhoneNumbers/{Country}/TollFree.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -551,7 +555,7 @@
       "name": "list_recordings",
       "description": "List call recordings with optional filters.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Recordings.json",
+      "path": "/Accounts/{{account_sid}}/Recordings.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -575,7 +579,7 @@
       "name": "get_recording",
       "description": "Retrieve details of a specific recording.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Recordings/{RecordingSid}.json",
+      "path": "/Accounts/{{account_sid}}/Recordings/{RecordingSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -593,7 +597,7 @@
       "name": "delete_recording",
       "description": "Delete a call recording.",
       "method": "DELETE",
-      "path": "/Accounts/{{credential.account_sid}}/Recordings/{RecordingSid}.json",
+      "path": "/Accounts/{{account_sid}}/Recordings/{RecordingSid}.json",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -611,7 +615,7 @@
       "name": "get_account",
       "description": "Retrieve your Twilio account details including balance, status, and type.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}.json",
+      "path": "/Accounts/{{account_sid}}.json",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -621,7 +625,7 @@
       "name": "get_balance",
       "description": "Retrieve your Twilio account balance and currency.",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Balance.json",
+      "path": "/Accounts/{{account_sid}}/Balance.json",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -631,7 +635,7 @@
       "name": "get_usage",
       "description": "Retrieve usage records for your account — see costs per category (calls, SMS, numbers, etc.).",
       "method": "GET",
-      "path": "/Accounts/{{credential.account_sid}}/Usage/Records.json",
+      "path": "/Accounts/{{account_sid}}/Usage/Records.json",
       "input_schema": {
         "type": "object",
         "properties": {
