@@ -84,3 +84,4 @@ export function listApps(): Array<{
     toolCount: app.tools.length,
   }));
 }
+

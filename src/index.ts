@@ -1,6 +1,8 @@
 // ─── Types ───
 export type {
   AppTemplate,
+  AppKind,
+  RemoteMcpConfig,
   AppAuthConfig,
   AuthType,
   OAuthConfig,

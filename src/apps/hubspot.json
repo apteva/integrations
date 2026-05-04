@@ -1,24 +1,30 @@
 {
   "slug": "hubspot",
   "name": "HubSpot",
-  "description": "MCP server for HubSpot CRM operations - deals, contacts, companies, and pipelines",
+  "description": "HubSpot CRM via HubSpot's hosted MCP server. OAuth 2.1 + PKCE. Vendor-maintained tool catalog (deals, contacts, companies, notes, tasks, emails, etc.) — no local tool list to drift.",
   "logo": "https://www.google.com/s2/favicons?domain=hubspot.com&sz=128",
   "categories": [
     "crm",
     "hubspot",
     "deals",
     "contacts",
-    "sales"
+    "sales",
+    "mcp"
   ],
-  "base_url": "https://api.hubapi.com",
+  "kind": "remote_mcp",
+  "base_url": "https://mcp-eu1.hubspot.com",
+  "mcp": {
+    "transport": "http",
+    "url": "https://mcp-eu1.hubspot.com/",
+    "auth_header": {
+      "name": "Authorization",
+      "value": "Bearer {{token}}"
+    }
+  },
   "auth": {
     "types": [
-      "bearer",
       "oauth2"
     ],
-    "headers": {
-      "Authorization": "Bearer {{token}}"
-    },
     "credential_fields": [
       {
         "name": "token",
@@ -38,810 +44,316 @@
       }
     ],
     "oauth2": {
-      "authorize_url": "https://app.hubspot.com/oauth/authorize",
-      "token_url": "https://api.hubapi.com/oauth/v1/token",
-      "scopes": [
-        "contacts",
-        "content",
-        "reports",
-        "social",
-        "automation",
-        "timeline",
-        "forms",
-        "files",
-        "hubdb",
-        "integration-sync",
-        "tickets",
-        "e-commerce",
-        "accounting",
-        "sales-email-read",
-        "forms-uploaded-files",
-        "media_bridge.read",
-        "media_bridge.write",
-        "oauth",
-        "crm.objects.companies.read",
-        "crm.objects.companies.write",
-        "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
-        "crm.objects.deals.read",
-        "crm.objects.deals.write",
-        "crm.schemas.companies.read",
-        "crm.schemas.companies.write",
-        "crm.schemas.contacts.read",
-        "crm.schemas.contacts.write",
-        "crm.schemas.deals.read",
-        "crm.schemas.deals.write",
-        "crm.objects.notes.read",
-        "crm.objects.notes.write",
-        "crm.objects.tasks.read",
-        "crm.objects.tasks.write",
-        "crm.objects.emails.read"
-      ],
+      "authorize_url": "https://mcp-eu1.hubspot.com/oauth/authorize/user",
+      "token_url": "https://mcp-eu1.hubspot.com/oauth/v3/token",
+      "scopes": [],
       "client_id_required": true,
-      "pkce": false
+      "pkce": true
     }
   },
-  "tools": [
+  "ui_components": [
     {
-      "name": "list_deals",
-      "description": "List deals from HubSpot CRM",
-      "method": "GET",
-      "path": "/list-deals",
-      "input_schema": {
+      "name": "deal-card",
+      "entry": "/ui/DealCard.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
         "type": "object",
+        "required": ["deal_id"],
         "properties": {
-          "limit": {
-            "type": "number",
-            "description": "Maximum number of deals to return",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          },
-          "associations": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Associations to include"
-          }
+          "deal_id":         { "type": "string",  "description": "HubSpot deal object id" },
+          "dealname":        { "type": "string" },
+          "amount":          { "type": "string",  "description": "Raw HubSpot amount string; component formats USD" },
+          "dealstage":       { "type": "string",  "description": "Internal id, e.g. contractsent" },
+          "dealstage_label": { "type": "string",  "description": "Optional human label override" },
+          "pipeline":        { "type": "string" },
+          "closedate":       { "type": "string",  "description": "ISO date" },
+          "owner_email":     { "type": "string" },
+          "company_name":    { "type": "string" },
+          "company_domain":  { "type": "string" },
+          "portal_id":       { "type": "string",  "description": "HubSpot portal id for canonical URL" }
         }
-      }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "create_deal",
-      "description": "Create a new deal in HubSpot",
-      "method": "POST",
-      "path": "/create-deal",
-      "input_schema": {
+      "name": "company-card",
+      "entry": "/ui/CompanyCard.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
         "type": "object",
+        "required": ["company_id"],
         "properties": {
-          "dealname": {
-            "type": "string",
-            "description": "Name of the deal"
-          },
-          "amount": {
-            "type": "number",
-            "description": "Deal amount"
-          },
-          "dealstage": {
-            "type": "string",
-            "description": "Deal stage ID"
-          },
-          "pipeline": {
-            "type": "string",
-            "description": "Pipeline ID"
-          },
-          "closedate": {
-            "type": "string",
-            "description": "Expected close date"
-          },
-          "hubspot_owner_id": {
-            "type": "string",
-            "description": "Owner ID"
-          }
-        },
-        "required": [
-          "dealname"
-        ]
-      }
-    },
-    {
-      "name": "update_deal",
-      "description": "Update an existing deal",
-      "method": "PUT",
-      "path": "/update-deal",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "deal_id": {
-            "type": "string",
-            "description": "ID of the deal to update"
-          },
-          "dealname": {
-            "type": "string",
-            "description": "Name of the deal"
-          },
-          "amount": {
-            "type": "number",
-            "description": "Deal amount"
-          },
-          "dealstage": {
-            "type": "string",
-            "description": "Deal stage ID"
-          },
-          "closedate": {
-            "type": "string",
-            "description": "Expected close date"
-          }
-        },
-        "required": [
-          "deal_id"
-        ]
-      }
-    },
-    {
-      "name": "get_deal",
-      "description": "Get a specific deal from HubSpot",
-      "method": "GET",
-      "path": "/get-deal",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "dealId": {
-            "type": "string",
-            "description": "ID of the deal"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          },
-          "associations": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Associations to include"
-          }
-        },
-        "required": [
-          "dealId"
-        ]
-      }
-    },
-    {
-      "name": "list_contacts",
-      "description": "List contacts from HubSpot",
-      "method": "GET",
-      "path": "/list-contacts",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "number",
-            "description": "Maximum number of contacts to return",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          }
+          "company_id":        { "type": "string" },
+          "name":              { "type": "string" },
+          "domain":            { "type": "string" },
+          "industry":          { "type": "string",  "description": "HubSpot enum (SHOUTY_SNAKE_CASE)" },
+          "numberofemployees": { "type": "string" },
+          "city":              { "type": "string" },
+          "country":           { "type": "string" },
+          "lifecyclestage":    { "type": "string" },
+          "open_deal_total":   { "type": "string",  "description": "Pre-aggregated by the agent" },
+          "open_deal_count":   { "type": "integer" },
+          "description":       { "type": "string" },
+          "portal_id":         { "type": "string" }
         }
-      }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "get_contact",
-      "description": "Get a specific contact from HubSpot",
-      "method": "GET",
-      "path": "/get-contact",
-      "input_schema": {
+      "name": "contact-card",
+      "entry": "/ui/ContactCard.mjs",
+      "slots": ["chat.message_attachment"],
+      "props_schema": {
         "type": "object",
+        "required": ["contact_id"],
         "properties": {
-          "contactId": {
-            "type": "string",
-            "description": "ID of the contact"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          },
-          "associations": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Associations to include"
-          }
-        },
-        "required": [
-          "contactId"
-        ]
-      }
-    },
-    {
-      "name": "create_contact",
-      "description": "Create a new contact in HubSpot",
-      "method": "POST",
-      "path": "/create-contact",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "description": "Contact email"
-          },
-          "firstname": {
-            "type": "string",
-            "description": "First name"
-          },
-          "lastname": {
-            "type": "string",
-            "description": "Last name"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Phone number"
-          },
-          "company": {
-            "type": "string",
-            "description": "Company name"
-          },
-          "jobtitle": {
-            "type": "string",
-            "description": "Job title"
-          }
-        },
-        "required": [
-          "email"
-        ]
-      }
-    },
-    {
-      "name": "update_contact",
-      "description": "Update an existing contact in HubSpot",
-      "method": "PUT",
-      "path": "/update-contact",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "contactId": {
-            "type": "string",
-            "description": "ID of the contact to update"
-          },
-          "email": {
-            "type": "string",
-            "description": "Contact email"
-          },
-          "firstname": {
-            "type": "string",
-            "description": "First name"
-          },
-          "lastname": {
-            "type": "string",
-            "description": "Last name"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Phone number"
-          },
-          "company": {
-            "type": "string",
-            "description": "Company name"
-          },
-          "jobtitle": {
-            "type": "string",
-            "description": "Job title"
-          }
-        },
-        "required": [
-          "contactId"
-        ]
-      }
-    },
-    {
-      "name": "search_contacts",
-      "description": "Search for contacts in HubSpot",
-      "method": "GET",
-      "path": "/search-contacts",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query"
-          },
-          "filterGroups": {
-            "type": "array",
-            "description": "Filter groups for advanced search"
-          },
-          "sorts": {
-            "type": "array",
-            "description": "Sort options"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to return"
-          },
-          "limit": {
-            "type": "number",
-            "description": "Maximum results",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          }
+          "contact_id":           { "type": "string" },
+          "firstname":            { "type": "string" },
+          "lastname":             { "type": "string" },
+          "email":                { "type": "string" },
+          "phone":                { "type": "string" },
+          "jobtitle":             { "type": "string" },
+          "lifecyclestage":       { "type": "string" },
+          "company_name":         { "type": "string" },
+          "company_domain":       { "type": "string" },
+          "last_engagement_at":   { "type": "string", "description": "ISO timestamp" },
+          "last_engagement_kind": { "type": "string", "description": "email | call | meeting | note | task" },
+          "portal_id":            { "type": "string" }
         }
-      }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "list_companies",
-      "description": "List companies from HubSpot",
-      "method": "GET",
-      "path": "/list-companies",
-      "input_schema": {
+      "name": "ticket-card",
+      "entry": "/ui/TicketCard.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
         "type": "object",
+        "required": ["ticket_id"],
         "properties": {
-          "limit": {
-            "type": "number",
-            "description": "Maximum number of companies to return",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          }
+          "ticket_id":           { "type": "string" },
+          "subject":             { "type": "string" },
+          "content":             { "type": "string" },
+          "hs_ticket_priority":  { "type": "string", "description": "LOW | MEDIUM | HIGH | URGENT" },
+          "hs_pipeline_stage":   { "type": "string", "description": "Pipeline-stage id" },
+          "stage_label":         { "type": "string" },
+          "createdate":          { "type": "string", "description": "ISO timestamp" },
+          "hs_lastmodifieddate": { "type": "string" },
+          "company_name":        { "type": "string" },
+          "company_domain":      { "type": "string" },
+          "comment_count":       { "type": "integer" },
+          "portal_id":           { "type": "string" }
         }
-      }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "get_company",
-      "description": "Get a specific company from HubSpot",
-      "method": "GET",
-      "path": "/get-company",
-      "input_schema": {
+      "name": "pipeline-strip",
+      "entry": "/ui/PipelineStrip.mjs",
+      "slots": ["dashboard.tile"],
+      "props_schema": {
         "type": "object",
         "properties": {
-          "companyId": {
-            "type": "string",
-            "description": "ID of the company"
-          },
-          "properties": {
+          "pipeline_label": { "type": "string" },
+          "pipeline":       { "type": "string", "description": "Pipeline id (default: 'default')" },
+          "stages": {
             "type": "array",
+            "description": "Pre-aggregated count + total per stage",
             "items": {
-              "type": "string"
-            },
-            "description": "Properties to include"
-          },
-          "associations": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Associations to include"
-          }
-        },
-        "required": [
-          "companyId"
-        ]
-      }
-    },
-    {
-      "name": "create_company",
-      "description": "Create a new company in HubSpot",
-      "method": "POST",
-      "path": "/create-company",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Company name"
-          },
-          "domain": {
-            "type": "string",
-            "description": "Company domain"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Company phone"
-          },
-          "industry": {
-            "type": "string",
-            "description": "Industry"
-          },
-          "city": {
-            "type": "string",
-            "description": "City"
-          },
-          "country": {
-            "type": "string",
-            "description": "Country"
-          }
-        },
-        "required": [
-          "name"
-        ]
-      }
-    },
-    {
-      "name": "search_companies",
-      "description": "Search for companies in HubSpot",
-      "method": "GET",
-      "path": "/search-companies",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query"
-          },
-          "filterGroups": {
-            "type": "array",
-            "description": "Filter groups for advanced search"
-          },
-          "sorts": {
-            "type": "array",
-            "description": "Sort options"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to return"
-          },
-          "limit": {
-            "type": "number",
-            "description": "Maximum results",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          }
-        }
-      }
-    },
-    {
-      "name": "search_deals",
-      "description": "Search for deals in HubSpot",
-      "method": "GET",
-      "path": "/search-deals",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query"
-          },
-          "filterGroups": {
-            "type": "array",
-            "description": "Filter groups for advanced search"
-          },
-          "sorts": {
-            "type": "array",
-            "description": "Sort options"
-          },
-          "properties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Properties to return"
-          },
-          "limit": {
-            "type": "number",
-            "description": "Maximum results",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          }
-        }
-      }
-    },
-    {
-      "name": "list_pipelines",
-      "description": "List deal pipelines from HubSpot",
-      "method": "GET",
-      "path": "/list-pipelines",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    {
-      "name": "list_owners",
-      "description": "List owners from HubSpot",
-      "method": "GET",
-      "path": "/list-owners",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "description": "Filter by email"
-          },
-          "limit": {
-            "type": "number",
-            "description": "Maximum results",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          }
-        }
-      }
-    },
-    {
-      "name": "create_ticket",
-      "description": "Create a support ticket in HubSpot CRM",
-      "method": "POST",
-      "path": "/create-ticket",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "subject": {
-            "type": "string",
-            "description": "Ticket subject"
-          },
-          "description": {
-            "type": "string",
-            "description": "Ticket description"
-          },
-          "priority": {
-            "type": "string",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ],
-            "description": "Ticket priority"
-          },
-          "pipeline": {
-            "type": "string",
-            "description": "Pipeline ID"
-          },
-          "status": {
-            "type": "string",
-            "description": "Ticket status"
-          },
-          "contact_id": {
-            "type": "string",
-            "description": "Associated contact ID"
-          },
-          "company_id": {
-            "type": "string",
-            "description": "Associated company ID"
-          }
-        },
-        "required": [
-          "subject",
-          "description"
-        ]
-      }
-    },
-    {
-      "name": "create_workflow",
-      "description": "Create an automation workflow in HubSpot",
-      "method": "POST",
-      "path": "/create-workflow",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Workflow name"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CONTACT",
-              "COMPANY",
-              "DEAL",
-              "TICKET"
-            ],
-            "description": "Workflow object type"
-          },
-          "actions": {
-            "type": "array",
-            "description": "Workflow actions to perform",
-            "items": {
-              "type": "object"
+              "type": "object",
+              "required": ["id", "count"],
+              "properties": {
+                "id":    { "type": "string", "description": "Internal HubSpot stage id" },
+                "label": { "type": "string", "description": "Optional human label override" },
+                "count": { "type": "integer" },
+                "total": { "type": ["string", "number"], "description": "Sum of deal amounts in stage" }
+              }
             }
           },
-          "enrollment_criteria": {
-            "type": "object",
-            "description": "Criteria for enrollment in workflow"
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ]
-      }
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "create_note",
-      "description": "Create a CRM note and associate it with a contact, deal, company or ticket. Use this to log agent findings (detected conflict, churn signal, lost-lead pattern) onto the relevant record.",
-      "method": "POST",
-      "path": "/crm/v3/objects/notes",
-      "input_schema": {
+      "name": "email-card",
+      "entry": "/ui/EmailCard.mjs",
+      "slots": ["chat.message_attachment"],
+      "props_schema": {
+        "type": "object",
+        "required": ["email_id"],
+        "properties": {
+          "email_id":       { "type": "string", "description": "HubSpot engagement id" },
+          "direction":      { "type": "string", "description": "INCOMING_EMAIL | EMAIL | FORWARDED_EMAIL" },
+          "from_name":      { "type": "string" },
+          "from_email":     { "type": "string" },
+          "to_email":       { "type": "string" },
+          "subject":        { "type": "string" },
+          "body":           { "type": "string" },
+          "sent_at":        { "type": "string", "description": "ISO timestamp" },
+          "thread_length":  { "type": "integer" },
+          "company_name":   { "type": "string" },
+          "company_domain": { "type": "string" },
+          "contact_name":   { "type": "string" },
+          "portal_id":      { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
+    },
+    {
+      "name": "activity-feed",
+      "entry": "/ui/ActivityFeed.mjs",
+      "slots": ["dashboard.tile", "chat.message_attachment"],
+      "props_schema": {
         "type": "object",
         "properties": {
-          "properties": {
-            "type": "object",
-            "description": "Note properties — must include `hs_note_body` (string) and `hs_timestamp` (epoch ms or ISO date)."
-          },
-          "associations": {
+          "events": {
             "type": "array",
-            "description": "Associations to attach the note to other records, e.g. [{ to: { id: '<contactId>' }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] }]. Type ids: 202=note→contact, 214=note→company, 216=note→deal, 228=note→ticket."
-          }
-        },
-        "required": [
-          "properties"
-        ]
-      }
+            "description": "Pre-merged engagement events (emails, calls, notes, tasks, meetings, record_changes)",
+            "items": {
+              "type": "object",
+              "required": ["id", "kind", "timestamp", "title"],
+              "properties": {
+                "id":            { "type": "string" },
+                "kind":          { "type": "string", "description": "email | call | note | task | meeting | record_change" },
+                "timestamp":     { "type": "string", "description": "ISO timestamp" },
+                "title":         { "type": "string" },
+                "subtitle":      { "type": "string" },
+                "engagement_id": { "type": "string", "description": "HubSpot engagement id for click-through" }
+              }
+            }
+          },
+          "max":       { "type": "integer", "description": "Cap rendered events; default 12" },
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "create_task",
-      "description": "Create a CRM task (follow-up reminder for a rep) and associate it with a contact/deal/company.",
-      "method": "POST",
-      "path": "/crm/v3/objects/tasks",
-      "input_schema": {
+      "name": "deal-list",
+      "entry": "/ui/DealList.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
         "type": "object",
         "properties": {
-          "properties": {
-            "type": "object",
-            "description": "Task properties — common fields: hs_task_subject, hs_task_body, hs_task_status (NOT_STARTED|IN_PROGRESS|COMPLETED|WAITING|DEFERRED), hs_task_priority (LOW|MEDIUM|HIGH), hs_task_type (TODO|CALL|EMAIL), hs_timestamp (due date, epoch ms), hubspot_owner_id."
-          },
-          "associations": {
+          "items": {
             "type": "array",
-            "description": "Associations to records. Type ids: 204=task→contact, 192=task→company, 216=task→deal, 226=task→ticket."
-          }
-        },
-        "required": [
-          "properties"
-        ]
-      }
+            "items": {
+              "type": "object",
+              "required": ["deal_id"],
+              "properties": {
+                "deal_id":         { "type": "string" },
+                "dealname":        { "type": "string" },
+                "amount":          { "type": "string" },
+                "dealstage":       { "type": "string" },
+                "dealstage_label": { "type": "string" },
+                "closedate":       { "type": "string" },
+                "company_name":    { "type": "string" }
+              }
+            }
+          },
+          "title":     { "type": "string" },
+          "subtitle":  { "type": "string" },
+          "max_rows":  { "type": "integer" },
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "list_contact_emails",
-      "description": "List the email engagement IDs associated with a contact. Pair with get_email to read prior conversation history when assessing churn / dissatisfaction signals.",
-      "method": "GET",
-      "path": "/crm/v3/objects/contacts/{contactId}/associations/emails",
-      "input_schema": {
+      "name": "ticket-list",
+      "entry": "/ui/TicketList.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
         "type": "object",
         "properties": {
-          "contactId": {
-            "type": "string",
-            "description": "HubSpot contact id"
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["ticket_id"],
+              "properties": {
+                "ticket_id":          { "type": "string" },
+                "subject":            { "type": "string" },
+                "hs_ticket_priority": { "type": "string" },
+                "hs_pipeline_stage":  { "type": "string" },
+                "stage_label":        { "type": "string" },
+                "createdate":         { "type": "string" },
+                "company_name":       { "type": "string" }
+              }
+            }
           },
-          "limit": {
-            "type": "integer",
-            "default": 100
-          },
-          "after": {
-            "type": "string",
-            "description": "Pagination cursor"
-          }
-        },
-        "required": [
-          "contactId"
-        ]
-      }
+          "title":     { "type": "string" },
+          "subtitle":  { "type": "string" },
+          "max_rows":  { "type": "integer" },
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
     },
     {
-      "name": "get_email",
-      "description": "Fetch a single email engagement (subject, body, direction, timestamps, status).",
-      "method": "GET",
-      "path": "/crm/v3/objects/emails/{emailId}",
-      "query_params": [
-        "properties",
-        "associations"
-      ],
-      "input_schema": {
+      "name": "contact-list",
+      "entry": "/ui/ContactList.mjs",
+      "slots": ["chat.message_attachment"],
+      "props_schema": {
         "type": "object",
         "properties": {
-          "emailId": {
-            "type": "string"
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["contact_id"],
+              "properties": {
+                "contact_id":         { "type": "string" },
+                "firstname":          { "type": "string" },
+                "lastname":           { "type": "string" },
+                "email":              { "type": "string" },
+                "jobtitle":           { "type": "string" },
+                "company_name":       { "type": "string" },
+                "last_engagement_at": { "type": "string" }
+              }
+            }
           },
-          "properties": {
-            "type": "string",
-            "description": "Comma-separated property names, e.g. \"hs_email_subject,hs_email_text,hs_email_direction,hs_email_status,hs_timestamp\""
+          "title":     { "type": "string" },
+          "subtitle":  { "type": "string" },
+          "max_rows":  { "type": "integer" },
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
+    },
+    {
+      "name": "inbox-strip",
+      "entry": "/ui/InboxStrip.mjs",
+      "slots": ["chat.message_attachment", "dashboard.tile"],
+      "props_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["email_id"],
+              "properties": {
+                "email_id":      { "type": "string" },
+                "from_name":     { "type": "string" },
+                "from_email":    { "type": "string" },
+                "subject":       { "type": "string" },
+                "snippet":       { "type": "string" },
+                "sent_at":       { "type": "string" },
+                "unread":        { "type": "boolean" },
+                "thread_length": { "type": "integer" }
+              }
+            }
           },
-          "associations": {
-            "type": "string",
-            "description": "Comma-separated association types, e.g. \"contacts,deals\""
-          }
-        },
-        "required": [
-          "emailId"
-        ]
-      }
+          "title":     { "type": "string" },
+          "subtitle":  { "type": "string" },
+          "max_rows":  { "type": "integer" },
+          "portal_id": { "type": "string" }
+        }
+      },
+      "preview_props": { "preview": true }
     }
   ],
-  "webhooks": {
-    "signature_header": "x-hubspot-signature-v3",
-    "events": [
-      {
-        "name": "contact.creation",
-        "description": "New contact created"
-      },
-      {
-        "name": "contact.propertyChange",
-        "description": "Contact property changed"
-      },
-      {
-        "name": "contact.deletion",
-        "description": "Contact deleted"
-      },
-      {
-        "name": "company.creation",
-        "description": "New company created"
-      },
-      {
-        "name": "company.propertyChange",
-        "description": "Company property changed"
-      },
-      {
-        "name": "deal.creation",
-        "description": "New deal created"
-      },
-      {
-        "name": "deal.propertyChange",
-        "description": "Deal property changed (e.g., stage change)"
-      },
-      {
-        "name": "deal.deletion",
-        "description": "Deal deleted"
-      },
-      {
-        "name": "ticket.creation",
-        "description": "New ticket created"
-      },
-      {
-        "name": "ticket.propertyChange",
-        "description": "Ticket property changed"
-      },
-      {
-        "name": "ticket.deletion",
-        "description": "Ticket deleted"
-      }
-    ]
-  }
+  "tools": []
 }
