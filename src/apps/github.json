@@ -39,38 +39,11 @@
       "token_url": "https://github.com/login/oauth/access_token",
       "scopes": [
         "repo",
-        "repo:status",
-        "repo_deployment",
         "public_repo",
-        "repo:invite",
-        "security_events",
         "admin:repo_hook",
-        "write:repo_hook",
-        "read:repo_hook",
-        "admin:org",
-        "write:org",
-        "read:org",
-        "admin:public_key",
-        "write:public_key",
-        "read:public_key",
-        "admin:org_hook",
-        "gist",
-        "notifications",
-        "user",
+        "workflow",
         "read:user",
-        "user:email",
-        "user:follow",
-        "project",
-        "read:project",
-        "delete_repo",
-        "write:packages",
-        "read:packages",
-        "delete:packages",
-        "admin:gpg_key",
-        "write:gpg_key",
-        "read:gpg_key",
-        "codespace",
-        "workflow"
+        "user:email"
       ],
       "client_id_required": true,
       "pkce": false
@@ -306,14 +279,14 @@
           },
           "sort": {
             "type": "string",
-            "description": "Sort field (only 'indexed' supported)",
+            "description": "Sort field (only 'indexed' supported). Note: GitHub has flagged sort/order on code search as 'closing down' — prefer omitting both for forward compatibility.",
             "enum": [
               "indexed"
             ]
           },
           "order": {
             "type": "string",
-            "description": "Sort order",
+            "description": "Sort order. Note: closing down per GitHub — prefer omitting.",
             "enum": [
               "asc",
               "desc"
@@ -753,6 +726,16 @@
             "enum": [
               "open",
               "closed"
+            ]
+          },
+          "state_reason": {
+            "type": "string",
+            "description": "Reason for the state change. Only valid when transitioning state.",
+            "enum": [
+              "completed",
+              "not_planned",
+              "duplicate",
+              "reopened"
             ]
           },
           "labels": {
