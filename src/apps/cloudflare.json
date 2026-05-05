@@ -532,10 +532,14 @@
       "name": "list_tunnels",
       "description": "List Cloudflare Tunnels (cfd_tunnel) in an account. Use this to find an existing tunnel by name before creating a duplicate. Filter is_deleted=false to skip soft-deleted tunnels.",
       "method": "GET",
-      "path": "/accounts/{{account_id}}/cfd_tunnel",
+      "path": "/accounts/{account_id}/cfd_tunnel",
       "input_schema": {
         "type": "object",
         "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Cloudflare account ID. Use list_accounts to discover it from a token that doesn't have it bound as a credential."
+          },
           "name": {
             "type": "string",
             "description": "Filter by exact tunnel name."
@@ -551,17 +555,24 @@
           "per_page": {
             "type": "integer"
           }
-        }
+        },
+        "required": [
+          "account_id"
+        ]
       }
     },
     {
       "name": "create_tunnel",
       "description": "Create a Cloudflare Tunnel. Returns the tunnel id and a connector token (used by 'cloudflared tunnel run --token <token>'). Set config_src=cloudflare to manage ingress through the API (update_tunnel_configuration); use config_src=local if the connector reads ingress from a local config.yml instead.",
       "method": "POST",
-      "path": "/accounts/{{account_id}}/cfd_tunnel",
+      "path": "/accounts/{account_id}/cfd_tunnel",
       "input_schema": {
         "type": "object",
         "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Cloudflare account ID."
+          },
           "name": {
             "type": "string",
             "description": "Tunnel name. Must be unique within the account; surfaces in the dashboard and the runs log."
@@ -581,6 +592,7 @@
           }
         },
         "required": [
+          "account_id",
           "name"
         ]
       }
@@ -589,15 +601,19 @@
       "name": "get_tunnel_token",
       "description": "Fetch the connector token for an existing tunnel — needed when adopting a tunnel created earlier (the create_tunnel response only returns the token once). The token is what 'cloudflared tunnel run --token <token>' consumes.",
       "method": "GET",
-      "path": "/accounts/{{account_id}}/cfd_tunnel/{tunnel_id}/token",
+      "path": "/accounts/{account_id}/cfd_tunnel/{tunnel_id}/token",
       "input_schema": {
         "type": "object",
         "properties": {
+          "account_id": {
+            "type": "string"
+          },
           "tunnel_id": {
             "type": "string"
           }
         },
         "required": [
+          "account_id",
           "tunnel_id"
         ]
       }
@@ -606,10 +622,13 @@
       "name": "update_tunnel_configuration",
       "description": "Replace the tunnel's ingress configuration. Body must include a 'config' object with an 'ingress' array; the last entry must be a catch-all (e.g. {\"service\": \"http_status:404\"}). This is a full replace, not a merge — include every rule you want to keep.",
       "method": "PUT",
-      "path": "/accounts/{{account_id}}/cfd_tunnel/{tunnel_id}/configurations",
+      "path": "/accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations",
       "input_schema": {
         "type": "object",
         "properties": {
+          "account_id": {
+            "type": "string"
+          },
           "tunnel_id": {
             "type": "string"
           },
@@ -619,6 +638,7 @@
           }
         },
         "required": [
+          "account_id",
           "tunnel_id",
           "config"
         ]
@@ -628,10 +648,13 @@
       "name": "delete_tunnel",
       "description": "Delete a Cloudflare Tunnel. The tunnel must have no active connections; stop the connector first. Soft-deleted by default — pass cascade=true to also delete dependent connections.",
       "method": "DELETE",
-      "path": "/accounts/{{account_id}}/cfd_tunnel/{tunnel_id}",
+      "path": "/accounts/{account_id}/cfd_tunnel/{tunnel_id}",
       "input_schema": {
         "type": "object",
         "properties": {
+          "account_id": {
+            "type": "string"
+          },
           "tunnel_id": {
             "type": "string"
           },
@@ -642,6 +665,7 @@
           }
         },
         "required": [
+          "account_id",
           "tunnel_id"
         ]
       }
