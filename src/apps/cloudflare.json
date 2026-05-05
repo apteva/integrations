@@ -35,6 +35,27 @@
   },
   "tools": [
     {
+      "name": "list_accounts",
+      "description": "List Cloudflare accounts the API token can see. Useful for discovering the account_id to pass to Tunnel and Registrar tools when the token doesn't carry it as a credential.",
+      "method": "GET",
+      "path": "/accounts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filter by exact account name."
+          },
+          "page": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
       "name": "list_zones",
       "description": "List Cloudflare zones (sites) accessible to the API token. Use this to find the zone_id needed for DNS-record and cache operations.",
       "method": "GET",
