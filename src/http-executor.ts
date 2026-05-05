@@ -473,6 +473,7 @@ const BINARY_MIME_PREFIXES = [
   "application/pdf",
   "application/zip",
   "application/gzip",
+  "application/x-gzip",
   "application/x-tar",
   "application/vnd.openxmlformats",
   "application/vnd.ms-",

@@ -179,6 +179,35 @@
       }
     },
     {
+      "name": "get_archive",
+      "description": "Download a repository as a gzipped tarball at a given ref (branch, tag, or SHA). Returns binary bytes. GitHub redirects to codeload.github.com; for private repos the redirect Location carries a short-lived signed token so the request succeeds even when the Authorization header is stripped on cross-subdomain redirect. Used by the Code app's import flow.",
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}/tarball/{ref}",
+      "timeout_ms": 120000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "Repository owner (user or org)"
+          },
+          "repo": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "ref": {
+            "type": "string",
+            "description": "Branch name, tag, or commit SHA. Defaults to the repo's default branch when omitted."
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "ref"
+        ]
+      }
+    },
+    {
       "name": "list_user_repos",
       "description": "List public repositories for a specific user",
       "method": "GET",
