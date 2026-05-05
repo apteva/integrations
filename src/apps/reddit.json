@@ -69,6 +69,22 @@
       }
     },
     {
+      "name": "delete_post",
+      "description": "Delete a Reddit post by its fullname (e.g. t3_abc123). Only the post's author can delete it — other users get a 200 with no effect. Note: Reddit's /api/del also handles comments (kind t1_); this tool documents posts (t3_) but accepts any fullname.",
+      "method": "POST",
+      "path": "/api/del",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Reddit fullname of the post to delete (t3_xxxxx)"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
       "name": "comment",
       "description": "Post a comment/reply",
       "method": "POST",
