@@ -333,15 +333,19 @@
     },
     {
       "name": "facebook_delete_post",
-      "description": "Permanently delete a Facebook post from a page",
-      "method": "GET",
-      "path": "/facebook-delete-post",
+      "description": "Permanently delete a Facebook post from a page. Calls DELETE /{postId} on the Graph API; postId must be the full pageId_postId format that post_to_page / post_photo_to_page / post_video return as `id`. Page-level access_token is required (user-level tokens are rejected with error 210, same as the write endpoints).",
+      "method": "DELETE",
+      "path": "/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
           "postId": {
             "type": "string",
-            "description": "Facebook post ID (format: pageId_postId)"
+            "description": "Facebook post ID in pageId_postId format (the `id` value returned by the post_to_page family)."
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token). Required: Facebook rejects user-level tokens for delete on page posts."
           }
         },
         "required": [
