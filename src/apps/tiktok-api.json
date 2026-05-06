@@ -51,7 +51,8 @@
       ],
       "client_id_required": true,
       "pkce": false,
-      "client_id_param_name": "client_key"
+      "client_id_param_name": "client_key",
+      "scope_separator": ","
     }
   },
   "tools": [
