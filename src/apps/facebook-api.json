@@ -365,19 +365,19 @@
             "type": "string",
             "description": "Instagram Business Account ID (from the linked FB Page's instagram_business_account.id)"
           },
-          "imageUrl": {
+          "image_url": {
             "type": "string",
-            "description": "URL of image to post (for IMAGE/CAROUSEL)"
+            "description": "URL of image to post (for IMAGE/CAROUSEL). Snake_case is canonical per Graph API."
           },
-          "videoUrl": {
+          "video_url": {
             "type": "string",
-            "description": "URL of video to post (for REELS)"
+            "description": "URL of video to post (for REELS). Snake_case is canonical per Graph API."
           },
           "caption": {
             "type": "string",
             "description": "Caption text for the media"
           },
-          "mediaType": {
+          "media_type": {
             "type": "string",
             "description": "Type of media (VIDEO is deprecated, use REELS for videos)",
             "enum": ["IMAGE", "REELS", "STORIES"],
