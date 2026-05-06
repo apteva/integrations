@@ -397,6 +397,31 @@
       }
     },
     {
+      "name": "get_container_status",
+      "description": "Poll an Instagram media container's processing status before publishing. Returns {id, status_code, status}. status_code values: FINISHED (ready to publish), IN_PROGRESS (still processing — Reels especially take time), ERROR (transcode/validation failed), EXPIRED (container older than 24h, must recreate). Calls GET /{containerId}?fields=status_code,status on the Graph API.",
+      "method": "GET",
+      "path": "/{containerId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "containerId": {
+            "type": "string",
+            "description": "Container ID returned by create_media_container."
+          },
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated fields to retrieve.",
+            "default": "id,status_code,status"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (the same one used to create the container)."
+          }
+        },
+        "required": ["containerId"]
+      }
+    },
+    {
       "name": "publish_media_container",
       "description": "Instagram step 2 of 2: publish the container created in step 1. Returns the published media id.",
       "method": "POST",
