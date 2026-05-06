@@ -341,6 +341,14 @@ function buildUrl(
       resolved = resolved.replace(`{${key}}`, encodeURIComponent(String(value)));
     }
   }
+  // Absolute-path passthrough: tools whose endpoint lives on a different
+  // host than the integration's primary base_url (YouTube's resumable
+  // upload init, Pinecone per-index data plane, etc.) declare the full
+  // URL in `path`. Detected post-substitution so {{credential.host}}
+  // injection still works.
+  if (/^https?:\/\//.test(resolved)) {
+    return resolved;
+  }
   return `${resolvedBase.replace(/\/$/, "")}${resolved}`;
 }
 
