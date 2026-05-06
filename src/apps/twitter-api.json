@@ -1191,30 +1191,23 @@
     },
     {
       "name": "get_tweet_analytics",
-      "description": "Get engagement metrics for one or more tweets. Returns public_metrics (impressions, likes, retweets, replies, quotes, bookmarks) and optionally non_public_metrics and organic_metrics (requires tweet owner auth). Up to 100 tweet IDs per request.\n\nExample:\n{\n  \"tweetIds\": [\"1234567890\", \"0987654321\"],\n  \"include_non_public\": true\n}",
+      "description": "Get engagement metrics for a single tweet. Returns public_metrics (impression_count, like_count, retweet_count, reply_count, quote_count, bookmark_count) under data.public_metrics. Calls X API v2: GET /2/tweets/{id}?tweet.fields=public_metrics.",
       "method": "GET",
-      "path": "/get-tweet-analytics",
+      "path": "/2/tweets/{tweet_id}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "tweetIds": {
-            "type": "array",
-            "description": "Array of tweet IDs to get analytics for (max 100)",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100
-          },
-          "tweetId": {
+          "tweet_id": {
             "type": "string",
-            "description": "Single tweet ID (alternative to tweetIds array)"
+            "description": "The tweet ID to fetch metrics for"
           },
-          "include_non_public": {
-            "type": "boolean",
-            "description": "Include non_public_metrics and organic_metrics (requires tweet owner authentication)",
-            "default": false
+          "tweet.fields": {
+            "type": "string",
+            "description": "Comma-separated tweet field expansions; default 'public_metrics' covers the engagement counts. Pass 'public_metrics,non_public_metrics,organic_metrics' for owner-only metrics (requires tweet owner authentication).",
+            "default": "public_metrics"
           }
-        }
+        },
+        "required": ["tweet_id"]
       }
     },
     {

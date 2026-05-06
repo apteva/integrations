@@ -288,25 +288,27 @@
     },
     {
       "name": "facebook_get_post",
-      "description": "Get details of a specific Facebook post including message, creation time, and engagement metrics",
+      "description": "Get a Facebook post by id, including engagement counts when fields are requested. Calls GET /{postId}?fields=... on the Graph API; postId must be the full pageId_postId format. Page-level access_token is required (user-level tokens are rejected with error 210, same as the write endpoints). Common fields for metrics: 'likes.summary(true),comments.summary(true),shares,reactions.summary(true)' — counts come back under the .summary.total_count of each.",
       "method": "GET",
-      "path": "/facebook-get-post",
+      "path": "/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
           "postId": {
             "type": "string",
-            "description": "Facebook post ID (format: pageId_postId)"
+            "description": "Facebook post ID in pageId_postId format"
           },
           "fields": {
             "type": "string",
-            "description": "Comma-separated list of fields to include",
+            "description": "Comma-separated list of fields. For engagement counts use 'likes.summary(true),comments.summary(true),shares,reactions.summary(true)'.",
             "default": "id,message,created_time,updated_time"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token). Required for posts owned by Pages."
           }
         },
-        "required": [
-          "postId"
-        ]
+        "required": ["postId"]
       }
     },
     {
@@ -448,6 +450,31 @@
           }
         },
         "required": ["instagramAccountId", "containerId"]
+      }
+    },
+    {
+      "name": "get_media_insights",
+      "description": "Fetch Instagram Business media insights (per-post metrics). Calls GET /{mediaId}/insights?metric=...&access_token=PAGE_TOKEN on the Graph API. Returns {data: [{name, period, values: [{value: N}]}]} — one entry per requested metric. Common metrics for FEED posts: reach, likes, comments, saves, shares (where supported). Metric availability varies by media type — REELS exposes plays, IG VIDEO ones differ.",
+      "method": "GET",
+      "path": "/{mediaId}/insights",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "description": "IG media id — the platform_post_id returned by publish_media_container."
+          },
+          "metric": {
+            "type": "string",
+            "description": "Comma-separated metric names (no spaces). Default covers the engagement basics.",
+            "default": "reach,likes,comments,saves,shares"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (the same token that owns the IG Business account)."
+          }
+        },
+        "required": ["mediaId"]
       }
     }
   ]
