@@ -1,10 +1,11 @@
 {
   "slug": "facebook-api",
-  "name": "Facebook Pages",
-  "description": "MCP server for Facebook Graph API operations including page management, post publishing, and social media analytics",
+  "name": "Facebook & Instagram",
+  "description": "Meta Graph API operations for Facebook Pages and Instagram Business: page/post management, photo + video publishing, Instagram Reels containers, and social analytics. One OAuth grant covers both surfaces.",
   "logo": "https://www.google.com/s2/favicons?domain=www.facebook.com&sz=128",
   "categories": [
     "facebook",
+    "instagram",
     "meta",
     "social-media",
     "pages",
