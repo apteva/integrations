@@ -50,7 +50,8 @@
         "user.info.profile"
       ],
       "client_id_required": true,
-      "pkce": false
+      "pkce": false,
+      "client_id_param_name": "client_key"
     }
   },
   "tools": [
