@@ -352,6 +352,77 @@
           "postId"
         ]
       }
+    },
+    {
+      "name": "create_media_container",
+      "description": "Instagram step 1 of 2: create a media container with image/video URL and caption. Returns containerId for step 2 (publish_media_container). For videos, sync=true (default) waits for processing to complete. The IG Business account must be linked to a Facebook Page that this connection has access to (instagramAccountId comes from list_pages with fields=...,instagram_business_account{id}).",
+      "method": "POST",
+      "path": "/{instagramAccountId}/media",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "instagramAccountId": {
+            "type": "string",
+            "description": "Instagram Business Account ID (from the linked FB Page's instagram_business_account.id)"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "URL of image to post (for IMAGE/CAROUSEL)"
+          },
+          "videoUrl": {
+            "type": "string",
+            "description": "URL of video to post (for REELS)"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Caption text for the media"
+          },
+          "mediaType": {
+            "type": "string",
+            "description": "Type of media (VIDEO is deprecated, use REELS for videos)",
+            "enum": ["IMAGE", "REELS", "STORIES"],
+            "default": "IMAGE"
+          },
+          "sync": {
+            "type": "boolean",
+            "description": "For videos/reels: wait for processing before returning. Default true.",
+            "default": true
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token of the FB Page that owns this IG account). Required for IG Business writes."
+          }
+        },
+        "required": ["instagramAccountId"]
+      }
+    },
+    {
+      "name": "publish_media_container",
+      "description": "Instagram step 2 of 2: publish the container created in step 1. Returns the published media id.",
+      "method": "POST",
+      "path": "/{instagramAccountId}/media_publish",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "instagramAccountId": {
+            "type": "string",
+            "description": "Instagram Business Account ID"
+          },
+          "containerId": {
+            "type": "string",
+            "description": "The 'id' returned from create_media_container."
+          },
+          "creation_id": {
+            "type": "string",
+            "description": "Alias for containerId — Graph API expects this field name."
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages). Required for IG Business writes."
+          }
+        },
+        "required": ["instagramAccountId", "containerId"]
+      }
     }
   ]
 }
