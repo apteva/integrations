@@ -172,15 +172,19 @@
     },
     {
       "name": "get_page_posts",
-      "description": "List posts from a Facebook page. Get all posts with message content, images, links, and engagement metrics (reactions, comments, shares). Supports pagination and date filtering.",
+      "description": "List posts from a Facebook page. Calls GET /{pageId}/posts on the Graph API. Page-level access_token is required (user-level tokens are rejected for /posts on Pages). Returns posts with message content, images (full_picture URL), permalink_url, and engagement metrics (reactions/comments/shares.summary.total_count when included in fields).",
       "method": "GET",
-      "path": "/get-page-posts",
+      "path": "/{pageId}/posts",
       "input_schema": {
         "type": "object",
         "properties": {
           "pageId": {
             "type": "string",
             "description": "Facebook page ID"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token)."
           },
           "limit": {
             "type": "integer",
@@ -313,25 +317,26 @@
     },
     {
       "name": "facebook_update_post",
-      "description": "Update/edit the message content of a Facebook post",
-      "method": "GET",
-      "path": "/facebook-update-post",
+      "description": "Edit the message of a Facebook post. Calls POST /{postId} on the Graph API; postId is the full pageId_postId format. Page-level access_token required (user-level tokens are rejected with error 210, same as the write endpoints).",
+      "method": "POST",
+      "path": "/{postId}",
       "input_schema": {
         "type": "object",
         "properties": {
           "postId": {
             "type": "string",
-            "description": "Facebook post ID (format: pageId_postId)"
+            "description": "Facebook post ID in pageId_postId format"
           },
           "message": {
             "type": "string",
-            "description": "New message content for the post"
+            "description": "New message body for the post"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Page-level access token (from list_pages → data[].access_token)."
           }
         },
-        "required": [
-          "postId",
-          "message"
-        ]
+        "required": ["postId", "message"]
       }
     },
     {
