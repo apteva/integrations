@@ -1,0 +1,11 @@
+/* @apteva/integrations — theme passthrough.
+ *
+ * Re-exports ui-kit's theme (dark-mode variant + body styling +
+ * @source for ui-kit components) and adds a @source for the
+ * integration components themselves so a consumer that only imports
+ * @apteva/integrations gets every class those cards use.
+ */
+
+@import "../../ui-kit/src/theme.css";
+
+@source "./ui/**/*.{ts,tsx}";

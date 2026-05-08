@@ -39,7 +39,7 @@ export interface AppTemplate {
   // to a built React module under integrations/dist/ui/<slug>/<file>
   // and is advertised to the agent by the channels MCP. Components
   // appear in chat when the agent calls
-  // respond(components=[{app:"<slug>", name:"<component-name>", props:{…}}]).
+  // respond(components=[{ app: "<slug>", name: "<component-name>", props:{…}}]).
   ui_components?: UIComponent[];
 }
 

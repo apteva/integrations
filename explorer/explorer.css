@@ -1,0 +1,7 @@
+/* Component explorer CSS — Tailwind + integrations theme. */
+
+@import "tailwindcss";
+
+@import "../src/theme.css";
+
+@source "./**/*.{ts,tsx}";

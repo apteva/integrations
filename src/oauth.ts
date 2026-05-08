@@ -65,7 +65,7 @@ export function getAuthorizationUrl(opts: OAuthStartOptions): string {
   // Use the right separator if the authorize_url already has a query
   // string (rare but legal — some templates encode static prefilters
   // there).
-  const sep = oauth.authorize_url.includes("?") ? "&" : "?";
+  const sep = oauth.authorize_url.includes("? ") ? "&" : "? ";
   return `${oauth.authorize_url}${sep}${params.toString()}`;
 }
 

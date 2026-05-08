@@ -153,7 +153,7 @@ export async function executeTool(
   // for POST/PUT/PATCH it includes only auth + tool-declared query params
   // (the body bucket is sent as a JSON body separately above).
   const qs = buildQueryString(allQueryParams);
-  if (qs) finalUrl += (finalUrl.includes("?") ? "&" : "?") + qs;
+  if (qs) finalUrl += (finalUrl.includes("? ") ? "&" : "? ") + qs;
 
   // AWS SigV4 signing — must happen AFTER the body and final URL are
   // built (the signature covers both). Skipped silently if the auth

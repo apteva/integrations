@@ -31,7 +31,7 @@ export function xmlToJson(xml: string): unknown | null {
       // <?xml ... ?>
       while (i < len) {
         skipWhitespace();
-        if (xml.startsWith("<?", i)) {
+        if (xml.startsWith("<? ", i)) {
           const end = xml.indexOf("?>", i);
           if (end === -1) {
             i = len;
@@ -101,10 +101,10 @@ export function xmlToJson(xml: string): unknown | null {
         if (xml[i] === "/" || xml[i] === ">") break;
         // Read attribute name=value
         const aNameStart = i;
-        while (i < len && xml[i] !== "=" && !/\s/.test(xml[i]) && xml[i] !== ">" && xml[i] !== "/") i++;
+        while (i < len && xml[i] !== "= " && !/\s/.test(xml[i]) && xml[i] !== ">" && xml[i] !== "/") i++;
         const attrName = stripNs(xml.slice(aNameStart, i));
         skipWhitespace();
-        if (xml[i] !== "=") {
+        if (xml[i] !== "= ") {
           // Boolean attribute (rare in our targets) — treat as empty.
           attrs[attrName] = "";
           continue;

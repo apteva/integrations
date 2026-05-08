@@ -1,53 +1,52 @@
 {
   "slug": "alpaca-trading",
-  "name": "Alpaca",
-  "description": "MCP server for Alpaca \u2014 stock, options & crypto trading, real-time and historical market data, portfolio management, screener, news, and forex rates via the Alpaca REST API v2. Uses paper trading by default.",
+  "name": "Alpaca Trading",
+  "description": "Alpaca Trading API v2 — accounts, positions, orders, watchlists, and market clock for stocks, options, and crypto. Paired with alpaca-market-data for quotes/bars/snapshots. Defaults to paper trading; switch the 'host' credential to api.alpaca.markets for live.",
   "logo": "https://www.google.com/s2/favicons?domain=alpaca.markets&sz=128",
   "categories": [
     "trading",
     "stocks",
-    "crypto",
     "options",
-    "market-data",
+    "crypto",
     "portfolio",
     "orders",
-    "news",
-    "screener",
-    "forex",
-    "alpaca"
+    "alpaca",
+    "finance"
   ],
-  "base_url": "https://api.alpaca.markets/v2",
+  "base_url": "https://{{host}}/v2",
   "auth": {
     "types": [
       "api_key"
     ],
     "headers": {
-      "APCA-API-KEY-ID": "{{api_key}}"
+      "APCA-API-KEY-ID": "{{api_key}}",
+      "APCA-API-SECRET-KEY": "{{api_secret}}"
     },
     "credential_fields": [
       {
         "name": "api_key",
-        "label": "Api_key",
-        "description": "Your Alpaca API Key ID"
+        "label": "API Key ID",
+        "description": "Alpaca API Key ID (Sign in > Paper or Live > Generate Keys)."
       },
       {
         "name": "api_secret",
-        "label": "Api_secret",
-        "description": "Your Alpaca Secret Key"
+        "label": "API Secret Key",
+        "description": "Alpaca Secret Key shown once at key generation."
       },
       {
-        "name": "base_url",
-        "label": "Base_url",
-        "description": "Default: https://paper-api.alpaca.markets \u2014 set to https://api.alpaca.markets for live trading"
+        "name": "host",
+        "label": "Host",
+        "description": "Trading host. Use 'paper-api.alpaca.markets' for paper trading (default) or 'api.alpaca.markets' for live trading. Do NOT include https:// or trailing slash.",
+        "default": "paper-api.alpaca.markets"
       }
     ]
   },
   "tools": [
     {
       "name": "get_account",
-      "description": "Get account details: equity, buying_power, cash, portfolio_value, pattern_day_trader status, account_number, and trading restrictions. No parameters needed.",
+      "description": "Get account details: equity, buying_power, cash, portfolio_value, pattern_day_trader status, account_number, and trading restrictions.",
       "method": "GET",
-      "path": "/get-account",
+      "path": "/account",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -55,9 +54,9 @@
     },
     {
       "name": "get_account_config",
-      "description": "Get account configuration settings: DTBP check, trade confirm email, fractional trading, max margin multiplier, PDT check, and suspend trade flag.",
+      "description": "Get account configuration settings: DTBP check, fractional trading, max margin multiplier, PDT check, suspend-trade flag, trade-confirm email setting.",
       "method": "GET",
-      "path": "/get-account-config",
+      "path": "/account/configurations",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -65,15 +64,14 @@
     },
     {
       "name": "update_account_config",
-      "description": "Update account configuration. You can change trade confirmation emails, DTBP checking, fractional trading, margin multiplier, and PDT checks.",
+      "description": "Update account configuration. Supply only fields you want to change.",
       "method": "PATCH",
-      "path": "/update-account-config",
+      "path": "/account/configurations",
       "input_schema": {
         "type": "object",
         "properties": {
           "dtbp_check": {
             "type": "string",
-            "description": "Day trading buying power check: both, entry, exit",
             "enum": [
               "both",
               "entry",
@@ -82,128 +80,130 @@
           },
           "trade_confirm_email": {
             "type": "string",
-            "description": "Trade confirmation email setting: all, none",
             "enum": [
               "all",
               "none"
             ]
           },
+          "suspend_trade": {
+            "type": "boolean"
+          },
+          "no_shorting": {
+            "type": "boolean"
+          },
           "fractional_trading": {
-            "type": "boolean",
-            "description": "Enable or disable fractional trading"
+            "type": "boolean"
           },
           "max_margin_multiplier": {
             "type": "string",
-            "description": "Max margin multiplier (1 for no margin, 2 for 2x, 4 for 4x)"
+            "description": "'1', '2', or '4'."
           },
           "pdt_check": {
             "type": "string",
-            "description": "PDT check: entry, exit",
             "enum": [
+              "both",
               "entry",
               "exit"
             ]
           },
-          "suspend_trade": {
-            "type": "boolean",
-            "description": "Suspend trading (freeze account)"
+          "ptp_no_exception_entry": {
+            "type": "boolean"
           }
         }
       }
     },
     {
       "name": "get_portfolio_history",
-      "description": "Get historical portfolio equity, P&L, and base values over time. Returns arrays of {timestamp, equity, profit_loss, profit_loss_pct, base_value}. Great for charting account performance.",
+      "description": "Get the time-series equity and P&L history for the account.",
       "method": "GET",
-      "path": "/get-portfolio-history",
+      "path": "/account/portfolio/history",
       "input_schema": {
         "type": "object",
         "properties": {
           "period": {
             "type": "string",
-            "description": "Time period: 1D, 1W, 1M, 3M, 6M, 1A (1 year), all, or custom like 5D, 2W"
+            "description": "Duration (e.g. '1D', '7D', '1M', '3M', '1A', 'all')."
           },
           "timeframe": {
             "type": "string",
-            "description": "Resolution: 1Min, 5Min, 15Min, 1H, 1D"
+            "description": "Resolution: 1Min, 5Min, 15Min, 1H, 1D."
           },
           "intraday_reporting": {
             "type": "string",
-            "description": "Intraday reporting type: market_hours, extended_hours, continuous"
+            "enum": [
+              "market_hours",
+              "extended_hours",
+              "continuous"
+            ]
           },
           "start": {
             "type": "string",
-            "description": "Start date (RFC3339 or YYYY-MM-DD)"
+            "description": "RFC-3339 start timestamp."
           },
           "end": {
             "type": "string",
-            "description": "End date (RFC3339 or YYYY-MM-DD)"
+            "description": "RFC-3339 end timestamp."
           },
           "pnl_reset": {
             "type": "string",
-            "description": "P&L reset frequency: per_day, no_reset"
-          },
-          "extended_hours": {
-            "type": "boolean",
-            "description": "Include extended hours data"
+            "enum": [
+              "per_day",
+              "no_reset"
+            ]
           }
         }
       }
     },
     {
-      "name": "get_activities",
-      "description": "Retrieve account activities: fills, dividends, interest, deposits, withdrawals, fees, and more. Filter by activity type and date range.",
+      "name": "list_activities",
+      "description": "List account activities: fills, dividends, transfers, fees. Filter by activity_types or specific date.",
       "method": "GET",
-      "path": "/get-activities",
+      "path": "/account/activities",
       "input_schema": {
         "type": "object",
         "properties": {
-          "activity_type": {
+          "activity_types": {
             "type": "string",
-            "description": "Filter by type: FILL, TRANS, MISC, ACATC, ACATS, CSD, CSW, DIV, JNLC, JNLS, MA, NC, OPASN, OPEXP, OPXRC, PTC, PTR, REORG, SC, SSO, SSP, CFEE, FEE, INT"
+            "description": "Comma-separated activity types (e.g. 'FILL,DIV,TRANS')."
           },
           "date": {
             "type": "string",
-            "description": "Exact date (YYYY-MM-DD)"
-          },
-          "after": {
-            "type": "string",
-            "description": "Return activities after this date (RFC3339)"
+            "description": "Single-day filter (YYYY-MM-DD)."
           },
           "until": {
             "type": "string",
-            "description": "Return activities until this date (RFC3339)"
+            "description": "Activities before this date/time."
+          },
+          "after": {
+            "type": "string",
+            "description": "Activities after this date/time."
           },
           "direction": {
             "type": "string",
-            "description": "Sort direction: asc, desc",
             "enum": [
               "asc",
               "desc"
             ]
           },
           "page_size": {
-            "type": "integer",
-            "description": "Number of results per page (max 100)"
+            "type": "integer"
           },
           "page_token": {
-            "type": "string",
-            "description": "Pagination token from previous response"
+            "type": "string"
           }
         }
       }
     },
     {
       "name": "list_orders",
-      "description": "Get all orders or filter by status, symbols, date range. Returns order ID, symbol, side, type, qty, filled_qty, filled_avg_price, status, timestamps. All filter values MUST be lowercase.",
+      "description": "List orders. Default returns open orders; pass status='all' or 'closed' for history.",
       "method": "GET",
-      "path": "/list-orders",
+      "path": "/orders",
       "input_schema": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "description": "MUST be lowercase: 'open' (pending/new), 'closed' (filled/cancelled/expired), 'all'",
             "enum": [
               "open",
               "closed",
@@ -212,19 +212,16 @@
           },
           "limit": {
             "type": "integer",
-            "description": "Max results to return (default 50, max 500)"
+            "description": "Max 500."
           },
           "after": {
-            "type": "string",
-            "description": "Only orders created after this timestamp (RFC3339, e.g. '2024-01-15T00:00:00Z')"
+            "type": "string"
           },
           "until": {
-            "type": "string",
-            "description": "Only orders created before this timestamp (RFC3339)"
+            "type": "string"
           },
           "direction": {
             "type": "string",
-            "description": "MUST be lowercase: 'asc' (oldest first) or 'desc' (newest first)",
             "enum": [
               "asc",
               "desc"
@@ -232,15 +229,14 @@
           },
           "nested": {
             "type": "boolean",
-            "description": "If true, include child orders for bracket/OCO/OTO orders"
+            "description": "Include nested multi-leg orders."
           },
           "symbols": {
             "type": "string",
-            "description": "Comma-separated symbols to filter (e.g. 'AAPL,TSLA,JNJ')"
+            "description": "Comma-separated symbols filter."
           },
           "side": {
             "type": "string",
-            "description": "MUST be lowercase: 'buy' or 'sell'",
             "enum": [
               "buy",
               "sell"
@@ -251,27 +247,26 @@
     },
     {
       "name": "create_order",
-      "description": "Place a new order. IMPORTANT: All enum values MUST be lowercase. Example: symbol='AAPL', side='buy', type='market', time_in_force='day'. To buy $20k worth of a stock use notional='20000' instead of qty. Returns order ID, status, filled_qty, filled_avg_price.",
+      "description": "Submit a new order. Required: symbol, side, type, time_in_force, plus qty OR notional. For limit/stop orders include the relevant prices. For options pass the OCC option symbol; for crypto pass the crypto pair (e.g. 'BTC/USD').",
       "method": "POST",
-      "path": "/create-order",
+      "path": "/orders",
       "input_schema": {
         "type": "object",
         "properties": {
           "symbol": {
             "type": "string",
-            "description": "Ticker symbol in UPPERCASE (e.g. AAPL, TSLA, JNJ, BTC/USD)"
+            "description": "Stock ticker, OCC option symbol, or crypto pair."
           },
           "qty": {
             "type": "string",
-            "description": "Number of shares as a string (e.g. '10', '0.5'). Use qty OR notional, not both."
+            "description": "Number of shares/contracts (string for fractional precision). Use this OR notional."
           },
           "notional": {
             "type": "string",
-            "description": "Dollar amount as a string (e.g. '20000' for $20k). Use for buying a dollar amount of shares. Use qty OR notional, not both."
+            "description": "Dollar amount instead of qty (fractional shares only). Use this OR qty."
           },
           "side": {
             "type": "string",
-            "description": "MUST be lowercase: 'buy' or 'sell'",
             "enum": [
               "buy",
               "sell"
@@ -279,7 +274,6 @@
           },
           "type": {
             "type": "string",
-            "description": "MUST be lowercase: 'market', 'limit', 'stop', 'stop_limit', or 'trailing_stop'",
             "enum": [
               "market",
               "limit",
@@ -290,7 +284,6 @@
           },
           "time_in_force": {
             "type": "string",
-            "description": "MUST be lowercase: 'day' (cancel at close), 'gtc' (good till cancelled), 'opg' (market open), 'cls' (market close), 'ioc' (immediate or cancel), 'fok' (fill or kill). Use 'day' for most orders.",
             "enum": [
               "day",
               "gtc",
@@ -301,32 +294,26 @@
             ]
           },
           "limit_price": {
-            "type": "string",
-            "description": "Required for type='limit' and 'stop_limit'. Price as string (e.g. '150.50')"
+            "type": "string"
           },
           "stop_price": {
-            "type": "string",
-            "description": "Required for type='stop' and 'stop_limit'. Trigger price as string (e.g. '145.00')"
+            "type": "string"
           },
           "trail_price": {
-            "type": "string",
-            "description": "Trail amount in dollars for type='trailing_stop' (e.g. '5.00' means $5 trail)"
+            "type": "string"
           },
           "trail_percent": {
-            "type": "string",
-            "description": "Trail percentage for type='trailing_stop' (e.g. '2.5' means 2.5% trail)"
+            "type": "string"
           },
           "extended_hours": {
-            "type": "boolean",
-            "description": "Allow extended hours execution (only for type='limit' with time_in_force='day')"
+            "type": "boolean"
           },
           "client_order_id": {
             "type": "string",
-            "description": "Optional unique ID for your own tracking (max 48 chars)"
+            "description": "Idempotent client-supplied ID (max 128 chars)."
           },
           "order_class": {
             "type": "string",
-            "description": "MUST be lowercase: 'simple' (default), 'bracket' (entry + take_profit + stop_loss), 'oco' (one-cancels-other), 'oto' (one-triggers-other)",
             "enum": [
               "simple",
               "bracket",
@@ -336,11 +323,21 @@
           },
           "take_profit": {
             "type": "object",
-            "description": "For bracket orders: { \"limit_price\": \"155.00\" }"
+            "description": "{ limit_price } for bracket / oto orders."
           },
           "stop_loss": {
             "type": "object",
-            "description": "For bracket orders: { \"stop_price\": \"140.00\", \"limit_price\": \"139.50\" }"
+            "description": "{ stop_price, limit_price? } for bracket / oco orders."
+          },
+          "position_intent": {
+            "type": "string",
+            "enum": [
+              "buy_to_open",
+              "buy_to_close",
+              "sell_to_open",
+              "sell_to_close"
+            ],
+            "description": "Required for options."
           }
         },
         "required": [
@@ -353,19 +350,19 @@
     },
     {
       "name": "get_order",
-      "description": "Get details of a specific order by its order ID, including status, fill info, and timestamps.",
+      "description": "Get a single order by ID or client_order_id.",
       "method": "GET",
-      "path": "/get-order",
+      "path": "/orders/{order_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "order_id": {
             "type": "string",
-            "description": "Order ID (UUID)"
+            "description": "Alpaca order ID."
           },
           "nested": {
             "type": "boolean",
-            "description": "Include nested multi-leg order details"
+            "description": "Include nested legs."
           }
         },
         "required": [
@@ -375,47 +372,32 @@
     },
     {
       "name": "replace_order",
-      "description": "Modify an existing open order by ID. Only open/pending orders can be replaced. Returns the new replacement order. All enum values MUST be lowercase.",
+      "description": "Replace an existing open order with new parameters (qty, time_in_force, limit_price, stop_price, trail, client_order_id). Server cancels the old order and submits a new one with the same order ID.",
       "method": "PATCH",
-      "path": "/replace-order",
+      "path": "/orders/{order_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "order_id": {
-            "type": "string",
-            "description": "UUID of the order to replace (from create-order response or list-orders)"
+            "type": "string"
           },
           "qty": {
-            "type": "string",
-            "description": "New quantity as string (e.g. '15')"
+            "type": "string"
           },
           "time_in_force": {
-            "type": "string",
-            "description": "MUST be lowercase: 'day', 'gtc', 'opg', 'cls', 'ioc', 'fok'",
-            "enum": [
-              "day",
-              "gtc",
-              "opg",
-              "cls",
-              "ioc",
-              "fok"
-            ]
+            "type": "string"
           },
           "limit_price": {
-            "type": "string",
-            "description": "New limit price as string (e.g. '152.50')"
+            "type": "string"
           },
           "stop_price": {
-            "type": "string",
-            "description": "New stop trigger price as string (e.g. '148.00')"
+            "type": "string"
           },
           "trail": {
-            "type": "string",
-            "description": "New trail amount in dollars or percent as string"
+            "type": "string"
           },
           "client_order_id": {
-            "type": "string",
-            "description": "New client-assigned tracking ID (max 48 chars)"
+            "type": "string"
           }
         },
         "required": [
@@ -425,15 +407,14 @@
     },
     {
       "name": "cancel_order",
-      "description": "Cancel a specific open order by its order ID.",
+      "description": "Cancel a single open order.",
       "method": "DELETE",
-      "path": "/cancel-order",
+      "path": "/orders/{order_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "order_id": {
-            "type": "string",
-            "description": "Order ID to cancel (UUID)"
+            "type": "string"
           }
         },
         "required": [
@@ -443,9 +424,9 @@
     },
     {
       "name": "cancel_all_orders",
-      "description": "Cancel all open orders. Returns a list of orders that were cancelled. Use with caution.",
+      "description": "Cancel every open order. Returns 207 with per-order outcomes.",
       "method": "DELETE",
-      "path": "/cancel-all-orders",
+      "path": "/orders",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -453,9 +434,9 @@
     },
     {
       "name": "list_positions",
-      "description": "Get all open positions. Returns array of {symbol, qty, avg_entry_price, current_price, market_value, cost_basis, unrealized_pl, unrealized_plpc, side}. No parameters needed.",
+      "description": "List all open positions: symbol, qty, avg_entry_price, market_value, unrealized P&L, side.",
       "method": "GET",
-      "path": "/list-positions",
+      "path": "/positions",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -463,74 +444,72 @@
     },
     {
       "name": "get_position",
-      "description": "Get details of a specific open position by symbol or asset ID, including quantity, market value, cost basis, and unrealized P&L.",
+      "description": "Get the open position for a single symbol.",
       "method": "GET",
-      "path": "/get-position",
+      "path": "/positions/{symbol}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "symbol_or_asset_id": {
+          "symbol": {
             "type": "string",
-            "description": "Symbol (e.g., AAPL) or asset UUID"
+            "description": "Stock ticker, OCC option symbol, or crypto pair (URL-encode '/' for crypto)."
           }
         },
         "required": [
-          "symbol_or_asset_id"
+          "symbol"
         ]
       }
     },
     {
       "name": "close_position",
-      "description": "Close (sell) an open position by symbol. Full close by default. Use qty or percentage for partial close. Returns the closing order details.",
+      "description": "Liquidate (or partially liquidate) a single position by submitting a market order. Specify qty OR percentage to partially close.",
       "method": "DELETE",
-      "path": "/close-position",
+      "path": "/positions/{symbol}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "symbol_or_asset_id": {
-            "type": "string",
-            "description": "Symbol in UPPERCASE (e.g. 'AAPL', 'BTC/USD') or asset UUID"
+          "symbol": {
+            "type": "string"
           },
           "qty": {
             "type": "string",
-            "description": "Number of shares to close as string for partial close (e.g. '5'). Omit to close entire position."
+            "description": "Specific quantity to close. Use this OR percentage."
           },
           "percentage": {
             "type": "string",
-            "description": "Percentage of position to close as string (e.g. '50' for 50%). Omit to close entire position."
+            "description": "0–100% of the position to close."
           }
         },
         "required": [
-          "symbol_or_asset_id"
+          "symbol"
         ]
       }
     },
     {
       "name": "close_all_positions",
-      "description": "Liquidate all open positions at market price. Optionally cancel all open orders first. Use with extreme caution.",
+      "description": "Liquidate every open position. Optionally cancel open orders first.",
       "method": "DELETE",
-      "path": "/close-all-positions",
+      "path": "/positions",
       "input_schema": {
         "type": "object",
         "properties": {
           "cancel_orders": {
             "type": "boolean",
-            "description": "Also cancel all open orders before liquidating (recommended: true)"
+            "description": "Cancel all open orders before liquidating."
           }
         }
       }
     },
     {
       "name": "list_assets",
-      "description": "Get a list of tradeable assets. Filter by status, asset class, or exchange. Returns symbol, name, tradability, marginability, shortability, and more.",
+      "description": "List tradeable assets. Filter by status, asset class, exchange, or attributes.",
       "method": "GET",
-      "path": "/list-assets",
+      "path": "/assets",
       "input_schema": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "description": "Filter by status: active, inactive",
             "enum": [
               "active",
               "inactive"
@@ -538,30 +517,33 @@
           },
           "asset_class": {
             "type": "string",
-            "description": "Filter by class: us_equity, us_option, crypto"
+            "enum": [
+              "us_equity",
+              "us_option",
+              "crypto"
+            ]
           },
           "exchange": {
-            "type": "string",
-            "description": "Filter by exchange: AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA, OTC, CRYPTO"
+            "type": "string"
           },
           "attributes": {
             "type": "string",
-            "description": "Comma-separated attributes filter (e.g., options_enabled)"
+            "description": "Comma-separated attribute filters (e.g. 'fractional_eb,ptp_no_exception')."
           }
         }
       }
     },
     {
       "name": "get_asset",
-      "description": "Get details of a specific asset by symbol or ID. Returns tradability, marginability, shortability, fractionability, and exchange info.",
+      "description": "Get a single asset by symbol or asset_id, including tradeable / marginable / shortable / fractionable flags.",
       "method": "GET",
-      "path": "/get-asset",
+      "path": "/assets/{symbol_or_asset_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "symbol_or_asset_id": {
             "type": "string",
-            "description": "Symbol (e.g., AAPL, BTC/USD) or asset UUID"
+            "description": "Symbol (e.g. 'AAPL') or asset UUID."
           }
         },
         "required": [
@@ -570,20 +552,19 @@
       }
     },
     {
-      "name": "get_option_contracts",
-      "description": "Get available option contracts. Filter by underlying symbol, expiration date, strike price, and option type.",
+      "name": "list_option_contracts",
+      "description": "List option contracts for an underlying symbol. Filter by expiration, strike range, contract type (call/put), and root symbol.",
       "method": "GET",
-      "path": "/get-option-contracts",
+      "path": "/options/contracts",
       "input_schema": {
         "type": "object",
         "properties": {
           "underlying_symbols": {
             "type": "string",
-            "description": "Comma-separated underlying symbols (e.g., AAPL,TSLA)"
+            "description": "Comma-separated underlying tickers (e.g. 'AAPL,MSFT')."
           },
           "status": {
             "type": "string",
-            "description": "Contract status: active, inactive",
             "enum": [
               "active",
               "inactive"
@@ -591,27 +572,19 @@
           },
           "expiration_date": {
             "type": "string",
-            "description": "Exact expiration date (YYYY-MM-DD)"
+            "description": "Exact expiration (YYYY-MM-DD)."
           },
           "expiration_date_gte": {
-            "type": "string",
-            "description": "Expiration on or after date (YYYY-MM-DD)"
+            "type": "string"
           },
           "expiration_date_lte": {
-            "type": "string",
-            "description": "Expiration on or before date (YYYY-MM-DD)"
+            "type": "string"
           },
-          "strike_price_gte": {
-            "type": "string",
-            "description": "Minimum strike price"
-          },
-          "strike_price_lte": {
-            "type": "string",
-            "description": "Maximum strike price"
+          "root_symbol": {
+            "type": "string"
           },
           "type": {
             "type": "string",
-            "description": "Option type: call, put",
             "enum": [
               "call",
               "put"
@@ -619,28 +592,31 @@
           },
           "style": {
             "type": "string",
-            "description": "Option style: american, european",
             "enum": [
               "american",
               "european"
             ]
           },
-          "limit": {
-            "type": "integer",
-            "description": "Max results per page"
+          "strike_price_gte": {
+            "type": "string"
+          },
+          "strike_price_lte": {
+            "type": "string"
           },
           "page_token": {
-            "type": "string",
-            "description": "Pagination token"
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
           }
         }
       }
     },
     {
       "name": "list_watchlists",
-      "description": "Get all watchlists for the account.",
+      "description": "List all watchlists for the account.",
       "method": "GET",
-      "path": "/list-watchlists",
+      "path": "/watchlists",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -648,22 +624,21 @@
     },
     {
       "name": "create_watchlist",
-      "description": "Create a new watchlist with a name and optional list of symbols.",
+      "description": "Create a new watchlist with an optional initial symbol set.",
       "method": "POST",
-      "path": "/create-watchlist",
+      "path": "/watchlists",
       "input_schema": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "description": "Watchlist name"
+            "description": "Watchlist name (max 64 chars)."
           },
           "symbols": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "Array of symbols to add (e.g., [\"AAPL\", \"TSLA\"])"
+            }
           }
         },
         "required": [
@@ -672,27 +647,41 @@
       }
     },
     {
-      "name": "update_watchlist",
-      "description": "Update a watchlist's name and/or symbols by watchlist ID.",
-      "method": "PUT",
-      "path": "/update-watchlist",
+      "name": "get_watchlist",
+      "description": "Get a watchlist by ID with its current asset list.",
+      "method": "GET",
+      "path": "/watchlists/{watchlist_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "watchlist_id": {
-            "type": "string",
-            "description": "Watchlist UUID"
+            "type": "string"
+          }
+        },
+        "required": [
+          "watchlist_id"
+        ]
+      }
+    },
+    {
+      "name": "update_watchlist",
+      "description": "Replace a watchlist's name and/or symbol set.",
+      "method": "PUT",
+      "path": "/watchlists/{watchlist_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "watchlist_id": {
+            "type": "string"
           },
           "name": {
-            "type": "string",
-            "description": "New watchlist name"
+            "type": "string"
           },
           "symbols": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "New list of symbols (replaces existing)"
+            }
           }
         },
         "required": [
@@ -702,15 +691,14 @@
     },
     {
       "name": "delete_watchlist",
-      "description": "Delete a watchlist by its ID.",
+      "description": "Delete a watchlist permanently.",
       "method": "DELETE",
-      "path": "/delete-watchlist",
+      "path": "/watchlists/{watchlist_id}",
       "input_schema": {
         "type": "object",
         "properties": {
           "watchlist_id": {
-            "type": "string",
-            "description": "Watchlist UUID to delete"
+            "type": "string"
           }
         },
         "required": [
@@ -720,9 +708,9 @@
     },
     {
       "name": "get_clock",
-      "description": "Get market clock: {is_open, timestamp, next_open, next_close}. Check if US stock market is currently open. No parameters needed.",
+      "description": "Get the market clock: current time, is_open, next_open, next_close.",
       "method": "GET",
-      "path": "/get-clock",
+      "path": "/clock",
       "input_schema": {
         "type": "object",
         "properties": {}
@@ -730,59 +718,61 @@
     },
     {
       "name": "get_calendar",
-      "description": "Get the market calendar showing trading days and their open/close times. Useful for determining trading days and early closes.",
+      "description": "Get the trading calendar: market days with open/close times. Default returns the full calendar.",
       "method": "GET",
-      "path": "/get-calendar",
+      "path": "/calendar",
       "input_schema": {
         "type": "object",
         "properties": {
           "start": {
             "type": "string",
-            "description": "Start date (YYYY-MM-DD)"
+            "description": "Start date (YYYY-MM-DD)."
           },
           "end": {
+            "type": "string"
+          },
+          "date_type": {
             "type": "string",
-            "description": "End date (YYYY-MM-DD)"
+            "enum": [
+              "TRADING",
+              "SETTLEMENT"
+            ]
           }
         }
       }
     },
     {
-      "name": "get_announcements",
-      "description": "Get corporate action announcements: dividends, mergers, spinoffs, stock splits, and more. Filter by type, date, and symbol.",
+      "name": "list_announcements",
+      "description": "List corporate-action announcements (dividends, splits, mergers, spinoffs) within a date range.",
       "method": "GET",
-      "path": "/get-announcements",
+      "path": "/corporate_actions/announcements",
       "input_schema": {
         "type": "object",
         "properties": {
           "ca_types": {
             "type": "string",
-            "description": "Comma-separated types: dividend, merger, spinoff, split"
+            "description": "Comma-separated: dividend, merger, spinoff, split."
           },
           "since": {
             "type": "string",
-            "description": "Start date (YYYY-MM-DD)"
+            "description": "YYYY-MM-DD."
           },
           "until": {
-            "type": "string",
-            "description": "End date (YYYY-MM-DD)"
+            "type": "string"
           },
           "symbol": {
-            "type": "string",
-            "description": "Filter by symbol"
+            "type": "string"
           },
           "cusip": {
-            "type": "string",
-            "description": "Filter by CUSIP"
+            "type": "string"
           },
           "date_type": {
             "type": "string",
-            "description": "Date field to filter on: declaration, ex, record, payable",
             "enum": [
-              "declaration",
-              "ex",
-              "record",
-              "payable"
+              "declaration_date",
+              "ex_date",
+              "record_date",
+              "payable_date"
             ]
           }
         },
@@ -790,774 +780,6 @@
           "ca_types",
           "since",
           "until"
-        ]
-      }
-    },
-    {
-      "name": "stock_bars",
-      "description": "Get historical OHLCV (open/high/low/close/volume) bars for stocks. Returns arrays of {t, o, h, l, c, v, n, vw} per symbol. Example: symbols='AAPL', timeframe='1Day', start='2024-01-01'.",
-      "method": "GET",
-      "path": "/stock-bars",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols (e.g., AAPL,TSLA,MSFT)"
-          },
-          "timeframe": {
-            "type": "string",
-            "description": "Bar timeframe: 1Min, 5Min, 15Min, 30Min, 1Hour, 4Hour, 1Day, 1Week, 1Month"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max bars per symbol (default 1000, max 10000)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "adjustment": {
-            "type": "string",
-            "description": "Price adjustment: raw, split, dividend, all",
-            "enum": [
-              "raw",
-              "split",
-              "dividend",
-              "all"
-            ]
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex (free), sip (premium)",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices (default: USD)"
-          }
-        },
-        "required": [
-          "symbols",
-          "timeframe"
-        ]
-      }
-    },
-    {
-      "name": "stock_trades",
-      "description": "Get historical trade (tick) data for one or more stock symbols. Returns price, size, exchange, and conditions for each trade.",
-      "method": "GET",
-      "path": "/stock-trades",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols (e.g., AAPL,TSLA)"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max trades per symbol (default 1000, max 10000)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices (default: USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "stock_quotes",
-      "description": "Get historical quote (NBBO) data for one or more stock symbols. Returns bid/ask price and size.",
-      "method": "GET",
-      "path": "/stock-quotes",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max quotes per symbol (default 1000, max 10000)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "stock_snapshots",
-      "description": "Get real-time snapshots for stocks in one call. Returns {latestTrade, latestQuote, minuteBar, dailyBar, prevDailyBar} per symbol. Best way to get current price + daily change. Example: symbols='AAPL,TSLA'.",
-      "method": "GET",
-      "path": "/stock-snapshots",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols (e.g., AAPL,TSLA,MSFT)"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "stock_latest_trades",
-      "description": "Get the most recent trade for stocks. Returns {price, size, timestamp, exchange} per symbol. Fastest way to get current stock prices. Example: symbols='AAPL,TSLA,JNJ'.",
-      "method": "GET",
-      "path": "/stock-latest-trades",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "stock_latest_quotes",
-      "description": "Get the latest NBBO quote for one or more stock symbols. Returns bid/ask price and size.",
-      "method": "GET",
-      "path": "/stock-latest-quotes",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "stock_latest_bars",
-      "description": "Get the latest minute bar for one or more stock symbols.",
-      "method": "GET",
-      "path": "/stock-latest-bars",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: iex, sip",
-            "enum": [
-              "iex",
-              "sip"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "description": "Currency for prices"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_bars",
-      "description": "Get historical OHLCV bar data for one or more crypto symbols (e.g., BTC/USD, ETH/USD).",
-      "method": "GET",
-      "path": "/crypto-bars",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          },
-          "timeframe": {
-            "type": "string",
-            "description": "Bar timeframe: 1Min, 5Min, 15Min, 30Min, 1Hour, 4Hour, 1Day, 1Week, 1Month"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max bars per symbol (default 1000, max 10000)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          }
-        },
-        "required": [
-          "symbols",
-          "timeframe"
-        ]
-      }
-    },
-    {
-      "name": "crypto_trades",
-      "description": "Get historical trade data for one or more crypto symbols.",
-      "method": "GET",
-      "path": "/crypto-trades",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max trades per symbol"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_snapshots",
-      "description": "Get real-time snapshots for crypto pairs in one call. Returns {latestTrade, latestQuote, minuteBar, dailyBar, prevDailyBar} per symbol. Example: symbols='BTC/USD,ETH/USD'.",
-      "method": "GET",
-      "path": "/crypto-snapshots",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD,SOL/USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_latest_trades",
-      "description": "Get the latest trade for one or more crypto pairs. Quick way to check current crypto prices.",
-      "method": "GET",
-      "path": "/crypto-latest-trades",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_latest_bars",
-      "description": "Get the latest minute bar for one or more crypto pairs.",
-      "method": "GET",
-      "path": "/crypto-latest-bars",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_latest_quotes",
-      "description": "Get the latest quote (bid/ask) for one or more crypto pairs.",
-      "method": "GET",
-      "path": "/crypto-latest-quotes",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "crypto_latest_orderbooks",
-      "description": "Get the latest orderbook (bid/ask depth) for one or more crypto pairs.",
-      "method": "GET",
-      "path": "/crypto-latest-orderbooks",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated crypto pairs (e.g., BTC/USD,ETH/USD)"
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "option_bars",
-      "description": "Get historical OHLCV bar data for option contracts. Use OCC symbol format (e.g., AAPL230120C00150000).",
-      "method": "GET",
-      "path": "/option-bars",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated option symbols in OCC format"
-          },
-          "timeframe": {
-            "type": "string",
-            "description": "Bar timeframe: 1Min, 5Min, 15Min, 30Min, 1Hour, 1Day, 1Week, 1Month"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max bars (default 1000, max 10000)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          }
-        },
-        "required": [
-          "symbols",
-          "timeframe"
-        ]
-      }
-    },
-    {
-      "name": "option_chain",
-      "description": "Get option chain snapshots for an underlying symbol. Returns {latestQuote, latestTrade, greeks, impliedVolatility} per contract. Filter by expiration, strike range, and type. Example: underlying_symbols='AAPL'.",
-      "method": "GET",
-      "path": "/option-chain",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "underlying_symbols": {
-            "type": "string",
-            "description": "Underlying symbol (e.g., AAPL, SPY)"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: indicative, opra",
-            "enum": [
-              "indicative",
-              "opra"
-            ]
-          },
-          "expiration_date": {
-            "type": "string",
-            "description": "Exact expiration (YYYY-MM-DD)"
-          },
-          "expiration_date_gte": {
-            "type": "string",
-            "description": "Expiration on or after (YYYY-MM-DD)"
-          },
-          "expiration_date_lte": {
-            "type": "string",
-            "description": "Expiration on or before (YYYY-MM-DD)"
-          },
-          "strike_price_gte": {
-            "type": "string",
-            "description": "Min strike price"
-          },
-          "strike_price_lte": {
-            "type": "string",
-            "description": "Max strike price"
-          },
-          "type": {
-            "type": "string",
-            "description": "Option type: call, put",
-            "enum": [
-              "call",
-              "put"
-            ]
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max results"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          }
-        },
-        "required": [
-          "underlying_symbols"
-        ]
-      }
-    },
-    {
-      "name": "option_latest_quotes",
-      "description": "Get the latest quote (bid/ask, greeks) for option contracts.",
-      "method": "GET",
-      "path": "/option-latest-quotes",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated option symbols in OCC format"
-          },
-          "feed": {
-            "type": "string",
-            "description": "Data feed: indicative, opra",
-            "enum": [
-              "indicative",
-              "opra"
-            ]
-          }
-        },
-        "required": [
-          "symbols"
-        ]
-      }
-    },
-    {
-      "name": "most_active_stocks",
-      "description": "Get the most actively traded stocks today ranked by volume or number of trades. Returns {symbol, volume, trade_count} per stock. No parameters required (defaults to top 10 by volume).",
-      "method": "GET",
-      "path": "/most-active-stocks",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "by": {
-            "type": "string",
-            "description": "Rank by: volume, trades",
-            "enum": [
-              "volume",
-              "trades"
-            ]
-          },
-          "top": {
-            "type": "integer",
-            "description": "Number of results (default 10, max 100)"
-          }
-        }
-      }
-    },
-    {
-      "name": "market_movers",
-      "description": "Get today's biggest gainers and losers by percent change. Returns {gainers: [...], losers: [...]} each with {symbol, percent_change, price, change}.",
-      "method": "GET",
-      "path": "/market-movers",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "top": {
-            "type": "integer",
-            "description": "Number of results per side (default 10, max 50)"
-          },
-          "market_type": {
-            "type": "string",
-            "description": "Market type: stocks, crypto",
-            "enum": [
-              "stocks",
-              "crypto"
-            ]
-          }
-        }
-      }
-    },
-    {
-      "name": "get_news",
-      "description": "Get news articles from Benzinga (FREE, data since 2015). Returns {id, headline, summary, author, source, url, symbols, created_at, images}. Filter by symbols and date range. Example: symbols='AAPL,TSLA', limit=5.",
-      "method": "GET",
-      "path": "/get-news",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "symbols": {
-            "type": "string",
-            "description": "Comma-separated symbols to filter news (e.g., AAPL,TSLA,BTC/USD)"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start date (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End date (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Number of articles (default 10, max 50)"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token from previous response"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort order: ASC, DESC",
-            "enum": [
-              "ASC",
-              "DESC"
-            ]
-          },
-          "include_content": {
-            "type": "boolean",
-            "description": "Include full article content"
-          },
-          "exclude_contentless": {
-            "type": "boolean",
-            "description": "Exclude articles without content"
-          }
-        }
-      }
-    },
-    {
-      "name": "forex_rates",
-      "description": "Get historical exchange rates for currency pairs (e.g., EUR/USD, GBP/USD).",
-      "method": "GET",
-      "path": "/forex-rates",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "currency_pairs": {
-            "type": "string",
-            "description": "Comma-separated currency pairs (e.g., EUR/USD,GBP/USD)"
-          },
-          "timeframe": {
-            "type": "string",
-            "description": "Rate timeframe: 1Min, 5Min, 15Min, 1H, 1D"
-          },
-          "start": {
-            "type": "string",
-            "description": "Start time (RFC3339 or YYYY-MM-DD)"
-          },
-          "end": {
-            "type": "string",
-            "description": "End time (RFC3339 or YYYY-MM-DD)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Max results"
-          },
-          "page_token": {
-            "type": "string",
-            "description": "Pagination token"
-          },
-          "sort": {
-            "type": "string",
-            "description": "Sort: asc, desc",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          }
-        },
-        "required": [
-          "currency_pairs"
-        ]
-      }
-    },
-    {
-      "name": "forex_latest_rates",
-      "description": "Get the latest exchange rates for currency pairs.",
-      "method": "GET",
-      "path": "/forex-latest-rates",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "currency_pairs": {
-            "type": "string",
-            "description": "Comma-separated currency pairs (e.g., EUR/USD,GBP/USD,JPY/USD)"
-          }
-        },
-        "required": [
-          "currency_pairs"
         ]
       }
     }

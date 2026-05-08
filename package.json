@@ -1,6 +1,6 @@
 {
   "name": "@apteva/integrations",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Local integrations, connections, and webhooks for Apteva. Self-contained app templates, OAuth engine, and trigger provider.",
   "author": "Apteva <hello@apteva.com>",
   "license": "Elastic-2.0",
@@ -31,12 +31,23 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "explorer": "bun run scripts/dev-explorer.ts",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^1.14.0"
   }
 }

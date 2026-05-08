@@ -24,6 +24,7 @@
       "description": "Text-to-speech via Deepgram's Aura models. Converts text to natural-sounding audio at sub-second latency. Returns the generated audio as binary (mp3/wav/ogg depending on encoding). Best for conversational agents, voice notifications, and on-the-fly narration. Defaults to `aura-asteria-en` (English female); full model catalog at https://developers.deepgram.com/docs/tts-models.",
       "method": "POST",
       "path": "/v1/speak",
+      "timeout_ms": 60000,
       "input_schema": {
         "type": "object",
         "properties": {
@@ -77,6 +78,7 @@
       "method": "POST",
       "path": "/v1/listen",
       "body_binary_param": "audio",
+      "timeout_ms": 600000,
       "response_omit": [
         "metadata.sha256",
         "metadata.model_info",
@@ -195,6 +197,7 @@
       "description": "Text Intelligence — runs analysis on plain text (no audio needed). Extracts topics, intents, sentiment, and summaries from a block of text or from a text file at a URL. Use for post-processing transcripts from other providers, analyzing emails, long documents, support tickets, etc. Same feature set as the transcript-analysis layer of listen but runs directly on text input.",
       "method": "POST",
       "path": "/v1/read",
+      "timeout_ms": 300000,
       "input_schema": {
         "type": "object",
         "properties": {

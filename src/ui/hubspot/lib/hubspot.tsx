@@ -19,7 +19,7 @@ const DEAL_STAGE: Record<string, PillMeta> = {
   appointmentscheduled:  { label: "Appointment scheduled",    variant: "info" },
   qualifiedtobuy:        { label: "Qualified to buy",         variant: "info" },
   presentationscheduled: { label: "Presentation scheduled",   variant: "info" },
-  decisionmakerboughtin: { label: "Decision-maker bought in", variant: "info" },
+  decisionmakerboughtin: { label: "Decision-maker bought in ", variant: "info" },
   contractsent:          { label: "Contract sent",            variant: "warn" },
   closedwon:             { label: "Closed (won)",             variant: "success" },
   closedlost:            { label: "Closed (lost)",            variant: "error" },
@@ -173,9 +173,12 @@ export function pillToDot(v: StatusPillVariant): StatusDotVariant {
 // ─── HubSpot brand mark ───────────────────────────────────────────
 //
 // Simplified mark — three satellites linked to a central node. Reads
-// at 14×14 without shipping the full brand artwork.
+// at 14×14 without shipping the full brand artwork. Uses currentColor
+// so the consumer can recolor it (CardHeader's vendor strip pipes the
+// HubSpot brand orange in via inline `style.color`).
 
 import type { ReactNode } from "react";
+import type { CardVendor } from "@apteva/ui-kit";
 
 export const hubspotLogo: ReactNode = (
   <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
@@ -186,3 +189,14 @@ export const hubspotLogo: ReactNode = (
     <path d="M8.2 12 L11 12 M16 7.5 L15 10.2 M16 16.5 L15 13.8" stroke="currentColor" strokeWidth="1.2" fill="none" />
   </svg>
 );
+
+// HubSpot's official brand orange. Passed through CardHeader's
+// `vendor.color` so the brand strip on every HubSpot-emitted card
+// reads as obviously HubSpot at a glance, in both light and dark.
+export const HUBSPOT_BRAND_COLOR = "#FF7A59";
+
+export const hubspotVendor: CardVendor = {
+  name: "HubSpot",
+  logo: hubspotLogo,
+  color: HUBSPOT_BRAND_COLOR,
+};
