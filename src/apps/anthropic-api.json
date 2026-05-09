@@ -16,7 +16,8 @@
       "api_key"
     ],
     "headers": {
-      "x-api-key": "{{api_key}}"
+      "x-api-key": "{{api_key}}",
+      "anthropic-version": "2023-06-01"
     },
     "credential_fields": [
       {
@@ -31,7 +32,7 @@
       "name": "create_message",
       "description": "Create a message using Claude AI models",
       "method": "POST",
-      "path": "/create-message",
+      "path": "/messages",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -87,7 +88,7 @@
       "name": "list_models",
       "description": "List available Anthropic Claude models",
       "method": "GET",
-      "path": "/list-models",
+      "path": "/models",
       "input_schema": {
         "type": "object",
         "properties": {}
