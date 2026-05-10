@@ -3,13 +3,25 @@
   "name": "Groq",
   "description": "MCP server for Groq - fast LLM inference (Llama, Mixtral, Gemma) via OpenAI-compatible API",
   "logo": "https://www.google.com/s2/favicons?domain=groq.com&sz=128",
-  "categories": ["ai", "llm", "inference", "chat"],
+  "categories": [
+    "ai",
+    "llm",
+    "inference",
+    "chat"
+  ],
   "base_url": "https://api.groq.com/openai/v1",
   "auth": {
-    "types": ["bearer"],
-    "headers": { "Authorization": "Bearer {{token}}" },
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
     "credential_fields": [
-      { "name": "token", "label": "API Key" }
+      {
+        "name": "token",
+        "label": "API Key"
+      }
     ]
   },
   "tools": [
@@ -21,15 +33,32 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "model": { "type": "string" },
-          "messages": { "type": "array" },
-          "temperature": { "type": "number" },
-          "max_tokens": { "type": "number" },
-          "top_p": { "type": "number" },
-          "stream": { "type": "boolean" },
-          "tools": { "type": "array" }
+          "model": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array"
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "max_tokens": {
+            "type": "number"
+          },
+          "top_p": {
+            "type": "number"
+          },
+          "stream": {
+            "type": "boolean"
+          },
+          "tools": {
+            "type": "array"
+          }
         },
-        "required": ["model", "messages"]
+        "required": [
+          "model",
+          "messages"
+        ]
       }
     },
     {
@@ -37,7 +66,10 @@
       "description": "List available models",
       "method": "GET",
       "path": "/models",
-      "input_schema": { "type": "object", "properties": {} }
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
     },
     {
       "name": "get_model",
@@ -46,8 +78,14 @@
       "path": "/models/{model_id}",
       "input_schema": {
         "type": "object",
-        "properties": { "model_id": { "type": "string" } },
-        "required": ["model_id"]
+        "properties": {
+          "model_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id"
+        ]
       }
     },
     {
@@ -58,12 +96,24 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "file": { "type": "string" },
-          "model": { "type": "string" },
-          "language": { "type": "string" }
+          "file": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          }
         },
-        "required": ["file", "model"]
+        "required": [
+          "file",
+          "model"
+        ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_models"
+  }
 }

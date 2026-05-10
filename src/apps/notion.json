@@ -653,5 +653,8 @@
         "description": "A comment is removed"
       }
     ]
+  },
+  "health_check": {
+    "tool": "get_me"
   }
 }

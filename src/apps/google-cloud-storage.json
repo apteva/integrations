@@ -1,7 +1,7 @@
 {
   "slug": "google-cloud-storage",
   "name": "Google Cloud Storage",
-  "description": "Google Cloud Storage (GCS) JSON API — buckets and objects in GCP. Analogous to AWS S3. Manage buckets, upload/download/list/copy/delete objects, set lifecycle and IAM. Authenticate via OAuth2 with the cloud-platform or devstorage.full_control scope.",
+  "description": "Google Cloud Storage (GCS) JSON API \u2014 buckets and objects in GCP. Analogous to AWS S3. Manage buckets, upload/download/list/copy/delete objects, set lifecycle and IAM. Authenticate via OAuth2 with the cloud-platform or devstorage.full_control scope.",
   "logo": "https://www.google.com/s2/favicons?domain=cloud.google.com&sz=128",
   "categories": [
     "cloud",
@@ -83,7 +83,7 @@
     },
     {
       "name": "get_bucket",
-      "description": "Get bucket metadata — location, storage class, versioning, lifecycle rules, IAM config, retention policy.",
+      "description": "Get bucket metadata \u2014 location, storage class, versioning, lifecycle rules, IAM config, retention policy.",
       "method": "GET",
       "path": "/b/{bucket}",
       "input_schema": {
@@ -119,7 +119,7 @@
           },
           "name": {
             "type": "string",
-            "description": "Bucket name (globally unique, lowercase, 3–63 chars)."
+            "description": "Bucket name (globally unique, lowercase, 3\u201363 chars)."
           },
           "location": {
             "type": "string",
@@ -225,7 +225,7 @@
           },
           "delimiter": {
             "type": "string",
-            "description": "Use '/' to mimic folder listings — common-prefixes are returned in 'prefixes'."
+            "description": "Use '/' to mimic folder listings \u2014 common-prefixes are returned in 'prefixes'."
           },
           "maxResults": {
             "type": "integer"
@@ -255,7 +255,7 @@
     },
     {
       "name": "get_object_metadata",
-      "description": "Get an object's metadata (size, contentType, generation, md5Hash, customTime, custom metadata). Does NOT return the object body — use download_object for that.",
+      "description": "Get an object's metadata (size, contentType, generation, md5Hash, customTime, custom metadata). Does NOT return the object body \u2014 use download_object for that.",
       "method": "GET",
       "path": "/b/{bucket}/o/{object}",
       "input_schema": {
@@ -314,7 +314,7 @@
     },
     {
       "name": "upload_object_simple",
-      "description": "Simple upload (≤5 MB) for a small object. Hits the upload endpoint, not the storage one — note this tool's path uses the upload host. For large files use resumable uploads externally.",
+      "description": "Simple upload (\u22645 MB) for a small object. Hits the upload endpoint, not the storage one \u2014 note this tool's path uses the upload host. For large files use resumable uploads externally.",
       "method": "POST",
       "path": "https://storage.googleapis.com/upload/storage/v1/b/{bucket}/o",
       "input_schema": {
@@ -413,7 +413,7 @@
     },
     {
       "name": "compose_object",
-      "description": "Concatenate up to 32 source objects into a single destination object — useful for assembling multi-part uploads server-side.",
+      "description": "Concatenate up to 32 source objects into a single destination object \u2014 useful for assembling multi-part uploads server-side.",
       "method": "POST",
       "path": "/b/{destinationBucket}/o/{destinationObject}/compose",
       "input_schema": {
@@ -446,7 +446,7 @@
     },
     {
       "name": "rewrite_object",
-      "description": "Rewrite an object — like copy but supports cross-region, storage-class change, and re-encryption with new KMS keys. May return a 'rewriteToken' for chunked progress on large objects.",
+      "description": "Rewrite an object \u2014 like copy but supports cross-region, storage-class change, and re-encryption with new KMS keys. May return a 'rewriteToken' for chunked progress on large objects.",
       "method": "POST",
       "path": "/b/{sourceBucket}/o/{sourceObject}/rewriteTo/b/{destinationBucket}/o/{destinationObject}",
       "input_schema": {

@@ -41,6 +41,67 @@ export interface AppTemplate {
   // appear in chat when the agent calls
   // respond(components=[{ app: "<slug>", name: "<component-name>", props:{…}}]).
   ui_components?: UIComponent[];
+  /** Cheap probe used by the dashboard "Test" button and the
+   *  pre-flight check in POST /connections (non-OAuth). When the
+   *  user types in credentials and hits save, the server runs this
+   *  endpoint with the same credential resolution + signing that a
+   *  real tool call would use; if it returns one of the expected
+   *  status codes the connection is saved as active, otherwise the
+   *  form surfaces an error and nothing is persisted. The probe
+   *  should be read-only and zero-arg.
+   *
+   *  ExpectStatus defaults to [200] when omitted. BaseURL is
+   *  optional and overrides AppTemplate.base_url for this probe
+   *  only (handy when an auth-introspection endpoint lives on a
+   *  different host than the data-plane). */
+  health_check?: AppHealthCheck;
+}
+
+/** Per-app credential probe used by the dashboard's "Test"
+ *  button and the pre-flight check at connection-creation time.
+ *
+ *  Two forms — pick whichever fits the app:
+ *
+ *  1. Reference an existing tool by name. The runner looks the
+ *     tool up in tools[] and reuses its method/path/query_params.
+ *     DRY: a fix to the tool propagates to the probe automatically.
+ *     Use this when there's a natural read-only zero-arg tool
+ *     (S3 list_buckets, GitHub /user, Slack auth.test).
+ *
+ *       { "tool": "list_buckets" }
+ *
+ *     Pass `input` if the tool needs parameters:
+ *       { "tool": "me", "input": { "scope": "read" } }
+ *
+ *  2. Synthetic HTTP request. Use when the probe URL doesn't
+ *     correspond to any exposed tool (a dedicated /healthz, a
+ *     different host, etc.):
+ *
+ *       { "method": "GET", "path": "/healthz" }
+ *
+ *  expect_status defaults to [200]. base_url overrides
+ *  AppTemplate.base_url for this probe only. */
+export interface AppHealthCheck {
+  // Form 1 — reference an existing tool by name.
+  tool?: string;
+  input?: Record<string, unknown>;
+
+  // Form 2 — synthetic HTTP request.
+  method?: "GET" | "HEAD" | "POST";
+  path?: string;
+  base_url?: string;
+
+  expect_status?: number[];
+
+  /** Treat a 401/403 response as "auth valid, permission denied"
+   *  when the body contains any of these substrings. Designed
+   *  for S3-compatible APIs where bucket-scoped tokens can't
+   *  list buckets at account level — R2 returns
+   *  `403 <Code>AccessDenied</Code>` for valid bucket-only
+   *  tokens but `403 <Code>InvalidAccessKeyId</Code>` for typo'd
+   *  ones; listing "AccessDenied" here passes the former and
+   *  fails the latter from the same probe. */
+  auth_ok_when_body_contains?: string[];
 }
 
 // ============ UI Components (chat-attachment cards) ============

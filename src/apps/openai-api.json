@@ -112,7 +112,7 @@
     },
     {
       "name": "generate_image",
-      "description": "Generate images via /v1/images/generations. Supports current GPT Image family (gpt-image-2 default; gpt-image-1.5, gpt-image-1, gpt-image-1-mini legacy) and DALL·E 3 / DALL·E 2 (legacy). gpt-image-* always returns base64 (b64_json); DALL·E returns URLs by default.",
+      "description": "Generate images via /v1/images/generations. Supports current GPT Image family (gpt-image-2 default; gpt-image-1.5, gpt-image-1, gpt-image-1-mini legacy) and DALL\u00b7E 3 / DALL\u00b7E 2 (legacy). gpt-image-* always returns base64 (b64_json); DALL\u00b7E returns URLs by default.",
       "method": "POST",
       "path": "/images/generations",
       "timeout_ms": 180000,
@@ -138,7 +138,7 @@
           },
           "size": {
             "type": "string",
-            "description": "Image size. gpt-image-2: any WxH where each edge is a multiple of 16, max edge 3840, ratio ≤ 3:1, total pixels 655,360–8,294,400 (popular: 1024x1024, 1024x1536, 1536x1024, 2048x2048, 3840x2160, auto). gpt-image-1/1.5/mini: 1024x1024 | 1024x1536 | 1536x1024. dall-e-3: 1024x1024 | 1792x1024 | 1024x1792. dall-e-2: 256x256 | 512x512 | 1024x1024.",
+            "description": "Image size. gpt-image-2: any WxH where each edge is a multiple of 16, max edge 3840, ratio \u2264 3:1, total pixels 655,360\u20138,294,400 (popular: 1024x1024, 1024x1536, 1536x1024, 2048x2048, 3840x2160, auto). gpt-image-1/1.5/mini: 1024x1024 | 1024x1536 | 1536x1024. dall-e-3: 1024x1024 | 1792x1024 | 1024x1792. dall-e-2: 256x256 | 512x512 | 1024x1024.",
             "default": "1024x1024"
           },
           "quality": {
@@ -148,7 +148,7 @@
           },
           "output_format": {
             "type": "string",
-            "description": "Output format (gpt-image-* only). Ignored by DALL·E.",
+            "description": "Output format (gpt-image-* only). Ignored by DALL\u00b7E.",
             "enum": [
               "png",
               "jpeg",
@@ -174,7 +174,7 @@
           },
           "response_format": {
             "type": "string",
-            "description": "DALL·E only — gpt-image-* always returns b64_json. Pick 'b64_json' for inline bytes (no signed URL roundtrip) or 'url' for an OpenAI-hosted URL with a 1-hour TTL.",
+            "description": "DALL\u00b7E only \u2014 gpt-image-* always returns b64_json. Pick 'b64_json' for inline bytes (no signed URL roundtrip) or 'url' for an OpenAI-hosted URL with a 1-hour TTL.",
             "enum": [
               "url",
               "b64_json"
@@ -485,5 +485,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_models"
+  }
 }

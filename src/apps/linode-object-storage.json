@@ -1,7 +1,7 @@
 {
   "slug": "linode-object-storage",
   "name": "Linode Object Storage",
-  "description": "Linode Object Storage — S3-compatible object storage from Akamai/Linode. $5/month base subscription includes 250GB storage + 1TB outbound transfer; overage at $0.02/GB storage and $0.005/GB egress. Bucket-scoped REST with AWS SigV4 against {cluster}.linodeobjects.com. Cluster examples: us-east-1, us-southeast-1, us-mia-1, us-iad-1, us-ord-1, us-sea-1, eu-central-1, ap-south-1, fr-par-1. Generate Object Storage Access Keys at cloud.linode.com → Object Storage → Access Keys.",
+  "description": "Linode Object Storage \u2014 S3-compatible object storage from Akamai/Linode. $5/month base subscription includes 250GB storage + 1TB outbound transfer; overage at $0.02/GB storage and $0.005/GB egress. Bucket-scoped REST with AWS SigV4 against {cluster}.linodeobjects.com. Cluster examples: us-east-1, us-southeast-1, us-mia-1, us-iad-1, us-ord-1, us-sea-1, eu-central-1, ap-south-1, fr-par-1. Generate Object Storage Access Keys at cloud.linode.com \u2192 Object Storage \u2192 Access Keys.",
   "logo": "https://www.google.com/s2/favicons?domain=linode.com&sz=128",
   "categories": [
     "storage",
@@ -39,7 +39,7 @@
       {
         "name": "access_key_id",
         "label": "Linode Access Key",
-        "description": "From cloud.linode.com → Object Storage → Access Keys → Create Access Key. Limited Access Keys can be scoped to specific buckets — prefer those over unrestricted keys.",
+        "description": "From cloud.linode.com \u2192 Object Storage \u2192 Access Keys \u2192 Create Access Key. Limited Access Keys can be scoped to specific buckets \u2014 prefer those over unrestricted keys.",
         "required": true,
         "type": "text"
       },
@@ -61,15 +61,37 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string", "description": "Linode Object Storage bucket name." },
-          "prefix": { "type": "string", "description": "Filter to keys starting with this prefix." },
-          "continuation-token": { "type": "string", "description": "Pagination cursor from a prior IsTruncated response." },
-          "max-keys": { "type": "integer", "description": "Page size (max 1000)." },
-          "list-type": { "type": "integer", "default": 2 }
+          "bucket": {
+            "type": "string",
+            "description": "Linode Object Storage bucket name."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Filter to keys starting with this prefix."
+          },
+          "continuation-token": {
+            "type": "string",
+            "description": "Pagination cursor from a prior IsTruncated response."
+          },
+          "max-keys": {
+            "type": "integer",
+            "description": "Page size (max 1000)."
+          },
+          "list-type": {
+            "type": "integer",
+            "default": 2
+          }
         },
-        "required": ["bucket"]
+        "required": [
+          "bucket"
+        ]
       },
-      "query_params": ["prefix", "continuation-token", "max-keys", "list-type"]
+      "query_params": [
+        "prefix",
+        "continuation-token",
+        "max-keys",
+        "list-type"
+      ]
     },
     {
       "name": "put_object",
@@ -79,11 +101,23 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string", "description": "Object key (path inside the bucket)." },
-          "body": { "type": "string", "description": "Object content. Bytes welcome — the runner sends them verbatim." }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Object key (path inside the bucket)."
+          },
+          "body": {
+            "type": "string",
+            "description": "Object content. Bytes welcome \u2014 the runner sends them verbatim."
+          }
         },
-        "required": ["bucket", "key", "body"]
+        "required": [
+          "bucket",
+          "key",
+          "body"
+        ]
       },
       "body_input": "body"
     },
@@ -95,10 +129,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -109,10 +150,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -125,5 +173,11 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_buckets",
+    "auth_ok_when_body_contains": [
+      "AccessDenied"
+    ]
+  }
 }

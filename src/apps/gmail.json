@@ -737,7 +737,7 @@
     },
     {
       "name": "update_draft",
-      "description": "Update an existing draft's content (replaces the entire draft message). Provide plain-text fields — the system handles RFC 2822 encoding automatically.",
+      "description": "Update an existing draft's content (replaces the entire draft message). Provide plain-text fields \u2014 the system handles RFC 2822 encoding automatically.",
       "method": "PUT",
       "path": "/users/me/drafts/{draftId}",
       "input_schema": {
@@ -1371,5 +1371,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_profile"
+  }
 }

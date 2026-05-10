@@ -1,7 +1,7 @@
 {
   "slug": "twilio",
   "name": "Twilio",
-  "description": "Twilio communications platform — SMS, MMS, voice calls, WhatsApp, phone numbers, recordings, usage, and verification",
+  "description": "Twilio communications platform \u2014 SMS, MMS, voice calls, WhatsApp, phone numbers, recordings, usage, and verification",
   "logo": "https://www.google.com/s2/favicons?domain=twilio.com&sz=128",
   "categories": [
     "messaging",
@@ -142,7 +142,7 @@
               "whatsapp"
             ],
             "default": "whatsapp",
-            "description": "Channel type — must be 'whatsapp'"
+            "description": "Channel type \u2014 must be 'whatsapp'"
           }
         },
         "required": [
@@ -329,7 +329,7 @@
     },
     {
       "name": "update_call",
-      "description": "Modify an in-progress call — redirect to new TwiML, end the call, or pause/resume recording.",
+      "description": "Modify an in-progress call \u2014 redirect to new TwiML, end the call, or pause/resume recording.",
       "method": "POST",
       "path": "/Accounts/{{account_sid}}/Calls/{CallSid}.json",
       "input_schema": {
@@ -417,7 +417,7 @@
     },
     {
       "name": "update_phone_number",
-      "description": "Update configuration for a phone number — webhooks, friendly name, voice/SMS settings.",
+      "description": "Update configuration for a phone number \u2014 webhooks, friendly name, voice/SMS settings.",
       "method": "POST",
       "path": "/Accounts/{{account_sid}}/IncomingPhoneNumbers/{PhoneNumberSid}.json",
       "input_schema": {
@@ -633,7 +633,7 @@
     },
     {
       "name": "get_usage",
-      "description": "Retrieve usage records for your account — see costs per category (calls, SMS, numbers, etc.).",
+      "description": "Retrieve usage records for your account \u2014 see costs per category (calls, SMS, numbers, etc.).",
       "method": "GET",
       "path": "/Accounts/{{account_sid}}/Usage/Records.json",
       "input_schema": {
@@ -677,7 +677,7 @@
     },
     {
       "name": "get_whatsapp_sender",
-      "description": "Get details of a specific WhatsApp Business sender by SID — status, phone number, profile info, and capabilities.",
+      "description": "Get details of a specific WhatsApp Business sender by SID \u2014 status, phone number, profile info, and capabilities.",
       "method": "GET",
       "path": "/v2/Channels/Senders/{SenderSid}",
       "input_schema": {
@@ -804,7 +804,7 @@
     },
     {
       "name": "get_content_template",
-      "description": "Retrieve details of a specific content template by SID — body, variables, type, and approval status.",
+      "description": "Retrieve details of a specific content template by SID \u2014 body, variables, type, and approval status.",
       "method": "GET",
       "path": "/v1/Content/{ContentSid}",
       "input_schema": {
@@ -906,7 +906,7 @@
     },
     {
       "name": "lookup_phone_number",
-      "description": "Look up information about a phone number — carrier, caller name, line type (mobile/landline/voip).",
+      "description": "Look up information about a phone number \u2014 carrier, caller name, line type (mobile/landline/voip).",
       "method": "GET",
       "path": "/v2/PhoneNumbers/{PhoneNumber}",
       "input_schema": {
@@ -1062,5 +1062,8 @@
         "description": "Call recording ready"
       }
     ]
+  },
+  "health_check": {
+    "tool": "get_account"
   }
 }

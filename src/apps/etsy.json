@@ -1,7 +1,7 @@
 {
   "slug": "etsy",
   "name": "Etsy",
-  "description": "Etsy Open API v3 — manage shops, listings, orders (receipts), and reviews on Etsy. OAuth2 with PKCE; the keystring (client_id) doubles as the x-api-key header.",
+  "description": "Etsy Open API v3 \u2014 manage shops, listings, orders (receipts), and reviews on Etsy. OAuth2 with PKCE; the keystring (client_id) doubles as the x-api-key header.",
   "logo": "https://www.google.com/s2/favicons?domain=etsy.com&sz=128",
   "categories": [
     "ecommerce",
@@ -34,7 +34,7 @@
       {
         "name": "client_id",
         "label": "Keystring (Client ID)",
-        "description": "Etsy app keystring from etsy.com/developers — also sent as the x-api-key header on every request."
+        "description": "Etsy app keystring from etsy.com/developers \u2014 also sent as the x-api-key header on every request."
       }
     ],
     "oauth2": {
@@ -102,7 +102,7 @@
     },
     {
       "name": "get_shop",
-      "description": "Get a shop by ID — name, currency, listing counts, vacation status.",
+      "description": "Get a shop by ID \u2014 name, currency, listing counts, vacation status.",
       "method": "GET",
       "path": "/shops/{shop_id}",
       "input_schema": {
@@ -185,7 +185,7 @@
     },
     {
       "name": "create_draft_listing",
-      "description": "Create a new draft listing in the seller's shop. The listing starts inactive — call update_listing to set state='active' once images and inventory are attached.",
+      "description": "Create a new draft listing in the seller's shop. The listing starts inactive \u2014 call update_listing to set state='active' once images and inventory are attached.",
       "method": "POST",
       "path": "/shops/{shop_id}/listings",
       "input_schema": {
@@ -329,7 +329,7 @@
     },
     {
       "name": "delete_listing",
-      "description": "Delete a listing. Etsy disallows deletion of sold-out listings — deactivate them via update_listing instead.",
+      "description": "Delete a listing. Etsy disallows deletion of sold-out listings \u2014 deactivate them via update_listing instead.",
       "method": "DELETE",
       "path": "/listings/{listing_id}",
       "input_schema": {
@@ -346,7 +346,7 @@
     },
     {
       "name": "list_shop_receipts",
-      "description": "List orders (receipts) for a shop — buyer info, items, totals, shipment status. Filter by paid/shipped status and date range.",
+      "description": "List orders (receipts) for a shop \u2014 buyer info, items, totals, shipment status. Filter by paid/shipped status and date range.",
       "method": "GET",
       "path": "/shops/{shop_id}/receipts",
       "input_schema": {
@@ -477,5 +477,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_authenticated_user"
+  }
 }

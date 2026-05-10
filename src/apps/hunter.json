@@ -501,5 +501,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "account"
+  }
 }

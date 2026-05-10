@@ -1,7 +1,7 @@
 {
   "slug": "scaleway-object-storage",
   "name": "Scaleway Object Storage",
-  "description": "Scaleway Object Storage — S3-compatible object storage from a French/EU sovereign cloud. ~€7/TB/month storage; 75GB/month egress free, then $10/TB. Bucket-scoped REST with AWS SigV4 against s3.{region}.scw.cloud. Regions: fr-par, nl-ams, pl-waw. Generate API keys at console.scaleway.com → IAM → API Keys; the access key + secret pair maps to access_key_id + secret_access_key here.",
+  "description": "Scaleway Object Storage \u2014 S3-compatible object storage from a French/EU sovereign cloud. ~\u20ac7/TB/month storage; 75GB/month egress free, then $10/TB. Bucket-scoped REST with AWS SigV4 against s3.{region}.scw.cloud. Regions: fr-par, nl-ams, pl-waw. Generate API keys at console.scaleway.com \u2192 IAM \u2192 API Keys; the access key + secret pair maps to access_key_id + secret_access_key here.",
   "logo": "https://www.google.com/s2/favicons?domain=scaleway.com&sz=128",
   "categories": [
     "storage",
@@ -23,7 +23,7 @@
       {
         "name": "region",
         "label": "Region",
-        "description": "Scaleway region of your bucket — fr-par (Paris), nl-ams (Amsterdam), or pl-waw (Warsaw).",
+        "description": "Scaleway region of your bucket \u2014 fr-par (Paris), nl-ams (Amsterdam), or pl-waw (Warsaw).",
         "required": true,
         "type": "text",
         "default": "fr-par"
@@ -31,7 +31,7 @@
       {
         "name": "access_key_id",
         "label": "Scaleway Access Key",
-        "description": "From console.scaleway.com → IAM → API Keys → Generate API key. Scope to an application or IAM group with object-storage permissions.",
+        "description": "From console.scaleway.com \u2192 IAM \u2192 API Keys \u2192 Generate API key. Scope to an application or IAM group with object-storage permissions.",
         "required": true,
         "type": "text"
       },
@@ -53,15 +53,37 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string", "description": "Scaleway bucket name." },
-          "prefix": { "type": "string", "description": "Filter to keys starting with this prefix." },
-          "continuation-token": { "type": "string", "description": "Pagination cursor from a prior IsTruncated response." },
-          "max-keys": { "type": "integer", "description": "Page size (max 1000)." },
-          "list-type": { "type": "integer", "default": 2 }
+          "bucket": {
+            "type": "string",
+            "description": "Scaleway bucket name."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Filter to keys starting with this prefix."
+          },
+          "continuation-token": {
+            "type": "string",
+            "description": "Pagination cursor from a prior IsTruncated response."
+          },
+          "max-keys": {
+            "type": "integer",
+            "description": "Page size (max 1000)."
+          },
+          "list-type": {
+            "type": "integer",
+            "default": 2
+          }
         },
-        "required": ["bucket"]
+        "required": [
+          "bucket"
+        ]
       },
-      "query_params": ["prefix", "continuation-token", "max-keys", "list-type"]
+      "query_params": [
+        "prefix",
+        "continuation-token",
+        "max-keys",
+        "list-type"
+      ]
     },
     {
       "name": "put_object",
@@ -71,11 +93,23 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string", "description": "Object key (path inside the bucket)." },
-          "body": { "type": "string", "description": "Object content. Bytes welcome — the runner sends them verbatim." }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Object key (path inside the bucket)."
+          },
+          "body": {
+            "type": "string",
+            "description": "Object content. Bytes welcome \u2014 the runner sends them verbatim."
+          }
         },
-        "required": ["bucket", "key", "body"]
+        "required": [
+          "bucket",
+          "key",
+          "body"
+        ]
       },
       "body_input": "body"
     },
@@ -87,10 +121,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -101,10 +142,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -117,5 +165,11 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_buckets",
+    "auth_ok_when_body_contains": [
+      "AccessDenied"
+    ]
+  }
 }

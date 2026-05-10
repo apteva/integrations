@@ -97,7 +97,7 @@
     },
     {
       "name": "delete_post",
-      "description": "Delete a LinkedIn UGC post by its URN. Pass the full URN (e.g. urn:li:share:1234567890 or urn:li:ugcPost:1234567890); it gets URL-encoded into the request path. Only the original author (or an admin of the owning organization) can delete a post — others get 403.",
+      "description": "Delete a LinkedIn UGC post by its URN. Pass the full URN (e.g. urn:li:share:1234567890 or urn:li:ugcPost:1234567890); it gets URL-encoded into the request path. Only the original author (or an admin of the owning organization) can delete a post \u2014 others get 403.",
       "method": "DELETE",
       "path": "/ugcPosts/{urn}",
       "input_schema": {
@@ -108,7 +108,9 @@
             "description": "Post URN to delete (urn:li:share:xxx or urn:li:ugcPost:xxx)"
           }
         },
-        "required": ["urn"]
+        "required": [
+          "urn"
+        ]
       }
     },
     {
@@ -195,5 +197,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_profile"
+  }
 }

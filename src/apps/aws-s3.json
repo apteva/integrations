@@ -1,7 +1,7 @@
 {
   "slug": "aws-s3",
   "name": "AWS S3",
-  "description": "Amazon Simple Storage Service — object storage. Bucket-scoped REST endpoints with AWS SigV4 request signing. Use put_object/get_object/list_objects/delete_object from any app needing durable cloud storage (backup, media, etc.).",
+  "description": "Amazon Simple Storage Service \u2014 object storage. Bucket-scoped REST endpoints with AWS SigV4 request signing. Use put_object/get_object/list_objects/delete_object from any app needing durable cloud storage (backup, media, etc.).",
   "logo": "https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128",
   "categories": [
     "storage",
@@ -56,15 +56,38 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string", "description": "Bucket name." },
-          "prefix": { "type": "string", "description": "Filter to keys starting with this prefix." },
-          "continuation-token": { "type": "string", "description": "Pagination cursor from a prior IsTruncated response." },
-          "max-keys": { "type": "integer", "description": "Page size (max 1000)." },
-          "list-type": { "type": "integer", "description": "Use 2 for ListObjectsV2 (recommended).", "default": 2 }
+          "bucket": {
+            "type": "string",
+            "description": "Bucket name."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Filter to keys starting with this prefix."
+          },
+          "continuation-token": {
+            "type": "string",
+            "description": "Pagination cursor from a prior IsTruncated response."
+          },
+          "max-keys": {
+            "type": "integer",
+            "description": "Page size (max 1000)."
+          },
+          "list-type": {
+            "type": "integer",
+            "description": "Use 2 for ListObjectsV2 (recommended).",
+            "default": 2
+          }
         },
-        "required": ["bucket"]
+        "required": [
+          "bucket"
+        ]
       },
-      "query_params": ["prefix", "continuation-token", "max-keys", "list-type"]
+      "query_params": [
+        "prefix",
+        "continuation-token",
+        "max-keys",
+        "list-type"
+      ]
     },
     {
       "name": "put_object",
@@ -74,11 +97,23 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string", "description": "Object key (path inside the bucket)." },
-          "body": { "type": "string", "description": "Object content. Bytes welcome — the runner sends them verbatim." }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Object key (path inside the bucket)."
+          },
+          "body": {
+            "type": "string",
+            "description": "Object content. Bytes welcome \u2014 the runner sends them verbatim."
+          }
         },
-        "required": ["bucket", "key", "body"]
+        "required": [
+          "bucket",
+          "key",
+          "body"
+        ]
       },
       "body_input": "body"
     },
@@ -90,10 +125,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -104,10 +146,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "bucket": { "type": "string" },
-          "key": { "type": "string" }
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
         },
-        "required": ["bucket", "key"]
+        "required": [
+          "bucket",
+          "key"
+        ]
       }
     },
     {
@@ -120,5 +169,11 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_buckets",
+    "auth_ok_when_body_contains": [
+      "AccessDenied"
+    ]
+  }
 }

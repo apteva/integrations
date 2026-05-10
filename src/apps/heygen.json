@@ -12,7 +12,9 @@
   ],
   "base_url": "https://api.heygen.com",
   "auth": {
-    "types": ["api_key"],
+    "types": [
+      "api_key"
+    ],
     "headers": {
       "X-Api-Key": "{{api_key}}"
     },
@@ -27,7 +29,7 @@
   "tools": [
     {
       "name": "create_video_agent_v3",
-      "description": "Create a video with HeyGen's newest Video Agent API (v3). Give it a natural-language prompt plus an avatar and voice, and HeyGen builds the full video automatically — no scene composition needed. Returns a video id to poll via get_video_status. This is the newest one-shot video generation endpoint; prefer it over the older v1 video_agent_generate when the caller just wants 'make me a video about X'.",
+      "description": "Create a video with HeyGen's newest Video Agent API (v3). Give it a natural-language prompt plus an avatar and voice, and HeyGen builds the full video automatically \u2014 no scene composition needed. Returns a video id to poll via get_video_status. This is the newest one-shot video generation endpoint; prefer it over the older v1 video_agent_generate when the caller just wants 'make me a video about X'.",
       "method": "POST",
       "path": "/v3/video-agents",
       "input_schema": {
@@ -46,7 +48,9 @@
             "description": "Voice id from list_voices. Overrides the avatar's default voice when provided."
           }
         },
-        "required": ["prompt"]
+        "required": [
+          "prompt"
+        ]
       }
     },
     {
@@ -68,7 +72,9 @@
           "files": {
             "type": "array",
             "description": "Array of asset references the agent can incorporate. Each entry: {\"asset_id\": \"...\"}",
-            "items": { "type": "object" }
+            "items": {
+              "type": "object"
+            }
           },
           "callback_id": {
             "type": "string",
@@ -79,12 +85,14 @@
             "description": "Webhook URL to notify when the video finishes generating."
           }
         },
-        "required": ["prompt"]
+        "required": [
+          "prompt"
+        ]
       }
     },
     {
       "name": "generate_video",
-      "description": "Generate Video (V2) — canonical endpoint for producing an avatar video from text or audio. Supports Avatar III/IV, photo avatars, digital twins, and direct image input. Use one of avatar_id / image_url / image_asset_id as the subject, and one of script+voice_id / audio_url / audio_asset_id as the voice source. Asynchronous — poll status via get_video_status.",
+      "description": "Generate Video (V2) \u2014 canonical endpoint for producing an avatar video from text or audio. Supports Avatar III/IV, photo avatars, digital twins, and direct image input. Use one of avatar_id / image_url / image_asset_id as the subject, and one of script+voice_id / audio_url / audio_asset_id as the voice source. Asynchronous \u2014 poll status via get_video_status.",
       "method": "POST",
       "path": "/v2/videos",
       "input_schema": {
@@ -124,21 +132,31 @@
           },
           "resolution": {
             "type": "string",
-            "enum": ["720p", "1080p"],
+            "enum": [
+              "720p",
+              "1080p"
+            ],
             "default": "1080p"
           },
           "aspect_ratio": {
             "type": "string",
-            "enum": ["16:9", "9:16"],
+            "enum": [
+              "16:9",
+              "9:16"
+            ],
             "default": "16:9"
           },
           "motion_prompt": {
             "type": "string",
-            "description": "Photo avatars only — free-text guidance for movement and expression."
+            "description": "Photo avatars only \u2014 free-text guidance for movement and expression."
           },
           "expressiveness": {
             "type": "string",
-            "enum": ["low", "medium", "high"],
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
             "description": "Photo avatars only."
           },
           "remove_background": {
@@ -159,7 +177,7 @@
     },
     {
       "name": "generate_studio_video",
-      "description": "Generate Studio Video — the earlier v2 multi-scene generator. Accepts an array of video_inputs where each entry is a scene with its own character (avatar + style), voice (script + voice_id or audio), and optional background. Use this when you need a multi-scene video with different avatars or backgrounds across scenes. For single-scene videos, prefer generate_video (POST /v2/videos) which has a simpler shape.",
+      "description": "Generate Studio Video \u2014 the earlier v2 multi-scene generator. Accepts an array of video_inputs where each entry is a scene with its own character (avatar + style), voice (script + voice_id or audio), and optional background. Use this when you need a multi-scene video with different avatars or backgrounds across scenes. For single-scene videos, prefer generate_video (POST /v2/videos) which has a simpler shape.",
       "method": "POST",
       "path": "/v2/video/generate",
       "input_schema": {
@@ -168,7 +186,9 @@
           "video_inputs": {
             "type": "array",
             "description": "Array of scene inputs. Each entry: { character: {type: 'avatar'|'talking_photo', avatar_id: '...', avatar_style: 'normal'|'closeUp'}, voice: {type: 'text', input_text: '...', voice_id: '...'}, background: {type: 'color'|'image'|'video', value: '#hex' or url: '...'} }",
-            "items": { "type": "object" }
+            "items": {
+              "type": "object"
+            }
           },
           "dimension": {
             "type": "object",
@@ -190,7 +210,9 @@
             "description": "Custom callback id for webhook notifications."
           }
         },
-        "required": ["video_inputs"]
+        "required": [
+          "video_inputs"
+        ]
       }
     },
     {
@@ -207,7 +229,10 @@
           },
           "avatar_style": {
             "type": "string",
-            "enum": ["normal", "closeUp"],
+            "enum": [
+              "normal",
+              "closeUp"
+            ],
             "default": "normal"
           },
           "input_text": {
@@ -227,7 +252,9 @@
             "description": "Custom output dimensions: {width: 512, height: 512}"
           }
         },
-        "required": ["avatar_pose_id"]
+        "required": [
+          "avatar_pose_id"
+        ]
       }
     },
     {
@@ -243,9 +270,13 @@
             "description": "The video id returned from generate_video / generate_studio_video / create_video_agent_v3 / etc."
           }
         },
-        "required": ["video_id"]
+        "required": [
+          "video_id"
+        ]
       },
-      "query_params": ["video_id"]
+      "query_params": [
+        "video_id"
+      ]
     },
     {
       "name": "list_videos",
@@ -265,7 +296,10 @@
           }
         }
       },
-      "query_params": ["limit", "token"]
+      "query_params": [
+        "limit",
+        "token"
+      ]
     },
     {
       "name": "delete_video",
@@ -279,13 +313,17 @@
             "type": "string"
           }
         },
-        "required": ["video_id"]
+        "required": [
+          "video_id"
+        ]
       },
-      "query_params": ["video_id"]
+      "query_params": [
+        "video_id"
+      ]
     },
     {
       "name": "get_sharable_url",
-      "description": "Get a non-expiring shareable URL for a completed video — useful for embedding the video on external sites or sharing with users who don't have a HeyGen account.",
+      "description": "Get a non-expiring shareable URL for a completed video \u2014 useful for embedding the video on external sites or sharing with users who don't have a HeyGen account.",
       "method": "POST",
       "path": "/v1/video/sharable-url",
       "input_schema": {
@@ -295,7 +333,9 @@
             "type": "string"
           }
         },
-        "required": ["video_id"]
+        "required": [
+          "video_id"
+        ]
       }
     },
     {
@@ -320,12 +360,14 @@
             "type": "string"
           }
         },
-        "required": ["avatar_id"]
+        "required": [
+          "avatar_id"
+        ]
       }
     },
     {
       "name": "list_avatar_groups",
-      "description": "List every avatar group (a collection of related avatars — e.g. the same person in different outfits or styles).",
+      "description": "List every avatar group (a collection of related avatars \u2014 e.g. the same person in different outfits or styles).",
       "method": "GET",
       "path": "/v2/avatar_group.list",
       "input_schema": {
@@ -345,7 +387,9 @@
             "type": "string"
           }
         },
-        "required": ["group_id"]
+        "required": [
+          "group_id"
+        ]
       }
     },
     {
@@ -370,7 +414,7 @@
     },
     {
       "name": "list_brand_voices",
-      "description": "List Brand Glossary entries — custom pronunciation and translation rules applied when using brand_voice_id on translate_video or generate_proofread.",
+      "description": "List Brand Glossary entries \u2014 custom pronunciation and translation rules applied when using brand_voice_id on translate_video or generate_proofread.",
       "method": "GET",
       "path": "/v2/brand_voice/list",
       "input_schema": {
@@ -395,10 +439,14 @@
           "terms": {
             "type": "array",
             "description": "Array of custom term objects: {term: 'string', pronunciation: 'string', translation_hints: {'es': 'string', ...}}",
-            "items": { "type": "object" }
+            "items": {
+              "type": "object"
+            }
           }
         },
-        "required": ["brand_voice_id"]
+        "required": [
+          "brand_voice_id"
+        ]
       }
     },
     {
@@ -423,12 +471,14 @@
             "type": "string"
           }
         },
-        "required": ["template_id"]
+        "required": [
+          "template_id"
+        ]
       }
     },
     {
       "name": "get_template_v3",
-      "description": "Fetch a template's V3 definition — same as get_template but also returns the scenes field mapping each variable to the scene where it's used. Required for templates created in HeyGen's New AI Studio.",
+      "description": "Fetch a template's V3 definition \u2014 same as get_template but also returns the scenes field mapping each variable to the scene where it's used. Required for templates created in HeyGen's New AI Studio.",
       "method": "GET",
       "path": "/v3/template/{template_id}",
       "input_schema": {
@@ -438,7 +488,9 @@
             "type": "string"
           }
         },
-        "required": ["template_id"]
+        "required": [
+          "template_id"
+        ]
       }
     },
     {
@@ -457,7 +509,7 @@
           },
           "variables": {
             "type": "object",
-            "description": "Map of variable names to values: {name1: {name: 'name1', type: 'text', properties: {content: '...'}}, ...}. Shape depends on the variable's type (text, image, video, audio) — see the template definition from get_template."
+            "description": "Map of variable names to values: {name1: {name: 'name1', type: 'text', properties: {content: '...'}}, ...}. Shape depends on the variable's type (text, image, video, audio) \u2014 see the template definition from get_template."
           },
           "test": {
             "type": "boolean",
@@ -470,12 +522,14 @@
             "type": "string"
           }
         },
-        "required": ["template_id"]
+        "required": [
+          "template_id"
+        ]
       }
     },
     {
       "name": "translate_video",
-      "description": "Translate a video into one of 175+ target languages with natural-sounding voice and accurate lip-sync. Returns video_translate_id to poll via get_translation_status. For translation with human-in-the-loop review, use the proofread family (generate_proofread → download_proofread_srt → upload_proofread_srt → generate_video_from_proofread).",
+      "description": "Translate a video into one of 175+ target languages with natural-sounding voice and accurate lip-sync. Returns video_translate_id to poll via get_translation_status. For translation with human-in-the-loop review, use the proofread family (generate_proofread \u2192 download_proofread_srt \u2192 upload_proofread_srt \u2192 generate_video_from_proofread).",
       "method": "POST",
       "path": "/v2/video_translate",
       "input_schema": {
@@ -508,7 +562,10 @@
             "type": "string"
           }
         },
-        "required": ["video_url", "output_language"]
+        "required": [
+          "video_url",
+          "output_language"
+        ]
       }
     },
     {
@@ -523,7 +580,9 @@
             "type": "string"
           }
         },
-        "required": ["video_translate_id"]
+        "required": [
+          "video_translate_id"
+        ]
       }
     },
     {
@@ -538,7 +597,7 @@
     },
     {
       "name": "get_translation_caption",
-      "description": "Download the caption (SRT) file for a completed translated video — useful for re-uploading the captions elsewhere or displaying them alongside the video.",
+      "description": "Download the caption (SRT) file for a completed translated video \u2014 useful for re-uploading the captions elsewhere or displaying them alongside the video.",
       "method": "GET",
       "path": "/v2/video_translate/{video_translate_id}/caption",
       "input_schema": {
@@ -548,12 +607,14 @@
             "type": "string"
           }
         },
-        "required": ["video_translate_id"]
+        "required": [
+          "video_translate_id"
+        ]
       }
     },
     {
       "name": "generate_proofread",
-      "description": "Generate a translation proofread — HeyGen translates the video and produces an SRT file for human review before the final lip-synced video is made. Use this for higher-quality translations where you want to correct the transcription before HeyGen commits to a final output. Returns a proofread_id. Scale or Enterprise plan only.",
+      "description": "Generate a translation proofread \u2014 HeyGen translates the video and produces an SRT file for human review before the final lip-synced video is made. Use this for higher-quality translations where you want to correct the transcription before HeyGen commits to a final output. Returns a proofread_id. Scale or Enterprise plan only.",
       "method": "POST",
       "path": "/v2/video_translate/proofread",
       "input_schema": {
@@ -573,7 +634,9 @@
           "output_languages": {
             "type": "array",
             "description": "Multiple target languages for batch proofread generation.",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "brand_voice_id": {
             "type": "string"
@@ -596,7 +659,10 @@
             "type": "boolean"
           }
         },
-        "required": ["video_url", "title"]
+        "required": [
+          "video_url",
+          "title"
+        ]
       }
     },
     {
@@ -611,7 +677,9 @@
             "type": "string"
           }
         },
-        "required": ["proofread_id"]
+        "required": [
+          "proofread_id"
+        ]
       }
     },
     {
@@ -626,7 +694,9 @@
             "type": "string"
           }
         },
-        "required": ["proofread_id"]
+        "required": [
+          "proofread_id"
+        ]
       }
     },
     {
@@ -641,7 +711,9 @@
             "type": "string"
           }
         },
-        "required": ["proofread_id"]
+        "required": [
+          "proofread_id"
+        ]
       }
     },
     {
@@ -656,7 +728,9 @@
             "type": "string"
           }
         },
-        "required": ["proofread_id"]
+        "required": [
+          "proofread_id"
+        ]
       }
     },
     {
@@ -677,7 +751,10 @@
           },
           "gender": {
             "type": "string",
-            "enum": ["Man", "Woman"]
+            "enum": [
+              "Man",
+              "Woman"
+            ]
           },
           "ethnicity": {
             "type": "string",
@@ -685,7 +762,11 @@
           },
           "orientation": {
             "type": "string",
-            "enum": ["horizontal", "vertical", "square"]
+            "enum": [
+              "horizontal",
+              "vertical",
+              "square"
+            ]
           },
           "pose": {
             "type": "string",
@@ -700,12 +781,14 @@
             "description": "Free-text appearance description ('short brown hair, glasses, casual shirt')."
           }
         },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
       }
     },
     {
       "name": "create_photo_avatar_group",
-      "description": "Create a photo avatar group — a container for multiple looks of the same avatar subject. Used before train_photo_avatar_group and add_looks_to_photo_avatar_group.",
+      "description": "Create a photo avatar group \u2014 a container for multiple looks of the same avatar subject. Used before train_photo_avatar_group and add_looks_to_photo_avatar_group.",
       "method": "POST",
       "path": "/v2/photo_avatar/avatar_group/create",
       "input_schema": {
@@ -719,7 +802,10 @@
             "description": "Initial photo image_key from a previously-uploaded asset."
           }
         },
-        "required": ["name", "image_key"]
+        "required": [
+          "name",
+          "image_key"
+        ]
       }
     },
     {
@@ -736,10 +822,15 @@
           "image_keys": {
             "type": "array",
             "description": "Array of image_key strings from uploaded assets.",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "required": ["group_id", "image_keys"]
+        "required": [
+          "group_id",
+          "image_keys"
+        ]
       }
     },
     {
@@ -754,7 +845,9 @@
             "type": "string"
           }
         },
-        "required": ["group_id"]
+        "required": [
+          "group_id"
+        ]
       }
     },
     {
@@ -769,7 +862,9 @@
             "type": "string"
           }
         },
-        "required": ["group_id"]
+        "required": [
+          "group_id"
+        ]
       }
     },
     {
@@ -789,7 +884,11 @@
           },
           "orientation": {
             "type": "string",
-            "enum": ["horizontal", "vertical", "square"]
+            "enum": [
+              "horizontal",
+              "vertical",
+              "square"
+            ]
           },
           "pose": {
             "type": "string"
@@ -798,12 +897,15 @@
             "type": "string"
           }
         },
-        "required": ["group_id", "prompt"]
+        "required": [
+          "group_id",
+          "prompt"
+        ]
       }
     },
     {
       "name": "add_photo_avatar_motion",
-      "description": "Add motion/animation to a still photo avatar look — converts a static image into a subtly animated one that looks alive. Precondition for using the photo avatar in video generation with non-trivial movement.",
+      "description": "Add motion/animation to a still photo avatar look \u2014 converts a static image into a subtly animated one that looks alive. Precondition for using the photo avatar in video generation with non-trivial movement.",
       "method": "POST",
       "path": "/v2/photo_avatar/add_motion",
       "input_schema": {
@@ -814,7 +916,9 @@
             "description": "Photo avatar look id."
           }
         },
-        "required": ["avatar_id"]
+        "required": [
+          "avatar_id"
+        ]
       }
     },
     {
@@ -829,7 +933,9 @@
             "type": "string"
           }
         },
-        "required": ["avatar_id"]
+        "required": [
+          "avatar_id"
+        ]
       }
     },
     {
@@ -844,7 +950,9 @@
             "type": "string"
           }
         },
-        "required": ["avatar_id"]
+        "required": [
+          "avatar_id"
+        ]
       }
     },
     {
@@ -859,12 +967,14 @@
             "type": "string"
           }
         },
-        "required": ["group_id"]
+        "required": [
+          "group_id"
+        ]
       }
     },
     {
       "name": "create_digital_twin",
-      "description": "Create a digital twin avatar from training footage. Submit a training-footage video URL and a consent-statement video URL; HeyGen builds a lifelike avatar of the person that can be used like any other avatar_id in generate_video. Training takes several minutes to hours — poll via get_digital_twin_status.",
+      "description": "Create a digital twin avatar from training footage. Submit a training-footage video URL and a consent-statement video URL; HeyGen builds a lifelike avatar of the person that can be used like any other avatar_id in generate_video. Training takes several minutes to hours \u2014 poll via get_digital_twin_status.",
       "method": "POST",
       "path": "/v1/video-avatar/create",
       "input_schema": {
@@ -882,7 +992,11 @@
             "type": "string"
           }
         },
-        "required": ["training_footage_url", "video_consent_url", "avatar_name"]
+        "required": [
+          "training_footage_url",
+          "video_consent_url",
+          "avatar_name"
+        ]
       }
     },
     {
@@ -897,7 +1011,9 @@
             "type": "string"
           }
         },
-        "required": ["digital_twin_id"]
+        "required": [
+          "digital_twin_id"
+        ]
       }
     },
     {
@@ -912,7 +1028,9 @@
             "type": "string"
           }
         },
-        "required": ["digital_twin_id"]
+        "required": [
+          "digital_twin_id"
+        ]
       }
     },
     {
@@ -929,7 +1047,11 @@
           },
           "file_type": {
             "type": "string",
-            "enum": ["image", "audio", "video"]
+            "enum": [
+              "image",
+              "audio",
+              "video"
+            ]
           },
           "limit": {
             "type": "integer",
@@ -941,7 +1063,12 @@
           }
         }
       },
-      "query_params": ["folder_id", "file_type", "limit", "token"]
+      "query_params": [
+        "folder_id",
+        "file_type",
+        "limit",
+        "token"
+      ]
     },
     {
       "name": "delete_asset",
@@ -955,7 +1082,9 @@
             "type": "string"
           }
         },
-        "required": ["asset_id"]
+        "required": [
+          "asset_id"
+        ]
       }
     },
     {
@@ -974,7 +1103,9 @@
             "description": "Parent folder id. Omit for root-level folder."
           }
         },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
       }
     },
     {
@@ -1004,7 +1135,13 @@
           }
         }
       },
-      "query_params": ["limit", "parent_id", "name_filter", "is_trash", "token"]
+      "query_params": [
+        "limit",
+        "parent_id",
+        "name_filter",
+        "is_trash",
+        "token"
+      ]
     },
     {
       "name": "update_folder",
@@ -1022,12 +1159,15 @@
             "description": "New folder name."
           }
         },
-        "required": ["folder_id", "name"]
+        "required": [
+          "folder_id",
+          "name"
+        ]
       }
     },
     {
       "name": "trash_folder",
-      "description": "Move a folder to the trash (soft delete — restorable via restore_folder).",
+      "description": "Move a folder to the trash (soft delete \u2014 restorable via restore_folder).",
       "method": "DELETE",
       "path": "/v1/folders/{folder_id}",
       "input_schema": {
@@ -1037,7 +1177,9 @@
             "type": "string"
           }
         },
-        "required": ["folder_id"]
+        "required": [
+          "folder_id"
+        ]
       }
     },
     {
@@ -1052,7 +1194,9 @@
             "type": "string"
           }
         },
-        "required": ["folder_id"]
+        "required": [
+          "folder_id"
+        ]
       }
     },
     {
@@ -1090,10 +1234,15 @@
           "events": {
             "type": "array",
             "description": "Array of event name strings (e.g. ['avatar_video.success', 'avatar_video.fail'])",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "required": ["url", "events"]
+        "required": [
+          "url",
+          "events"
+        ]
       }
     },
     {
@@ -1122,10 +1271,14 @@
           },
           "events": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "required": ["endpoint_id"]
+        "required": [
+          "endpoint_id"
+        ]
       }
     },
     {
@@ -1140,9 +1293,13 @@
             "type": "string"
           }
         },
-        "required": ["endpoint_id"]
+        "required": [
+          "endpoint_id"
+        ]
       },
-      "query_params": ["endpoint_id"]
+      "query_params": [
+        "endpoint_id"
+      ]
     },
     {
       "name": "list_available_webhook_events",
@@ -1200,5 +1357,8 @@
         "description": "Photo avatar generation / training / look failed."
       }
     ]
+  },
+  "health_check": {
+    "tool": "get_current_user"
   }
 }

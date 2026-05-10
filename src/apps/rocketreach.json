@@ -1,12 +1,21 @@
 {
   "slug": "rocketreach",
   "name": "RocketReach",
-  "description": "Contact finder — emails (personal + work) and phone numbers for 700M+ professionals. Strong at people-level lookups when you have a name + company.",
+  "description": "Contact finder \u2014 emails (personal + work) and phone numbers for 700M+ professionals. Strong at people-level lookups when you have a name + company.",
   "logo": "https://www.google.com/s2/favicons?domain=rocketreach.co&sz=128",
-  "categories": ["sales", "leads", "enrichment", "contacts", "prospecting", "b2b"],
+  "categories": [
+    "sales",
+    "leads",
+    "enrichment",
+    "contacts",
+    "prospecting",
+    "b2b"
+  ],
   "base_url": "https://api.rocketreach.co/v2/api",
   "auth": {
-    "types": ["api_key"],
+    "types": [
+      "api_key"
+    ],
     "headers": {
       "Api-Key": "{{api_key}}"
     },
@@ -14,7 +23,7 @@
       {
         "name": "api_key",
         "label": "API key",
-        "description": "RocketReach API key from rocketreach.co → Settings → API"
+        "description": "RocketReach API key from rocketreach.co \u2192 Settings \u2192 API"
       }
     ]
   },
@@ -27,13 +36,36 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "description": "RocketReach profile id (from a search result)" },
-          "linkedin_url": { "type": "string" },
-          "name": { "type": "string" },
-          "current_employer": { "type": "string" },
-          "title": { "type": "string" },
-          "email": { "type": "string" },
-          "lookup_type": { "type": "string", "enum": ["standard", "premium", "premium_(feeds_unlimited)", "phone", "enrich"], "default": "standard" }
+          "id": {
+            "type": "integer",
+            "description": "RocketReach profile id (from a search result)"
+          },
+          "linkedin_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "current_employer": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "lookup_type": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "premium",
+              "premium_(feeds_unlimited)",
+              "phone",
+              "enrich"
+            ],
+            "default": "standard"
+          }
         }
       }
     },
@@ -47,12 +79,21 @@
         "properties": {
           "query": {
             "type": "object",
-            "description": "Filter object — supports name, current_title, current_employer, location, keyword, company_industry, company_size_range, etc. (each as a string array of include terms; suffix '_excluded' to exclude)"
+            "description": "Filter object \u2014 supports name, current_title, current_employer, location, keyword, company_industry, company_size_range, etc. (each as a string array of include terms; suffix '_excluded' to exclude)"
           },
-          "start": { "type": "integer", "default": 1 },
-          "page_size": { "type": "integer", "default": 10, "maximum": 100 }
+          "start": {
+            "type": "integer",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "default": 10,
+            "maximum": 100
+          }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     },
     {
@@ -63,9 +104,15 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "name": { "type": "string" },
-          "ticker": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ticker": {
+            "type": "string"
+          }
         }
       }
     },
@@ -77,19 +124,35 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "query": { "type": "object" },
-          "start": { "type": "integer", "default": 1 },
-          "page_size": { "type": "integer", "default": 10 }
+          "query": {
+            "type": "object"
+          },
+          "start": {
+            "type": "integer",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "default": 10
+          }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     },
     {
       "name": "account",
-      "description": "Get current account details — credits, plan, daily limits.",
+      "description": "Get current account details \u2014 credits, plan, daily limits.",
       "method": "GET",
       "path": "/account",
-      "input_schema": { "type": "object", "properties": {} }
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "account"
+  }
 }

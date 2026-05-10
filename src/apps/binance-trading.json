@@ -58,7 +58,7 @@
     },
     {
       "name": "get_price",
-      "description": "Get the latest price for a symbol. Lightweight alternative to full ticker — use this when you only need current price.",
+      "description": "Get the latest price for a symbol. Lightweight alternative to full ticker \u2014 use this when you only need current price.",
       "method": "GET",
       "path": "/ticker/price",
       "input_schema": {
@@ -440,7 +440,7 @@
     },
     {
       "name": "get_all_orders",
-      "description": "Get all orders for a symbol — active, canceled, and filled. Use for order history.",
+      "description": "Get all orders for a symbol \u2014 active, canceled, and filled. Use for order history.",
       "method": "GET",
       "path": "/allOrders",
       "input_schema": {
@@ -562,5 +562,8 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_account"
+  }
 }

@@ -1,7 +1,7 @@
 {
   "slug": "alpaca-trading",
   "name": "Alpaca Trading",
-  "description": "Alpaca Trading API v2 — accounts, positions, orders, watchlists, and market clock for stocks, options, and crypto. Paired with alpaca-market-data for quotes/bars/snapshots. Defaults to paper trading; switch the 'host' credential to api.alpaca.markets for live.",
+  "description": "Alpaca Trading API v2 \u2014 accounts, positions, orders, watchlists, and market clock for stocks, options, and crypto. Paired with alpaca-market-data for quotes/bars/snapshots. Defaults to paper trading; switch the 'host' credential to api.alpaca.markets for live.",
   "logo": "https://www.google.com/s2/favicons?domain=alpaca.markets&sz=128",
   "categories": [
     "trading",
@@ -477,7 +477,7 @@
           },
           "percentage": {
             "type": "string",
-            "description": "0–100% of the position to close."
+            "description": "0\u2013100% of the position to close."
           }
         },
         "required": [
@@ -783,5 +783,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_account"
+  }
 }

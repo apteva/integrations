@@ -1207,7 +1207,9 @@
             "default": "public_metrics"
           }
         },
-        "required": ["tweet_id"]
+        "required": [
+          "tweet_id"
+        ]
       }
     },
     {
@@ -1238,5 +1240,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_me"
+  }
 }

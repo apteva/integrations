@@ -1,7 +1,7 @@
 {
   "slug": "calendly",
   "name": "Calendly",
-  "description": "MCP server for Calendly scheduling — manage event types, scheduled events, invitees, availability, scheduling links, and webhooks",
+  "description": "MCP server for Calendly scheduling \u2014 manage event types, scheduled events, invitees, availability, scheduling links, and webhooks",
   "logo": "https://www.google.com/s2/favicons?domain=calendly.com&sz=128",
   "categories": [
     "scheduling",
@@ -183,7 +183,7 @@
     },
     {
       "name": "list_invitees",
-      "description": "List all invitees for a scheduled event — includes name, email, questions/answers, timezone, and cancellation info",
+      "description": "List all invitees for a scheduled event \u2014 includes name, email, questions/answers, timezone, and cancellation info",
       "method": "GET",
       "path": "/scheduled_events/{event_uuid}/invitees",
       "input_schema": {
@@ -278,7 +278,7 @@
     },
     {
       "name": "create_one_off_event_type",
-      "description": "Create a temporary event type for a specific occasion — useful for custom meetings not covered by regular event types",
+      "description": "Create a temporary event type for a specific occasion \u2014 useful for custom meetings not covered by regular event types",
       "method": "POST",
       "path": "/one_off_event_types",
       "input_schema": {
@@ -524,7 +524,7 @@
     },
     {
       "name": "list_routing_forms",
-      "description": "List routing forms for an organization — forms that route invitees to the right event type based on their answers",
+      "description": "List routing forms for an organization \u2014 forms that route invitees to the right event type based on their answers",
       "method": "GET",
       "path": "/routing_forms",
       "input_schema": {
@@ -550,7 +550,7 @@
     },
     {
       "name": "list_routing_form_submissions",
-      "description": "List submissions for a routing form — see how invitees answered routing questions and which event type they were routed to",
+      "description": "List submissions for a routing form \u2014 see how invitees answered routing questions and which event type they were routed to",
       "method": "GET",
       "path": "/routing_form_submissions",
       "input_schema": {
@@ -574,5 +574,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_current_user"
+  }
 }

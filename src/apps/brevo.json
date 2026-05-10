@@ -1488,5 +1488,8 @@
         "description": "Contact was deleted from the account"
       }
     ]
+  },
+  "health_check": {
+    "tool": "get_account"
   }
 }

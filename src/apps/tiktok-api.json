@@ -1,7 +1,7 @@
 {
   "slug": "tiktok-api",
   "name": "TikTok",
-  "description": "TikTok Content Posting API v2 — post videos & photos, manage content, get user info, video analytics, and creator settings via OAuth2",
+  "description": "TikTok Content Posting API v2 \u2014 post videos & photos, manage content, get user info, video analytics, and creator settings via OAuth2",
   "logo": "https://www.google.com/s2/favicons?domain=www.tiktok.com&sz=128",
   "categories": [
     "tiktok",
@@ -58,7 +58,7 @@
   "tools": [
     {
       "name": "post_video",
-      "description": "Post a video to TikTok by pulling from a URL. Returns publish_id — use get-publish-status to check completion.\n\nNOTE: TikTok has ONE text field ('title' in post_info) which serves as the caption. Include hashtags and @mentions there. There is no separate description field for videos.\n\nExample:\n{\n  \"post_info\": {\n    \"title\": \"Check this out! #fyp #trending\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\",\n    \"disable_comment\": false\n  },\n  \"source_info\": {\n    \"source\": \"PULL_FROM_URL\",\n    \"video_url\": \"https://example.com/video.mp4\"\n  }\n}",
+      "description": "Post a video to TikTok by pulling from a URL. Returns publish_id \u2014 use get-publish-status to check completion.\n\nNOTE: TikTok has ONE text field ('title' in post_info) which serves as the caption. Include hashtags and @mentions there. There is no separate description field for videos.\n\nExample:\n{\n  \"post_info\": {\n    \"title\": \"Check this out! #fyp #trending\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\",\n    \"disable_comment\": false\n  },\n  \"source_info\": {\n    \"source\": \"PULL_FROM_URL\",\n    \"video_url\": \"https://example.com/video.mp4\"\n  }\n}",
       "method": "POST",
       "path": "/post/publish/video/init/",
       "input_schema": {
@@ -70,7 +70,7 @@
             "properties": {
               "title": {
                 "type": "string",
-                "description": "Video caption text (max 2200 chars) — this is the ONLY text field. Include hashtags and @mentions here."
+                "description": "Video caption text (max 2200 chars) \u2014 this is the ONLY text field. Include hashtags and @mentions here."
               },
               "privacy_level": {
                 "type": "string",
@@ -166,7 +166,7 @@
     },
     {
       "name": "post_photo",
-      "description": "Post photos to TikTok (up to 35 images). Returns publish_id — use get-publish-status to check completion.\n\nExample:\n{\n  \"post_info\": {\n    \"title\": \"My photo carousel\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\"\n  },\n  \"source_info\": {\n    \"source\": \"PULL_FROM_URL\",\n    \"photo_images\": [\"https://example.com/img1.jpg\", \"https://example.com/img2.jpg\"],\n    \"photo_cover_index\": 0\n  },\n  \"post_mode\": \"DIRECT_POST\",\n  \"media_type\": \"PHOTO\"\n}",
+      "description": "Post photos to TikTok (up to 35 images). Returns publish_id \u2014 use get-publish-status to check completion.\n\nExample:\n{\n  \"post_info\": {\n    \"title\": \"My photo carousel\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\"\n  },\n  \"source_info\": {\n    \"source\": \"PULL_FROM_URL\",\n    \"photo_images\": [\"https://example.com/img1.jpg\", \"https://example.com/img2.jpg\"],\n    \"photo_cover_index\": 0\n  },\n  \"post_mode\": \"DIRECT_POST\",\n  \"media_type\": \"PHOTO\"\n}",
       "method": "POST",
       "path": "/post/publish/content/init/",
       "input_schema": {
@@ -509,5 +509,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_user_info"
+  }
 }

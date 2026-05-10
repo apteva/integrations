@@ -94,5 +94,8 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "list_models"
+  }
 }

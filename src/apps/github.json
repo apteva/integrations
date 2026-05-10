@@ -53,24 +53,61 @@
     {
       "name": "issue-card",
       "entry": "/ui/IssueCard.mjs",
-      "slots": ["chat.message_attachment"],
+      "slots": [
+        "chat.message_attachment"
+      ],
       "props_schema": {
         "type": "object",
-        "required": ["repo", "issue_number"],
+        "required": [
+          "repo",
+          "issue_number"
+        ],
         "properties": {
-          "repo": { "type": "string", "description": "owner/name (e.g. acme-corp/billing-service)" },
-          "issue_number": { "type": "integer", "description": "Issue number (#NN)" },
-          "title": { "type": "string", "description": "Issue title — pass from get_issue response" },
-          "state": { "type": "string", "description": "open or closed" },
-          "state_reason": { "type": "string", "description": "completed | not_planned | reopened" },
-          "user_login": { "type": "string", "description": "Author login" },
-          "user_avatar_url": { "type": "string", "description": "Author avatar URL" },
-          "labels": { "type": "string", "description": "Comma-separated label names" },
-          "assignees": { "type": "string", "description": "Comma-separated assignee logins" },
-          "comments": { "type": "integer", "description": "Comments count" }
+          "repo": {
+            "type": "string",
+            "description": "owner/name (e.g. acme-corp/billing-service)"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "Issue number (#NN)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Issue title \u2014 pass from get_issue response"
+          },
+          "state": {
+            "type": "string",
+            "description": "open or closed"
+          },
+          "state_reason": {
+            "type": "string",
+            "description": "completed | not_planned | reopened"
+          },
+          "user_login": {
+            "type": "string",
+            "description": "Author login"
+          },
+          "user_avatar_url": {
+            "type": "string",
+            "description": "Author avatar URL"
+          },
+          "labels": {
+            "type": "string",
+            "description": "Comma-separated label names"
+          },
+          "assignees": {
+            "type": "string",
+            "description": "Comma-separated assignee logins"
+          },
+          "comments": {
+            "type": "integer",
+            "description": "Comments count"
+          }
         }
       },
-      "preview_props": { "preview": true }
+      "preview_props": {
+        "preview": true
+      }
     }
   ],
   "tools": [
@@ -308,14 +345,14 @@
           },
           "sort": {
             "type": "string",
-            "description": "Sort field (only 'indexed' supported). Note: GitHub has flagged sort/order on code search as 'closing down' — prefer omitting both for forward compatibility.",
+            "description": "Sort field (only 'indexed' supported). Note: GitHub has flagged sort/order on code search as 'closing down' \u2014 prefer omitting both for forward compatibility.",
             "enum": [
               "indexed"
             ]
           },
           "order": {
             "type": "string",
-            "description": "Sort order. Note: closing down per GitHub — prefer omitting.",
+            "description": "Sort order. Note: closing down per GitHub \u2014 prefer omitting.",
             "enum": [
               "asc",
               "desc"
@@ -340,7 +377,7 @@
     },
     {
       "name": "get_contents",
-      "description": "Get repository contents — a file (with content) or directory listing. For files up to 1MB, content is base64 encoded.",
+      "description": "Get repository contents \u2014 a file (with content) or directory listing. For files up to 1MB, content is base64 encoded.",
       "method": "GET",
       "path": "/repos/{owner}/{repo}/contents/{path}",
       "input_schema": {
@@ -554,11 +591,11 @@
           },
           "since": {
             "type": "string",
-            "description": "ISO 8601 date — only commits after this date"
+            "description": "ISO 8601 date \u2014 only commits after this date"
           },
           "until": {
             "type": "string",
-            "description": "ISO 8601 date — only commits before this date"
+            "description": "ISO 8601 date \u2014 only commits before this date"
           },
           "per_page": {
             "type": "integer",
@@ -723,7 +760,7 @@
     },
     {
       "name": "update_issue",
-      "description": "Update an issue — change title, body, state, labels, or assignees",
+      "description": "Update an issue \u2014 change title, body, state, labels, or assignees",
       "method": "PATCH",
       "path": "/repos/{owner}/{repo}/issues/{issue_number}",
       "input_schema": {
@@ -1631,5 +1668,8 @@
         "description": "Deployment status updated"
       }
     ]
+  },
+  "health_check": {
+    "tool": "get_authenticated_user"
   }
 }

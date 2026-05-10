@@ -3,13 +3,26 @@
   "name": "CircleCI",
   "description": "MCP server for CircleCI - pipelines, workflows, jobs, and projects via the CircleCI REST API v2",
   "logo": "https://www.google.com/s2/favicons?domain=circleci.com&sz=128",
-  "categories": ["ci-cd", "developer-tools", "devops", "build"],
+  "categories": [
+    "ci-cd",
+    "developer-tools",
+    "devops",
+    "build"
+  ],
   "base_url": "https://circleci.com/api/v2",
   "auth": {
-    "types": ["api_key"],
-    "headers": { "Circle-Token": "{{api_key}}" },
+    "types": [
+      "api_key"
+    ],
+    "headers": {
+      "Circle-Token": "{{api_key}}"
+    },
     "credential_fields": [
-      { "name": "api_key", "label": "Personal API Token", "description": "Personal API token from User Settings → Personal API Tokens" }
+      {
+        "name": "api_key",
+        "label": "Personal API Token",
+        "description": "Personal API token from User Settings \u2192 Personal API Tokens"
+      }
     ]
   },
   "tools": [
@@ -18,7 +31,10 @@
       "description": "Get the authenticated user's account",
       "method": "GET",
       "path": "/me",
-      "input_schema": { "type": "object", "properties": {} }
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
     },
     {
       "name": "list_pipelines",
@@ -28,13 +44,24 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_slug": { "type": "string" },
-          "branch": { "type": "string" },
-          "page-token": { "type": "string" }
+          "project_slug": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "page-token": {
+            "type": "string"
+          }
         },
-        "required": ["project_slug"]
+        "required": [
+          "project_slug"
+        ]
       },
-      "query_params": ["branch", "page-token"]
+      "query_params": [
+        "branch",
+        "page-token"
+      ]
     },
     {
       "name": "get_pipeline",
@@ -43,8 +70,14 @@
       "path": "/pipeline/{pipeline_id}",
       "input_schema": {
         "type": "object",
-        "properties": { "pipeline_id": { "type": "string" } },
-        "required": ["pipeline_id"]
+        "properties": {
+          "pipeline_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pipeline_id"
+        ]
       }
     },
     {
@@ -55,12 +88,23 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "project_slug": { "type": "string" },
-          "branch": { "type": "string" },
-          "tag": { "type": "string" },
-          "parameters": { "type": "object", "description": "Map of pipeline parameter name → value" }
+          "project_slug": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Map of pipeline parameter name \u2192 value"
+          }
         },
-        "required": ["project_slug"]
+        "required": [
+          "project_slug"
+        ]
       }
     },
     {
@@ -70,8 +114,14 @@
       "path": "/pipeline/{pipeline_id}/workflow",
       "input_schema": {
         "type": "object",
-        "properties": { "pipeline_id": { "type": "string" } },
-        "required": ["pipeline_id"]
+        "properties": {
+          "pipeline_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pipeline_id"
+        ]
       }
     },
     {
@@ -81,8 +131,14 @@
       "path": "/workflow/{workflow_id}",
       "input_schema": {
         "type": "object",
-        "properties": { "workflow_id": { "type": "string" } },
-        "required": ["workflow_id"]
+        "properties": {
+          "workflow_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow_id"
+        ]
       }
     },
     {
@@ -92,8 +148,14 @@
       "path": "/workflow/{workflow_id}/job",
       "input_schema": {
         "type": "object",
-        "properties": { "workflow_id": { "type": "string" } },
-        "required": ["workflow_id"]
+        "properties": {
+          "workflow_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow_id"
+        ]
       }
     },
     {
@@ -103,8 +165,14 @@
       "path": "/workflow/{workflow_id}/cancel",
       "input_schema": {
         "type": "object",
-        "properties": { "workflow_id": { "type": "string" } },
-        "required": ["workflow_id"]
+        "properties": {
+          "workflow_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow_id"
+        ]
       }
     },
     {
@@ -115,13 +183,30 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "workflow_id": { "type": "string" },
-          "from_failed": { "type": "boolean" },
-          "jobs": { "type": "array", "items": { "type": "string" }, "description": "Job IDs to rerun (omit for all)" },
-          "enable_ssh": { "type": "boolean" }
+          "workflow_id": {
+            "type": "string"
+          },
+          "from_failed": {
+            "type": "boolean"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Job IDs to rerun (omit for all)"
+          },
+          "enable_ssh": {
+            "type": "boolean"
+          }
         },
-        "required": ["workflow_id"]
+        "required": [
+          "workflow_id"
+        ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_current_user"
+  }
 }

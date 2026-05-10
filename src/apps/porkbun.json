@@ -1,7 +1,7 @@
 {
   "slug": "porkbun",
   "name": "Porkbun",
-  "description": "Porkbun domain registrar — register and manage domains, DNS records, nameservers, URL forwarding, glue records, and SSL certificates. Authenticates via X-API-Key + X-Secret-API-Key headers.",
+  "description": "Porkbun domain registrar \u2014 register and manage domains, DNS records, nameservers, URL forwarding, glue records, and SSL certificates. Authenticates via X-API-Key + X-Secret-API-Key headers.",
   "logo": "https://porkbun.com/static/img/favicon-32x32.png",
   "categories": [
     "dns",
@@ -49,7 +49,7 @@
     },
     {
       "name": "get_pricing",
-      "description": "Public domain pricing across all TLDs Porkbun sells. No credentials required, but cheapest to call once and cache — pricing rarely changes intra-day. Returns a map of TLD → { registration, renewal, transfer } prices.",
+      "description": "Public domain pricing across all TLDs Porkbun sells. No credentials required, but cheapest to call once and cache \u2014 pricing rarely changes intra-day. Returns a map of TLD \u2192 { registration, renewal, transfer } prices.",
       "method": "GET",
       "path": "/pricing/get",
       "input_schema": {
@@ -72,7 +72,10 @@
           },
           "includeLabels": {
             "type": "string",
-            "enum": ["yes", "no"],
+            "enum": [
+              "yes",
+              "no"
+            ],
             "description": "Include user-defined labels in the response",
             "default": "no"
           }
@@ -92,18 +95,22 @@
             "description": "Fully-qualified domain name to check (e.g. example.com)"
           }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
       "name": "register_domain",
-      "description": "Register a new domain. ⚠️ This SPENDS REAL MONEY against your account balance. The price is whatever get_pricing currently returns for the TLD. Make sure to confirm with the user before calling.",
+      "description": "Register a new domain. \u26a0\ufe0f This SPENDS REAL MONEY against your account balance. The price is whatever get_pricing currently returns for the TLD. Make sure to confirm with the user before calling.",
       "method": "POST",
       "path": "/domain/create/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "years": {
             "type": "integer",
             "description": "Number of years to register (1-10)",
@@ -115,52 +122,69 @@
           },
           "renewAuto": {
             "type": "string",
-            "enum": ["yes", "no"],
+            "enum": [
+              "yes",
+              "no"
+            ],
             "description": "Enable auto-renewal",
             "default": "yes"
           },
           "whoisPrivacy": {
             "type": "string",
-            "enum": ["yes", "no"],
+            "enum": [
+              "yes",
+              "no"
+            ],
             "description": "Enable WHOIS privacy (free with all Porkbun registrations)",
             "default": "yes"
           }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
       "name": "renew_domain",
-      "description": "Renew a domain for the specified number of years. ⚠️ Spends account balance.",
+      "description": "Renew a domain for the specified number of years. \u26a0\ufe0f Spends account balance.",
       "method": "POST",
       "path": "/domain/renew/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "years": {
             "type": "integer",
             "default": 1
           }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
       "name": "transfer_domain",
-      "description": "Initiate a domain transfer in to Porkbun. ⚠️ Spends account balance (transfer price).",
+      "description": "Initiate a domain transfer in to Porkbun. \u26a0\ufe0f Spends account balance (transfer price).",
       "method": "POST",
       "path": "/domain/transfer/{domain}",
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "authcode": {
             "type": "string",
             "description": "EPP/auth code from the losing registrar"
           }
         },
-        "required": ["domain", "authcode"]
+        "required": [
+          "domain",
+          "authcode"
+        ]
       }
     },
     {
@@ -171,9 +195,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -194,13 +222,21 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "renewAuto": {
             "type": "string",
-            "enum": ["yes", "no"]
+            "enum": [
+              "yes",
+              "no"
+            ]
           }
         },
-        "required": ["domain", "renewAuto"]
+        "required": [
+          "domain",
+          "renewAuto"
+        ]
       }
     },
     {
@@ -211,9 +247,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -224,14 +264,21 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "ns": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Nameserver hostnames (e.g. ['ns1.example.com', 'ns2.example.com'])"
           }
         },
-        "required": ["domain", "ns"]
+        "required": [
+          "domain",
+          "ns"
+        ]
       }
     },
     {
@@ -242,9 +289,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -255,18 +306,26 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "subdomain": {
             "type": "string",
             "description": "Subdomain only (e.g. 'ns1' for ns1.example.com)"
           },
           "ips": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "IPv4 and/or IPv6 addresses for the glue record"
           }
         },
-        "required": ["domain", "subdomain", "ips"]
+        "required": [
+          "domain",
+          "subdomain",
+          "ips"
+        ]
       }
     },
     {
@@ -277,14 +336,24 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "subdomain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
+          "subdomain": {
+            "type": "string"
+          },
           "ips": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "required": ["domain", "subdomain", "ips"]
+        "required": [
+          "domain",
+          "subdomain",
+          "ips"
+        ]
       }
     },
     {
@@ -295,10 +364,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "subdomain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "subdomain": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "subdomain"]
+        "required": [
+          "domain",
+          "subdomain"
+        ]
       }
     },
     {
@@ -309,9 +385,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -322,13 +402,18 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "id": {
             "type": "string",
             "description": "DNS record ID (returned by list_dns_records)"
           }
         },
-        "required": ["domain", "id"]
+        "required": [
+          "domain",
+          "id"
+        ]
       }
     },
     {
@@ -339,17 +424,35 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
-            "enum": ["A", "AAAA", "MX", "CNAME", "ALIAS", "TXT", "NS", "SRV", "TLSA", "CAA", "HTTPS", "SVCB"]
+            "enum": [
+              "A",
+              "AAAA",
+              "MX",
+              "CNAME",
+              "ALIAS",
+              "TXT",
+              "NS",
+              "SRV",
+              "TLSA",
+              "CAA",
+              "HTTPS",
+              "SVCB"
+            ]
           },
           "subdomain": {
             "type": "string",
             "description": "Subdomain part only ('' for root, 'www' for www.example.com)"
           }
         },
-        "required": ["domain", "type"]
+        "required": [
+          "domain",
+          "type"
+        ]
       }
     },
     {
@@ -360,14 +463,29 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "name": {
             "type": "string",
             "description": "Subdomain only (e.g. 'www', 'mail'). Use '' for the apex record. Do NOT include the parent domain."
           },
           "type": {
             "type": "string",
-            "enum": ["A", "AAAA", "MX", "CNAME", "ALIAS", "TXT", "NS", "SRV", "TLSA", "CAA", "HTTPS", "SVCB"]
+            "enum": [
+              "A",
+              "AAAA",
+              "MX",
+              "CNAME",
+              "ALIAS",
+              "TXT",
+              "NS",
+              "SRV",
+              "TLSA",
+              "CAA",
+              "HTTPS",
+              "SVCB"
+            ]
           },
           "content": {
             "type": "string",
@@ -380,14 +498,18 @@
           },
           "prio": {
             "type": "string",
-            "description": "Priority — required for MX and SRV records"
+            "description": "Priority \u2014 required for MX and SRV records"
           },
           "notes": {
             "type": "string",
             "description": "Free-form internal note (not published)"
           }
         },
-        "required": ["domain", "type", "content"]
+        "required": [
+          "domain",
+          "type",
+          "content"
+        ]
       }
     },
     {
@@ -398,19 +520,51 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
-            "enum": ["A", "AAAA", "MX", "CNAME", "ALIAS", "TXT", "NS", "SRV", "TLSA", "CAA", "HTTPS", "SVCB"]
+            "enum": [
+              "A",
+              "AAAA",
+              "MX",
+              "CNAME",
+              "ALIAS",
+              "TXT",
+              "NS",
+              "SRV",
+              "TLSA",
+              "CAA",
+              "HTTPS",
+              "SVCB"
+            ]
           },
-          "content": { "type": "string" },
-          "ttl": { "type": "string" },
-          "prio": { "type": "string" },
-          "notes": { "type": "string" }
+          "content": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "string"
+          },
+          "prio": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "id", "type", "content"]
+        "required": [
+          "domain",
+          "id",
+          "type",
+          "content"
+        ]
       }
     },
     {
@@ -421,18 +575,47 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
-            "enum": ["A", "AAAA", "MX", "CNAME", "ALIAS", "TXT", "NS", "SRV", "TLSA", "CAA", "HTTPS", "SVCB"]
+            "enum": [
+              "A",
+              "AAAA",
+              "MX",
+              "CNAME",
+              "ALIAS",
+              "TXT",
+              "NS",
+              "SRV",
+              "TLSA",
+              "CAA",
+              "HTTPS",
+              "SVCB"
+            ]
           },
-          "subdomain": { "type": "string" },
-          "content": { "type": "string" },
-          "ttl": { "type": "string" },
-          "prio": { "type": "string" },
-          "notes": { "type": "string" }
+          "subdomain": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "string"
+          },
+          "prio": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "type", "content"]
+        "required": [
+          "domain",
+          "type",
+          "content"
+        ]
       }
     },
     {
@@ -443,10 +626,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "id": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "id"]
+        "required": [
+          "domain",
+          "id"
+        ]
       }
     },
     {
@@ -457,14 +647,34 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
-            "enum": ["A", "AAAA", "MX", "CNAME", "ALIAS", "TXT", "NS", "SRV", "TLSA", "CAA", "HTTPS", "SVCB"]
+            "enum": [
+              "A",
+              "AAAA",
+              "MX",
+              "CNAME",
+              "ALIAS",
+              "TXT",
+              "NS",
+              "SRV",
+              "TLSA",
+              "CAA",
+              "HTTPS",
+              "SVCB"
+            ]
           },
-          "subdomain": { "type": "string" }
+          "subdomain": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "type"]
+        "required": [
+          "domain",
+          "type"
+        ]
       }
     },
     {
@@ -475,9 +685,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -488,7 +702,9 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "keyTag": {
             "type": "string",
             "description": "DNSKEY key tag (decimal)"
@@ -510,7 +726,13 @@
             "description": "Optional max signature lifetime in seconds"
           }
         },
-        "required": ["domain", "keyTag", "alg", "digestType", "digest"]
+        "required": [
+          "domain",
+          "keyTag",
+          "alg",
+          "digestType",
+          "digest"
+        ]
       }
     },
     {
@@ -521,10 +743,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "keytag": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "keytag": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "keytag"]
+        "required": [
+          "domain",
+          "keytag"
+        ]
       }
     },
     {
@@ -535,9 +764,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -548,7 +781,9 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
+          "domain": {
+            "type": "string"
+          },
           "subdomain": {
             "type": "string",
             "description": "Subdomain to forward from ('' for the apex)"
@@ -559,21 +794,36 @@
           },
           "type": {
             "type": "string",
-            "enum": ["temporary", "permanent"],
+            "enum": [
+              "temporary",
+              "permanent"
+            ],
             "description": "302 (temporary) or 301 (permanent)"
           },
           "includePath": {
             "type": "string",
-            "enum": ["yes", "no"],
+            "enum": [
+              "yes",
+              "no"
+            ],
             "description": "Append the source request path to the destination"
           },
           "wildcard": {
             "type": "string",
-            "enum": ["yes", "no"],
+            "enum": [
+              "yes",
+              "no"
+            ],
             "description": "Apply to all subdomains under the target"
           }
         },
-        "required": ["domain", "location", "type", "includePath", "wildcard"]
+        "required": [
+          "domain",
+          "location",
+          "type",
+          "includePath",
+          "wildcard"
+        ]
       }
     },
     {
@@ -584,10 +834,17 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" },
-          "id": { "type": "string" }
+          "domain": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
         },
-        "required": ["domain", "id"]
+        "required": [
+          "domain",
+          "id"
+        ]
       }
     },
     {
@@ -598,9 +855,13 @@
       "input_schema": {
         "type": "object",
         "properties": {
-          "domain": { "type": "string" }
+          "domain": {
+            "type": "string"
+          }
         },
-        "required": ["domain"]
+        "required": [
+          "domain"
+        ]
       }
     },
     {
@@ -613,5 +874,8 @@
         "properties": {}
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "ping"
+  }
 }

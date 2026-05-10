@@ -440,5 +440,8 @@
         ]
       }
     }
-  ]
+  ],
+  "health_check": {
+    "tool": "get_me"
+  }
 }
