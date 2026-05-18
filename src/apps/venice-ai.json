@@ -1,0 +1,410 @@
+{
+  "slug": "venice-ai",
+  "name": "Venice AI",
+  "description": "Privacy-first, OpenAI-compatible API for chat, image generation (Grok Imagine, Nano Banana, Venice SD 3.5, gpt-image-2), text-to-speech (multiple TTS engines + voice cloning handles), and image upscaling. Bearer-token auth; no data retention on Venice's side.",
+  "logo": "https://www.google.com/s2/favicons?domain=venice.ai&sz=128",
+  "categories": [
+    "ai",
+    "venice",
+    "chat",
+    "image-generation",
+    "tts",
+    "upscale",
+    "uncensored"
+  ],
+  "base_url": "https://api.venice.ai/api/v1",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key",
+        "description": "Your Venice AI API Key — create one at https://venice.ai/settings/api"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "generate_image",
+      "description": "Generate an image via Venice's POST /images/generations. Supports grok-imagine-image, gpt-image-2, venice-sd35, qwen-image-2, nano-banana-pro, and others (call list_models?type=image for the live set). Returns base64 image data by default (return_binary=false). Most Venice-specific knobs (style_preset, hide_watermark, safe_mode, variants) are exposed.",
+      "method": "POST",
+      "path": "/images/generations",
+      "timeout_ms": 180000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Image model id — e.g. grok-imagine-image (default), gpt-image-2, venice-sd35, qwen-image-2, nano-banana-pro. Use list_models?type=image for the authoritative list.",
+            "default": "grok-imagine-image"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Image description (1–7500 chars, model-specific limit)."
+          },
+          "negative_prompt": {
+            "type": "string",
+            "description": "Things to steer the image away from (up to 7500 chars)."
+          },
+          "width": {
+            "type": "integer",
+            "description": "Image width in pixels (1–1280). Pixel-sized models (venice-sd35) honour this; aspect-ratio models (nano-banana, qwen-image-2) ignore it — use aspect_ratio + resolution instead.",
+            "minimum": 1,
+            "maximum": 1280,
+            "default": 1024
+          },
+          "height": {
+            "type": "integer",
+            "description": "Image height in pixels (1–1280).",
+            "minimum": 1,
+            "maximum": 1280,
+            "default": 1024
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Aspect ratio (aspect-ratio models only — nano-banana, qwen-image-2). e.g. 1:1, 16:9, 3:2.",
+            "enum": [
+              "1:1",
+              "3:2",
+              "2:3",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "21:9"
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Resolution tier (resolution-tier models only — gpt-image-2, nano-banana-pro).",
+            "enum": [
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "format": {
+            "type": "string",
+            "description": "Output image format.",
+            "enum": [
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "default": "webp"
+          },
+          "cfg_scale": {
+            "type": "number",
+            "description": "Adherence to prompt (0–20, model-specific defaults). Higher = more literal, lower = more creative.",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "steps": {
+            "type": "integer",
+            "description": "Diffusion steps (model-specific default; some models ignore this).",
+            "default": 8
+          },
+          "seed": {
+            "type": "integer",
+            "description": "Random seed for reproducibility (-999999999 to 999999999). 0 = random.",
+            "minimum": -999999999,
+            "maximum": 999999999,
+            "default": 0
+          },
+          "style_preset": {
+            "type": "string",
+            "description": "Style preset — e.g. '3D Model', 'Photographic', 'Anime', 'Digital Art'. Model-specific support."
+          },
+          "safe_mode": {
+            "type": "boolean",
+            "description": "Blur adult-classified content. Default true.",
+            "default": true
+          },
+          "hide_watermark": {
+            "type": "boolean",
+            "description": "Suppress the Venice watermark. Venice may override for certain content.",
+            "default": false
+          },
+          "return_binary": {
+            "type": "boolean",
+            "description": "Return raw image bytes instead of JSON+base64. Default false (returns JSON with base64 image strings).",
+            "default": false
+          },
+          "variants": {
+            "type": "integer",
+            "description": "Number of image variants to generate (1–4). Only honoured when return_binary=false.",
+            "minimum": 1,
+            "maximum": 4,
+            "default": 1
+          },
+          "lora_strength": {
+            "type": "integer",
+            "description": "LoRA strength when the chosen model supports adapters (0–100).",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "embed_exif_metadata": {
+            "type": "boolean",
+            "description": "Embed generation metadata in the image EXIF block.",
+            "default": false
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      }
+    },
+    {
+      "name": "chat_completion",
+      "description": "OpenAI-compatible chat completion via POST /chat/completions. Venice extras (web search, character_slug, thinking control) ride on `venice_parameters`.",
+      "method": "POST",
+      "path": "/chat/completions",
+      "timeout_ms": 120000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Text model id — e.g. venice-uncensored, llama-3.3-70b, qwen-2.5-coder-32b, deepseek-r1-671b. Use list_models?type=text for the live set."
+          },
+          "messages": {
+            "type": "array",
+            "description": "OpenAI-shaped messages array.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "system",
+                    "user",
+                    "assistant",
+                    "tool"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "Cap on response tokens.",
+            "minimum": 1
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Sampling temperature (0–2).",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "description": "Nucleus sampling (0–1).",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "Stream tokens via SSE.",
+            "default": false
+          },
+          "venice_parameters": {
+            "type": "object",
+            "description": "Venice-specific knobs.",
+            "properties": {
+              "include_venice_system_prompt": {
+                "type": "boolean",
+                "default": true
+              },
+              "character_slug": {
+                "type": "string",
+                "description": "Use a Venice Character persona."
+              },
+              "enable_web_search": {
+                "type": "string",
+                "enum": [
+                  "off",
+                  "on",
+                  "auto"
+                ],
+                "default": "off"
+              },
+              "enable_web_scraping": {
+                "type": "boolean",
+                "default": false
+              },
+              "enable_web_citations": {
+                "type": "boolean",
+                "default": false
+              },
+              "strip_thinking_response": {
+                "type": "boolean",
+                "default": false
+              },
+              "disable_thinking": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "required": [
+          "model",
+          "messages"
+        ]
+      }
+    },
+    {
+      "name": "text_to_speech",
+      "description": "Generate speech audio via POST /audio/speech. Returns binary audio (Content-Type matches `response_format`). Supports voice cloning handles (vv_<slug>) alongside the curated voice catalog.",
+      "method": "POST",
+      "path": "/audio/speech",
+      "timeout_ms": 120000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "TTS model id.",
+            "enum": [
+              "tts-kokoro",
+              "tts-qwen3-0-6b",
+              "tts-qwen3-1-7b",
+              "tts-xai-v1",
+              "tts-chatterbox-hd",
+              "tts-elevenlabs-turbo-v2-5",
+              "tts-minimax-speech-02-hd",
+              "tts-gemini-3-1-flash"
+            ],
+            "default": "tts-kokoro"
+          },
+          "input": {
+            "type": "string",
+            "description": "Text to speak (1–4096 chars)."
+          },
+          "voice": {
+            "type": "string",
+            "description": "Voice id — curated catalog (af_sky, af_bella, af_nova, am_adam, am_echo, bm_daniel, eve, Vivian, Rachel, Aria, …) OR a cloned-voice handle matching vv_<slug>.",
+            "default": "af_sky"
+          },
+          "response_format": {
+            "type": "string",
+            "description": "Audio container.",
+            "enum": [
+              "mp3",
+              "opus",
+              "aac",
+              "flac",
+              "wav",
+              "pcm"
+            ],
+            "default": "mp3"
+          },
+          "speed": {
+            "type": "number",
+            "description": "Playback speed multiplier.",
+            "minimum": 0.25,
+            "maximum": 4,
+            "default": 1
+          }
+        },
+        "required": [
+          "input"
+        ]
+      }
+    },
+    {
+      "name": "upscale_image",
+      "description": "Upscale or enhance an image via POST /images/upscale. Inputs accept base64 or remote URL bytes (≤25 MB, ≥65536 px, ≤16777216 px after scaling).",
+      "method": "POST",
+      "path": "/images/upscale",
+      "timeout_ms": 180000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Source image — base64 string or fetchable URL."
+          },
+          "scale": {
+            "type": "number",
+            "description": "Output multiplier (1–4). scale=1 requires enhance=true.",
+            "minimum": 1,
+            "maximum": 4,
+            "default": 2
+          },
+          "enhance": {
+            "type": "boolean",
+            "description": "Apply enhancement pass. Required when scale=1.",
+            "default": false
+          },
+          "enhanceCreativity": {
+            "type": "number",
+            "description": "How much the enhancer may invent (0–1).",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.5
+          },
+          "enhancePrompt": {
+            "type": "string",
+            "description": "Optional style hint for the enhancer (≤1500 chars)."
+          },
+          "replication": {
+            "type": "number",
+            "description": "How faithfully to preserve the source (0–1).",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.35
+          }
+        },
+        "required": [
+          "image"
+        ]
+      }
+    },
+    {
+      "name": "list_models",
+      "description": "List available models via GET /models. Filter by `type` — image | text | tts | video | music | upscale | inpaint | embedding | asr | code | all.",
+      "method": "GET",
+      "path": "/models",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Model family filter. 'all' returns every model.",
+            "enum": [
+              "all",
+              "image",
+              "text",
+              "tts",
+              "video",
+              "music",
+              "upscale",
+              "inpaint",
+              "embedding",
+              "asr",
+              "code"
+            ],
+            "default": "all"
+          }
+        }
+      }
+    }
+  ],
+  "health_check": {
+    "tool": "list_models"
+  }
+}
