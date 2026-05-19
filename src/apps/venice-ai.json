@@ -445,6 +445,125 @@
       }
     },
     {
+      "name": "queue_video",
+      "description": "Queue a video generation job via POST /video/queue. Async — returns {queue_id, model} immediately; poll retrieve_video to get the bytes. Supports text-to-video, image-to-video (image_url), and a rich reference-asset surface. Models: kling-2, veo-3-1, ltx-video-2, runway-gen-4-5, hailuo-02, seedance-2, … (call list_models?type=video for the live set).",
+      "method": "POST",
+      "path": "/video/queue",
+      "timeout_ms": 60000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Video model id."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Description (1–10,000 chars, model-specific cap)."
+          },
+          "duration": {
+            "type": "string",
+            "description": "Video length: '2s'–'30s', '1 gen', or 'Auto'. Per-model support varies."
+          },
+          "negative_prompt": {
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"]
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Output resolution — 256p..4k, 2x, 4x, true_1080p (model-dependent)."
+          },
+          "upscale_factor": {
+            "type": "integer",
+            "description": "1, 2, or 4 — upscale-capable models only.",
+            "enum": [1, 2, 4]
+          },
+          "audio": {
+            "type": "boolean",
+            "description": "Generate audio track (audio-capable models). Default true.",
+            "default": true
+          },
+          "image_url": {
+            "type": "string",
+            "description": "Image-to-video source — HTTPS URL or data: URL."
+          },
+          "end_image_url": {
+            "type": "string",
+            "description": "End-frame target — same encoding as image_url."
+          },
+          "audio_url": {
+            "type": "string",
+            "description": "Reference audio for lip-sync / score (WAV/MP3, ≤30s, ≤15 MB)."
+          },
+          "video_url": {
+            "type": "string",
+            "description": "Video-to-video / upscale source (MP4/MOV/WebM)."
+          },
+          "reference_image_urls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Up to 9 reference images (character / style consistency)."
+          },
+          "reference_video_urls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Up to 3 reference videos (motion / style; 2–15s each, ≤50 MB)."
+          },
+          "reference_audio_urls": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Up to 3 reference audio clips for vocal timbre (2–15s each)."
+          }
+        },
+        "required": ["model", "prompt", "duration"]
+      }
+    },
+    {
+      "name": "retrieve_video",
+      "description": "Poll a queued video job via POST /video/retrieve. While processing returns JSON {status:'PROCESSING', average_execution_time, execution_duration}. When complete returns binary mp4 (wrapped as {_binary, base64, mimeType} by the executor).",
+      "method": "POST",
+      "path": "/video/retrieve",
+      "timeout_ms": 120000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "queue_id": { "type": "string", "description": "From queue_video." },
+          "model": { "type": "string", "description": "Same model id as the queue call." },
+          "delete_media_on_completion": { "type": "boolean", "default": false }
+        },
+        "required": ["queue_id", "model"]
+      }
+    },
+    {
+      "name": "quote_video",
+      "description": "Get a USD price quote for a video gen BEFORE queueing via POST /video/quote. Returns {quote: <number>} — useful for cost-aware UIs (panel can show 'this will cost $X' before submit).",
+      "method": "POST",
+      "path": "/video/quote",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": { "type": "string" },
+          "duration": { "type": "string" },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"]
+          },
+          "resolution": { "type": "string" },
+          "upscale_factor": { "type": "integer", "enum": [1, 2, 4] },
+          "audio": { "type": "boolean" },
+          "video_url": { "type": "string", "description": "Base64 video for upscaling; auto-detects duration." },
+          "reference_video_total_duration": {
+            "type": "number",
+            "description": "Aggregate reference-video seconds for R2V models (max 45)."
+          }
+        },
+        "required": ["model", "duration"]
+      }
+    },
+    {
       "name": "list_models",
       "description": "List available models via GET /models. Filter by `type` — image | text | tts | video | music | upscale | inpaint | embedding | asr | code | all.",
       "method": "GET",
