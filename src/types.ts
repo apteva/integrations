@@ -311,6 +311,12 @@ export interface AppToolTemplate {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
   input_schema: Record<string, unknown>;
+  // Canned response returned for this tool when it runs inside a test
+  // World (the agent-testing sandbox) and there's no per-eval fixture or
+  // recording. Should match the real API's response shape so the agent
+  // (and any app parsing it) behaves as it would against production. The
+  // curated default; record/replay or a per-eval fixture override it.
+  mock_response?: unknown;
   // Names of input fields that should be sent as URL query string
   // parameters instead of being folded into the request body. Required
   // for APIs that mix query+body on POST/PUT/PATCH (e.g. Google Sheets'
