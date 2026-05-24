@@ -1,7 +1,7 @@
 {
   "slug": "trading212",
   "name": "Trading 212",
-  "description": "Trading 212 Public API — read account summary, instruments, positions, historical orders, dividends, cash transactions, and exports; optionally manage orders. Uses Trading 212 API key + secret Basic auth. For Invest and Stocks ISA accounts only.",
+  "description": "Trading 212 Public API — read account summary, instruments, positions, historical orders, dividends, cash transactions, and exports; optionally manage orders. For Invest and Stocks ISA accounts only.",
   "logo": "https://www.google.com/s2/favicons?domain=trading212.com&sz=128",
   "categories": [
     "trading",
@@ -14,23 +14,16 @@
   "base_url": "https://{{credential.environment}}.trading212.com/api/v0",
   "auth": {
     "types": [
-      "basic"
+      "api_key"
     ],
     "headers": {
-      "Authorization": "Basic {{basic_auth}}"
+      "Authorization": "{{api_key}}"
     },
     "credential_fields": [
       {
         "name": "api_key",
         "label": "API Key",
-        "description": "Trading 212 Public API key from the Trading 212 app.",
-        "required": true,
-        "type": "text"
-      },
-      {
-        "name": "api_secret",
-        "label": "API Secret",
-        "description": "Trading 212 Public API secret paired with the API key.",
+        "description": "Trading 212 Public API key from the Trading 212 app. The integration sends it directly in the Authorization header.",
         "required": true,
         "type": "password"
       },
