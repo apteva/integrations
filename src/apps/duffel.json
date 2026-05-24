@@ -29,7 +29,7 @@
   "tools": [
     {
       "name": "search_flights",
-      "description": "Create a Duffel offer request and return matching flight offers. Send body as { data: { slices, passengers, cabin_class? } }. Query options: return_offers, supplier_timeout, view.",
+      "description": "Create a Duffel offer request and return matching flight offers. Send body as { data: { slices, passengers, cabin_class?, max_connections? } }. Query options: return_offers, supplier_timeout, view.",
       "method": "POST",
       "path": "/air/offer_requests",
       "query_params": [
@@ -42,7 +42,7 @@
         "properties": {
           "data": {
             "type": "object",
-            "description": "Duffel offer request body, containing slices, passengers, and optional cabin_class.",
+            "description": "Duffel offer request body, containing slices, passengers, optional cabin_class, and optional max_connections. Use max_connections=0 for direct flights only.",
             "properties": {
               "slices": {
                 "type": "array",
@@ -60,6 +60,10 @@
                   "business",
                   "first"
                 ]
+              },
+              "max_connections": {
+                "type": "integer",
+                "description": "Maximum connections per slice. 0 means direct flights only; 1 allows one connection."
               }
             },
             "required": [
