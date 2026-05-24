@@ -11,7 +11,7 @@
     "portfolio",
     "brokerage"
   ],
-  "base_url": "https://{{credential.environment}}.trading212.com/api/v0",
+  "base_url": "https://live.trading212.com/api/v0",
   "auth": {
     "types": [
       "api_key"
@@ -26,13 +26,6 @@
         "description": "Trading 212 Public API key from the Trading 212 app. The integration sends it directly in the Authorization header.",
         "required": true,
         "type": "password"
-      },
-      {
-        "name": "environment",
-        "label": "Environment",
-        "description": "Use live for real money or demo for paper trading.",
-        "required": true,
-        "type": "text"
       }
     ]
   },
