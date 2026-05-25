@@ -261,6 +261,7 @@ export interface AppAuthConfig {
   types: AuthType[];
   oauth2?: OAuthConfig;
   aws_sigv4?: AwsSigv4Config;
+  shareasale?: ShareASaleAuthConfig;
   headers?: Record<string, string>; // e.g. { "Authorization": "Bearer {{token}}" }
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
   credential_fields?: CredentialField[]; // Describes what credentials the user must provide
@@ -269,6 +270,11 @@ export interface AppAuthConfig {
 export interface AwsSigv4Config {
   /** AWS service name used in the credential scope (e.g. "ses", "lambda", "dynamodb"). */
   service: string;
+}
+
+export interface ShareASaleAuthConfig {
+  /** Credential key containing the ShareASale API secret key. */
+  secret_field: string;
 }
 
 export interface CredentialField {
@@ -325,6 +331,10 @@ export interface AppToolTemplate {
   // body content and the API rejects the request.
   query_params?: string[];
   response_path?: string; // JSONPath to extract from response
+  // Return the resolved request URL instead of issuing the HTTP call.
+  // Useful for deterministic affiliate/link-wrapper URLs where the URL
+  // itself is the artifact and fetching it would follow a merchant redirect.
+  return_request_url?: boolean;
   // Override the default 30s HTTP timeout for this tool's upstream call.
   // Capped server-side at 600s. Use for tools that legitimately take
   // longer than 30s (image generation, video generation, long-audio

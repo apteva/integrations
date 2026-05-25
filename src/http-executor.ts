@@ -4,6 +4,7 @@ import type {
   Connection,
   ConnectionCredentials,
 } from "./types.js";
+import { createHash } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
 
@@ -153,7 +154,7 @@ export async function executeTool(
   // for POST/PUT/PATCH it includes only auth + tool-declared query params
   // (the body bucket is sent as a JSON body separately above).
   const qs = buildQueryString(allQueryParams);
-  if (qs) finalUrl += (finalUrl.includes("? ") ? "&" : "? ") + qs;
+  if (qs) finalUrl += (finalUrl.includes("?") ? "&" : "?") + qs;
 
   // AWS SigV4 signing — must happen AFTER the body and final URL are
   // built (the signature covers both). Skipped silently if the auth
@@ -195,6 +196,31 @@ export async function executeTool(
       Object.assign(headers, sigHeaders);
       fetchOpts.headers = headers;
     }
+  }
+
+  if (app.auth.shareasale) {
+    const norm = normalizeCredentials(credentials);
+    const token = norm.token || norm.api_token;
+    const secret = norm[app.auth.shareasale.secret_field];
+    const action = new URL(finalUrl).searchParams.get("action") || "";
+    if (token && secret && action) {
+      const date = new Date().toUTCString();
+      const signature = createHash("sha256")
+        .update(`${token}:${date}:${action}:${secret}`)
+        .digest("hex");
+      headers["x-ShareASale-Date"] = date;
+      headers["x-ShareASale-Authentication"] = signature.toUpperCase();
+      fetchOpts.headers = headers;
+    }
+  }
+
+  if (tool.return_request_url) {
+    return {
+      success: true,
+      status: 200,
+      data: { url: finalUrl },
+      headers: {},
+    };
   }
 
   // 5. Execute the request
