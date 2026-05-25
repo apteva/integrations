@@ -91,11 +91,24 @@ export async function executeTool(
       ? (input[binaryParam] as Record<string, unknown>)
       : null;
 
+  // Root-body param: when set, this field's value IS the whole JSON body
+  // (e.g. a bare array). Pulled aside before the query/body split so it
+  // isn't echoed as a query param or wrapped in an object. Only honored
+  // for non-binary, body-bearing methods below.
+  const rootParam = tool.body_root_param;
+  const hasRootBody =
+    !binaryEnvelope &&
+    !!rootParam &&
+    rootParam in input &&
+    input[rootParam] !== undefined &&
+    input[rootParam] !== null;
+
   const remainingParams: Record<string, unknown> = {};
   const toolQueryParams: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input)) {
     if (pathParams.includes(k)) continue;
     if (binaryEnvelope && k === binaryParam) continue;
+    if (hasRootBody && k === rootParam) continue;
     if (declaredQueryParams.includes(k)) {
       // Skip undefined / null so optional query fields don't show up
       // in the URL as empty strings.
@@ -127,6 +140,15 @@ export async function executeTool(
     // Any leftover non-binary, non-query input fields are ignored here —
     // if a template mixes raw body with JSON fields it should put those
     // in query_params, which is already the convention.
+  } else if (hasRootBody) {
+    // Root-body path: send the named field's value as the entire JSON
+    // body, verbatim — supports top-level arrays (IONOS create-records)
+    // that the object-wrapping path below can't express.
+    fetchOpts.body = JSON.stringify(input[rootParam as string]);
+    if (!headers["Content-Type"] && !headers["content-type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+    fetchOpts.headers = headers;
   } else if (tool.method === "GET" || tool.method === "DELETE") {
     Object.assign(allQueryParams, remainingParams);
   } else {

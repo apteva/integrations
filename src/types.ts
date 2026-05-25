@@ -285,7 +285,7 @@ export interface CredentialField {
   type?: "password" | "text"; // Default "password"
 }
 
-export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "aws_sigv4";
+export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4";
 
 export interface OAuthConfig {
   authorize_url: string;
@@ -357,6 +357,17 @@ export interface AppToolTemplate {
   // path. Used by endpoints like Deepgram's /v1/listen that accept a raw
   // audio payload on the same URL as their JSON variant.
   body_binary_param?: string;
+  // Name of an input field whose value becomes the ENTIRE JSON request
+  // body, verbatim, instead of the default "serialize all remaining
+  // input fields into a flat JSON object". Use for endpoints whose body
+  // is a top-level JSON array (or any non-object JSON value) — e.g. IONOS
+  // DNS create-records (POST /zones/{id}/records) takes a bare array of
+  // record objects. Path params and tool-declared query_params are still
+  // peeled off the URL first; any other remaining inputs are dropped. The
+  // request is sent as application/json. Distinct from body_binary_param,
+  // which sends raw/binary bytes. Mirrors AppToolDef.BodyRoot on the Go
+  // runner in server/integrations.go.
+  body_root_param?: string;
 }
 
 // ============ Connections ============
