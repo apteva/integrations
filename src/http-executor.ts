@@ -52,7 +52,7 @@ export async function executeTool(
   } = opts;
 
   // 1. Build the URL with path parameter + credential interpolation
-  const url = buildUrl(app.base_url, tool.path, input, credentials);
+  const url = buildUrl(tool.base_url || app.base_url, tool.path, input, credentials);
 
   // 2. Build headers from app auth config + credentials
   const headers = buildHeaders(app, credentials);

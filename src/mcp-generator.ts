@@ -100,7 +100,8 @@ function generateMcpTool(
   }
 
   // Build the full URL template (path params remain as {param} for runtime resolution)
-  const url = `${app.base_url.replace(/\/$/, "")}${tool.path}${authQuery}`;
+  const baseURL = tool.base_url || app.base_url;
+  const url = `${baseURL.replace(/\/$/, "")}${tool.path}${authQuery}`;
 
   // For POST/PUT/PATCH, generate a body template
   let bodyTemplate: string | undefined;
@@ -150,7 +151,7 @@ function resolveCredentialTemplate(
   template: string,
   credentials: Connection["credentials"]
 ): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+  return template.replace(/\{\{(?:credential\.)?([\w]+)\}\}/g, (_match, key) => {
     // Check custom fields first (most specific)
     if (credentials.fields?.[key]) return credentials.fields[key];
 
@@ -164,7 +165,15 @@ function resolveCredentialTemplate(
           ""
         );
       case "api_key":
-        return credentials.fields?.api_key || credentials.api_key || "";
+        return (
+          credentials.fields?.api_key ||
+          credentials.fields?.apiKey ||
+          credentials.fields?.apikey ||
+          credentials.fields?.api_token ||
+          credentials.fields?.apiToken ||
+          credentials.api_key ||
+          ""
+        );
       case "username":
         return credentials.username || "";
       case "password":

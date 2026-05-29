@@ -41,6 +41,10 @@ export interface AppTemplate {
   // appear in chat when the agent calls
   // respond(components=[{ app: "<slug>", name: "<component-name>", props:{…}}]).
   ui_components?: UIComponent[];
+  /** Optional declarative resource browser for the dashboard. The
+   *  explorer never defines new capabilities; it only maps friendly
+   *  navigation and actions onto existing tools in `tools[]`. */
+  explorer?: IntegrationExplorerConfig;
   /** Cheap probe used by the dashboard "Test" button and the
    *  pre-flight check in POST /connections (non-OAuth). When the
    *  user types in credentials and hits save, the server runs this
@@ -127,6 +131,44 @@ export interface UIComponent {
    *  props. The component decides what synthetic state to render —
    *  typically a `preview: true` boolean flag. */
   preview_props?: Record<string, unknown>;
+}
+
+// ============ Integration Explorer (dashboard resource browser) ============
+
+export interface IntegrationExplorerConfig {
+  resources: IntegrationExplorerResource[];
+}
+
+export interface IntegrationExplorerResource {
+  /** Stable resource id, e.g. "collections". */
+  id: string;
+  /** Human label shown in the explorer navigation. */
+  label: string;
+  description?: string;
+  /** Existing tool name used to list this resource. */
+  list_tool: string;
+  /** Optional input object sent with list_tool. Values may be templates. */
+  list_input?: Record<string, unknown>;
+  /** Dot path into the tool response where rows live. Defaults to "Items". */
+  response_path?: string;
+  /** Dot paths read from each row for compact display. */
+  item_id_path?: string;
+  item_label_path?: string;
+  item_subtitle_path?: string;
+  /** Existing tool name used to load details for a selected row. */
+  detail_tool?: string;
+  /** Input object for detail_tool. Supports {{item.foo}} templates. */
+  detail_input?: Record<string, unknown>;
+  actions?: IntegrationExplorerAction[];
+}
+
+export interface IntegrationExplorerAction {
+  label: string;
+  tool: string;
+  /** Optional preset input. Supports {{item.foo}} templates when an item is selected. */
+  input?: Record<string, unknown>;
+  destructive?: boolean;
+  description?: string;
 }
 
 // ============ Remote MCP (vendor-hosted MCP servers) ============
@@ -315,6 +357,8 @@ export interface AppToolTemplate {
   name: string;
   description: string;
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  /** Optional override when one integration mixes hosts. Defaults to AppTemplate.base_url. */
+  base_url?: string;
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
   input_schema: Record<string, unknown>;
   // Canned response returned for this tool when it runs inside a test
