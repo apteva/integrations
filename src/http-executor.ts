@@ -56,6 +56,11 @@ export async function executeTool(
 
   // 2. Build headers from app auth config + credentials
   const headers = buildHeaders(app, credentials);
+  if (tool.headers) {
+    for (const [key, template] of Object.entries(tool.headers)) {
+      headers[key] = resolveTemplate(template, credentials);
+    }
+  }
 
   // 3. Build request options
   const fetchOpts: RequestInit = {

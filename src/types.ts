@@ -360,6 +360,8 @@ export interface AppToolTemplate {
   /** Optional override when one integration mixes hosts. Defaults to AppTemplate.base_url. */
   base_url?: string;
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
+  /** Optional per-tool request headers. Overrides app-level auth headers. */
+  headers?: Record<string, string>;
   input_schema: Record<string, unknown>;
   // Canned response returned for this tool when it runs inside a test
   // World (the agent-testing sandbox) and there's no per-eval fixture or
