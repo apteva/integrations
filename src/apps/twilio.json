@@ -33,11 +33,6 @@
         "description": "Your Twilio Auth Token (used as the HTTP Basic password)",
         "required": true,
         "type": "password"
-      },
-      {
-        "name": "phone_number",
-        "label": "Default Phone Number",
-        "description": "Optional default From number in E.164 (e.g. +15551234567)"
       }
     ]
   },
