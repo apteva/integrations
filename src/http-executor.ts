@@ -71,6 +71,7 @@ export async function executeTool(
 
   // 4. Build auth query params (e.g. Pushover's ?token=xxx)
   const authQueryParams = buildAuthQueryParams(app, credentials);
+  const authBodyParams = buildAuthBodyParams(app, credentials);
 
   // 5. Split input into path-substituted, query-string, and body buckets.
   //    - Path params: already substituted into `url` above; drop from the
@@ -157,10 +158,12 @@ export async function executeTool(
   } else if (tool.method === "GET" || tool.method === "DELETE") {
     Object.assign(allQueryParams, remainingParams);
   } else {
-    // For POST with query_params auth (like Pushover), merge auth + input into body
+    // For POST with query_params auth (like Pushover), merge auth + input into body.
+    // Some APIs instead require credentials in the JSON body while still using
+    // headers/query elsewhere; body_params is explicit opt-in for those.
     if (Object.keys(authQueryParams).length > 0) {
       // API-key APIs like Pushover expect token in the POST body too
-      const bodyParams = { ...authQueryParams, ...remainingParams };
+      const bodyParams = { ...authQueryParams, ...authBodyParams, ...remainingParams };
       const contentType = headers["Content-Type"] || headers["content-type"] || "";
       if (contentType.includes("x-www-form-urlencoded")) {
         fetchOpts.body = buildQueryString(bodyParams);
@@ -168,11 +171,12 @@ export async function executeTool(
         fetchOpts.body = JSON.stringify(bodyParams);
       }
     } else {
+      const bodyParams = { ...authBodyParams, ...remainingParams };
       const contentType = headers["Content-Type"] || headers["content-type"] || "";
       if (contentType.includes("x-www-form-urlencoded")) {
-        fetchOpts.body = buildQueryString(remainingParams);
+        fetchOpts.body = buildQueryString(bodyParams);
       } else {
-        fetchOpts.body = JSON.stringify(remainingParams);
+        fetchOpts.body = JSON.stringify(bodyParams);
       }
     }
   }
@@ -422,6 +426,19 @@ function buildAuthQueryParams(
   const params: Record<string, string> = {};
   if (app.auth.query_params) {
     for (const [key, template] of Object.entries(app.auth.query_params)) {
+      params[key] = resolveTemplate(template, credentials);
+    }
+  }
+  return params;
+}
+
+function buildAuthBodyParams(
+  app: AppTemplate,
+  credentials: ConnectionCredentials
+): Record<string, string> {
+  const params: Record<string, string> = {};
+  if (app.auth.body_params) {
+    for (const [key, template] of Object.entries(app.auth.body_params)) {
       params[key] = resolveTemplate(template, credentials);
     }
   }

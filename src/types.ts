@@ -297,6 +297,22 @@ export interface WebhookRegistrationConfig {
 export interface AppWebhookEvent {
   name: string; // e.g. "push", "payment_intent.succeeded"
   description: string;
+  /** Omitted or "webhook" means native upstream webhook delivery. "poll" means the server synthesizes events by calling poll.tool. */
+  delivery?: "webhook" | "poll";
+  poll?: WebhookPollConfig;
+}
+
+export interface WebhookPollConfig {
+  tool: string;
+  default_interval_seconds?: number;
+  min_interval_seconds?: number;
+  input?: Record<string, unknown>;
+  items_path?: string;
+  id_fields: string[];
+  timestamp_field?: string;
+  mode?: "new_items" | "updated_items";
+  emit_initial?: boolean;
+  max_seen?: number;
 }
 
 export interface AppAuthConfig {
@@ -306,6 +322,7 @@ export interface AppAuthConfig {
   shareasale?: ShareASaleAuthConfig;
   headers?: Record<string, string>; // e.g. { "Authorization": "Bearer {{token}}" }
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
+  body_params?: Record<string, string>; // e.g. { "key": "{{api_key}}" } for APIs that require auth in JSON body
   credential_fields?: CredentialField[]; // Describes what credentials the user must provide
 }
 
