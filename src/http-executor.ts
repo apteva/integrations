@@ -7,6 +7,7 @@ import type {
 import { createHash } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
+import { ProxyAgent } from "undici";
 
 export interface ExecuteToolOptions {
   app: AppTemplate;
@@ -256,6 +257,7 @@ export async function executeTool(
 
   // 5. Execute the request
   try {
+    applyIntegrationProxy(app, fetchOpts);
     const response = await fetch(finalUrl, fetchOpts);
     const responseHeaders: Record<string, string> = {};
     response.headers.forEach((v, k) => {
@@ -360,6 +362,43 @@ export async function executeTool(
 }
 
 // ─── Helpers ───
+
+function integrationProxyEnvName(slug: string): string {
+  const normalized = slug
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return normalized ? `APTEVA_INTEGRATION_PROXY_${normalized}` : "";
+}
+
+function integrationProxyURL(app: AppTemplate): { url: string; env: string } {
+  const specific = integrationProxyEnvName(app.slug);
+  if (specific) {
+    const value = process.env[specific]?.trim();
+    if (value) return { url: value, env: specific };
+  }
+  return {
+    url: process.env.APTEVA_INTEGRATION_PROXY?.trim() || "",
+    env: "APTEVA_INTEGRATION_PROXY",
+  };
+}
+
+function applyIntegrationProxy(app: AppTemplate, fetchOpts: RequestInit): void {
+  const { url: proxy, env } = integrationProxyURL(app);
+  if (!proxy) return;
+  try {
+    new URL(proxy);
+  } catch (err) {
+    throw new Error(
+      `invalid ${env}: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
+  (fetchOpts as RequestInit & { dispatcher?: unknown }).dispatcher =
+    new ProxyAgent(proxy);
+}
 
 function buildUrl(
   baseUrl: string,
