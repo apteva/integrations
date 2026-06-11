@@ -431,6 +431,75 @@ export interface AppToolTemplate {
   // which sends raw/binary bytes. Mirrors AppToolDef.BodyRoot on the Go
   // runner in server/integrations.go.
   body_root_param?: string;
+  // Declarative request-body transform applied after URL interpolation and
+  // before the generic query/body split. This lets tools expose agent-friendly
+  // inputs while sending provider-specific payload shapes such as encoded MIME
+  // messages, wrapped JSON, or encoded fields.
+  request_transform?: RequestTransform;
+  // Declarative response transform applied after response_path and before
+  // response_omit. This lets tools return agent-friendly output for provider
+  // payloads such as nested email/MIME trees or encoded fields.
+  response_transform?: ResponseTransform;
+}
+
+export type RequestTransform =
+  | MimeEmailRequestTransform
+  | Base64FieldRequestTransform
+  | JsonWrapRequestTransform;
+
+export interface MimeEmailRequestTransform {
+  type: "mime_email";
+  output?: "json";
+  /** Dot path where the encoded MIME message should be placed. Defaults to "raw". */
+  target?: string;
+  /** Defaults to "base64url", matching Gmail's raw message format. */
+  encoding?: "base64" | "base64url";
+  /** Copy selected original input fields into the transformed JSON body. source -> target dot path. */
+  include_fields?: Record<string, string>;
+}
+
+export interface Base64FieldRequestTransform {
+  type: "base64_field";
+  output?: "json";
+  source: string;
+  target: string;
+  encoding?: "base64" | "base64url";
+  include_fields?: Record<string, string>;
+}
+
+export interface JsonWrapRequestTransform {
+  type: "json_wrap";
+  output?: "json";
+  /** Dot path to place selected fields under. Empty/omitted means top-level. */
+  target?: string;
+  fields: string[];
+  include_fields?: Record<string, string>;
+}
+
+export type ResponseTransform =
+  | EmailMessageResponseTransform
+  | EmailThreadResponseTransform
+  | Base64FieldDecodeResponseTransform
+  | FieldMapResponseTransform;
+
+export interface EmailMessageResponseTransform {
+  type: "email_message";
+}
+
+export interface EmailThreadResponseTransform {
+  type: "email_thread";
+}
+
+export interface Base64FieldDecodeResponseTransform {
+  type: "base64_field_decode";
+  source: string;
+  target: string;
+  encoding?: "base64" | "base64url";
+}
+
+export interface FieldMapResponseTransform {
+  type: "field_map";
+  fields: Record<string, string>;
 }
 
 // ============ Connections ============
@@ -512,6 +581,8 @@ export interface GeneratedMcpTool {
     headers: Record<string, string>;
     body_template?: string;
     default_body?: Record<string, string>; // Credential-derived defaults merged into request body
+    request_transform?: RequestTransform;
+    response_transform?: ResponseTransform;
   };
 }
 

@@ -3,6 +3,8 @@ import type {
   AppToolTemplate,
   Connection,
   ConnectionCredentials,
+  ResponseTransform,
+  RequestTransform,
 } from "./types.js";
 import { createHash } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
@@ -86,6 +88,9 @@ export async function executeTool(
   //    - POST/PUT/PATCH: everything left over goes to body.
   const pathParams = extractPathParams(tool.path);
   const declaredQueryParams = tool.query_params || [];
+  const transformedBody = tool.request_transform
+    ? applyRequestTransform(tool.request_transform, input)
+    : undefined;
 
   // Request-side binary body: if the template declared a `body_binary_param`
   // and that input field is a _binary envelope (populated by the core
@@ -116,6 +121,9 @@ export async function executeTool(
     if (pathParams.includes(k)) continue;
     if (binaryEnvelope && k === binaryParam) continue;
     if (hasRootBody && k === rootParam) continue;
+    if (transformedBody !== undefined && !declaredQueryParams.includes(k)) {
+      continue;
+    }
     if (declaredQueryParams.includes(k)) {
       // Skip undefined / null so optional query fields don't show up
       // in the URL as empty strings.
@@ -152,6 +160,16 @@ export async function executeTool(
     // body, verbatim — supports top-level arrays (IONOS create-records)
     // that the object-wrapping path below can't express.
     fetchOpts.body = JSON.stringify(input[rootParam as string]);
+    if (!headers["Content-Type"] && !headers["content-type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+    fetchOpts.headers = headers;
+  } else if (transformedBody !== undefined) {
+    const body =
+      isPlainObject(transformedBody) && Object.keys(authBodyParams).length > 0
+        ? { ...authBodyParams, ...transformedBody }
+        : transformedBody;
+    fetchOpts.body = JSON.stringify(body);
     if (!headers["Content-Type"] && !headers["content-type"]) {
       headers["Content-Type"] = "application/json";
     }
@@ -341,6 +359,10 @@ export async function executeTool(
     // undefined, destroying the payload.
     if (tool.response_path && data && typeof data === "object" && !isBinary) {
       data = extractPath(data, tool.response_path);
+    }
+
+    if (tool.response_transform && data && !isBinary) {
+      data = applyResponseTransform(tool.response_transform, data);
     }
 
     return {
@@ -580,6 +602,433 @@ function buildQueryString(params: Record<string, unknown>): string {
     }
   }
   return parts.join("&");
+}
+
+function applyResponseTransform(
+  transform: ResponseTransform,
+  data: unknown
+): unknown {
+  switch (transform.type) {
+    case "email_message":
+      return normalizeEmailMessage(data);
+    case "email_thread":
+      return normalizeEmailThread(data);
+    case "base64_field_decode": {
+      const value = getPath(data, transform.source);
+      const decoded =
+        typeof value === "string"
+          ? decodeString(value, transform.encoding || "base64")
+          : "";
+      const out = isPlainObject(data) ? JSON.parse(JSON.stringify(data)) : {};
+      setPath(out, transform.target, decoded);
+      return out;
+    }
+    case "field_map": {
+      const out: Record<string, unknown> = {};
+      for (const [target, source] of Object.entries(transform.fields)) {
+        const value = getPath(data, source);
+        if (value !== undefined) setPath(out, target, value);
+      }
+      return out;
+    }
+  }
+}
+
+function normalizeEmailThread(data: unknown): unknown {
+  if (!isPlainObject(data)) return data;
+  const messages = Array.isArray(data.messages)
+    ? data.messages.map((message) => normalizeEmailMessage(message))
+    : [];
+  return {
+    id: data.id,
+    historyId: data.historyId,
+    messages,
+  };
+}
+
+function normalizeEmailMessage(data: unknown): unknown {
+  if (!isPlainObject(data)) return data;
+  const payload = isPlainObject(data.payload) ? data.payload : {};
+  const headerPairs = Array.isArray(payload.headers) ? payload.headers : [];
+  const headers = headersObject(headerPairs);
+  const bodies = collectEmailBodies(payload);
+  const internalDate = parseGmailInternalDate(data.internalDate);
+
+  return {
+    id: data.id,
+    threadId: data.threadId,
+    labelIds: data.labelIds,
+    historyId: data.historyId,
+    snippet: data.snippet,
+    sizeEstimate: data.sizeEstimate,
+    internalDate: data.internalDate,
+    receivedAt: internalDate,
+    headers,
+    from: pickHeader(headers, "from"),
+    to: pickHeader(headers, "to"),
+    cc: pickHeader(headers, "cc"),
+    bcc: pickHeader(headers, "bcc"),
+    subject: pickHeader(headers, "subject"),
+    date: pickHeader(headers, "date") || internalDate,
+    messageId: pickHeader(headers, "message-id"),
+    inReplyTo: pickHeader(headers, "in-reply-to"),
+    references: pickHeader(headers, "references"),
+    text: bodies.text.join("\n\n").trim(),
+    html: bodies.html.join("\n\n").trim(),
+    attachments: bodies.attachments,
+  };
+}
+
+function headersObject(headers: unknown[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const header of headers) {
+    if (!isPlainObject(header)) continue;
+    const name = String(header.name || "").toLowerCase();
+    const value = String(header.value || "");
+    if (name) out[name] = value;
+  }
+  return out;
+}
+
+function pickHeader(headers: Record<string, string>, name: string): string {
+  return headers[name.toLowerCase()] || "";
+}
+
+function collectEmailBodies(part: unknown): {
+  text: string[];
+  html: string[];
+  attachments: Array<{
+    filename: string;
+    mimeType: string;
+    attachmentId: string;
+    size: number;
+    partId: string;
+  }>;
+} {
+  const out: {
+    text: string[];
+    html: string[];
+    attachments: Array<{
+      filename: string;
+      mimeType: string;
+      attachmentId: string;
+      size: number;
+      partId: string;
+    }>;
+  } = { text: [], html: [], attachments: [] };
+  collectEmailBodiesInto(part, out);
+  return out;
+}
+
+function collectEmailBodiesInto(
+  part: unknown,
+  out: ReturnType<typeof collectEmailBodies>
+): void {
+  if (!isPlainObject(part)) return;
+  const mimeType = String(part.mimeType || "");
+  const filename = String(part.filename || "");
+  const body = isPlainObject(part.body) ? part.body : {};
+  const data = typeof body.data === "string" ? body.data : "";
+  const attachmentId = typeof body.attachmentId === "string" ? body.attachmentId : "";
+
+  if (filename || attachmentId) {
+    out.attachments.push({
+      filename,
+      mimeType,
+      attachmentId,
+      size: typeof body.size === "number" ? body.size : Number(body.size || 0),
+      partId: String(part.partId || ""),
+    });
+  } else if (data && mimeType.toLowerCase().startsWith("text/plain")) {
+    out.text.push(decodeString(data, "base64url"));
+  } else if (data && mimeType.toLowerCase().startsWith("text/html")) {
+    out.html.push(decodeString(data, "base64url"));
+  }
+
+  if (Array.isArray(part.parts)) {
+    for (const child of part.parts) collectEmailBodiesInto(child, out);
+  }
+}
+
+function parseGmailInternalDate(value: unknown): string {
+  const millis = Number(value || 0);
+  if (!Number.isFinite(millis) || millis <= 0) return "";
+  return new Date(millis).toISOString();
+}
+
+function applyRequestTransform(
+  transform: RequestTransform,
+  input: Record<string, unknown>
+): unknown {
+  switch (transform.type) {
+    case "mime_email": {
+      const mime = buildMimeEmail(input);
+      const body: Record<string, unknown> = {};
+      setPath(
+        body,
+        transform.target || "raw",
+        encodeString(mime, transform.encoding || "base64url")
+      );
+      copyIncludedFields(body, input, transform.include_fields);
+      return body;
+    }
+    case "base64_field": {
+      const source = input[transform.source];
+      if (source === undefined || source === null) {
+        throw new Error(`request_transform source missing: ${transform.source}`);
+      }
+      const body: Record<string, unknown> = {};
+      setPath(
+        body,
+        transform.target,
+        encodeString(String(source), transform.encoding || "base64")
+      );
+      copyIncludedFields(body, input, transform.include_fields);
+      return body;
+    }
+    case "json_wrap": {
+      const selected: Record<string, unknown> = {};
+      for (const field of transform.fields) {
+        const value = input[field];
+        if (value !== undefined && value !== null) {
+          selected[field] = value;
+        }
+      }
+      const body: Record<string, unknown> = {};
+      if (transform.target) {
+        setPath(body, transform.target, selected);
+      } else {
+        Object.assign(body, selected);
+      }
+      copyIncludedFields(body, input, transform.include_fields);
+      return body;
+    }
+  }
+}
+
+function getPath(data: unknown, path: string): unknown {
+  const parts = path.split(".").filter(Boolean);
+  let current = data;
+  for (const part of parts) {
+    if (!isPlainObject(current)) return undefined;
+    current = current[part];
+  }
+  return current;
+}
+
+function buildMimeEmail(input: Record<string, unknown>): string {
+  const to = formatAddressList(input.to);
+  if (!to) throw new Error("mime_email transform requires a to recipient");
+
+  const subject = stringValue(input.subject);
+  const textBody = bodyValue(input.body);
+  const htmlBody = bodyValue(input.htmlBody);
+  if (!textBody && !htmlBody) {
+    throw new Error("mime_email transform requires body or htmlBody");
+  }
+
+  const headers: string[] = [
+    "MIME-Version: 1.0",
+    `To: ${to}`,
+    `Subject: ${encodeHeaderValue(subject)}`,
+  ];
+  addHeader(headers, "From", formatAddressList(input.from));
+  addHeader(headers, "Cc", formatAddressList(input.cc));
+  addHeader(headers, "Bcc", formatAddressList(input.bcc));
+  addHeader(headers, "Reply-To", formatAddressList(input.replyTo));
+  addHeader(headers, "In-Reply-To", stringValue(input.inReplyTo));
+  addHeader(headers, "References", stringValue(input.references));
+
+  const attachments = parseAttachments(input.attachments);
+  const content = buildMimeContent(textBody, htmlBody);
+  if (attachments.length === 0) {
+    return [...headers, ...content.headers, "", content.body].join("\r\n");
+  }
+
+  const mixedBoundary = `apteva_mixed_${randomBoundarySuffix()}`;
+  const bodyParts = [
+    `--${mixedBoundary}`,
+    content.headers.join("\r\n"),
+    "",
+    content.body,
+  ];
+  for (const attachment of attachments) {
+    bodyParts.push(
+      `--${mixedBoundary}`,
+      `Content-Type: ${sanitizeHeaderValue(attachment.mimeType)}; name="${escapeQuotedParam(attachment.filename)}"`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${escapeQuotedParam(attachment.filename)}"`,
+      "",
+      wrapBase64(attachment.base64)
+    );
+  }
+  bodyParts.push(`--${mixedBoundary}--`);
+
+  return [
+    ...headers,
+    `Content-Type: multipart/mixed; boundary="${mixedBoundary}"`,
+    "",
+    bodyParts.join("\r\n"),
+  ].join("\r\n");
+}
+
+function buildMimeContent(
+  textBody: string,
+  htmlBody: string
+): { headers: string[]; body: string } {
+  if (textBody && htmlBody) {
+    const boundary = `apteva_alt_${randomBoundarySuffix()}`;
+    return {
+      headers: [`Content-Type: multipart/alternative; boundary="${boundary}"`],
+      body: [
+        `--${boundary}`,
+        ...mimeTextPartHeaders("text/plain"),
+        "",
+        encodeString(textBody, "base64"),
+        `--${boundary}`,
+        ...mimeTextPartHeaders("text/html"),
+        "",
+        encodeString(htmlBody, "base64"),
+        `--${boundary}--`,
+      ].join("\r\n"),
+    };
+  }
+
+  const contentType = htmlBody ? "text/html" : "text/plain";
+  return {
+    headers: mimeTextPartHeaders(contentType),
+    body: encodeString(htmlBody || textBody, "base64"),
+  };
+}
+
+function mimeTextPartHeaders(contentType: string): string[] {
+  return [
+    `Content-Type: ${contentType}; charset=UTF-8`,
+    "Content-Transfer-Encoding: base64",
+  ];
+}
+
+function addHeader(headers: string[], name: string, value: string): void {
+  if (value) headers.push(`${name}: ${sanitizeHeaderValue(value)}`);
+}
+
+function encodeHeaderValue(value: string): string {
+  const sanitized = sanitizeHeaderValue(value);
+  if (!/[^\x20-\x7e]/.test(sanitized)) return sanitized;
+  return `=?UTF-8?B?${Buffer.from(sanitized, "utf8").toString("base64")}?=`;
+}
+
+function sanitizeHeaderValue(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
+function formatAddressList(value: unknown): string {
+  const values = arrayFromInput(value)
+    .map((v) => sanitizeHeaderValue(String(v)))
+    .filter(Boolean);
+  return values.join(", ");
+}
+
+function arrayFromInput(value: unknown): unknown[] {
+  if (value === undefined || value === null || value === "") return [];
+  if (Array.isArray(value)) return value;
+  return String(value)
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function stringValue(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return sanitizeHeaderValue(String(value));
+}
+
+function bodyValue(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return String(value);
+}
+
+function parseAttachments(value: unknown): Array<{
+  filename: string;
+  mimeType: string;
+  base64: string;
+}> {
+  if (!Array.isArray(value)) return [];
+  const attachments: Array<{ filename: string; mimeType: string; base64: string }> = [];
+  for (const item of value) {
+    if (!isPlainObject(item)) continue;
+    const filename = sanitizeHeaderValue(String(item.filename || "attachment"));
+    const mimeType = sanitizeHeaderValue(
+      String(item.mimeType || item.contentType || "application/octet-stream")
+    );
+    const rawBase64 = stringValue(item.base64);
+    const content = item.content === undefined || item.content === null
+      ? ""
+      : String(item.content);
+    const base64 = rawBase64 || Buffer.from(content, "utf8").toString("base64");
+    if (base64) attachments.push({ filename, mimeType, base64 });
+  }
+  return attachments;
+}
+
+function encodeString(value: string, encoding: "base64" | "base64url"): string {
+  const base64 = Buffer.from(value, "utf8").toString("base64");
+  if (encoding === "base64") return wrapBase64(base64);
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function decodeString(value: string, encoding: "base64" | "base64url"): string {
+  const normalized =
+    encoding === "base64url"
+      ? value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=")
+      : value;
+  return Buffer.from(normalized, "base64").toString("utf8");
+}
+
+function wrapBase64(value: string): string {
+  const compact = value.replace(/\s+/g, "");
+  return compact.match(/.{1,76}/g)?.join("\r\n") || "";
+}
+
+function copyIncludedFields(
+  body: Record<string, unknown>,
+  input: Record<string, unknown>,
+  includeFields?: Record<string, string>
+): void {
+  if (!includeFields) return;
+  for (const [source, target] of Object.entries(includeFields)) {
+    const value = input[source];
+    if (value !== undefined && value !== null && value !== "") {
+      setPath(body, target, value);
+    }
+  }
+}
+
+function setPath(target: Record<string, unknown>, path: string, value: unknown): void {
+  const parts = path.split(".").filter(Boolean);
+  if (parts.length === 0) return;
+  let current: Record<string, unknown> = target;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i];
+    const next = current[part];
+    if (!isPlainObject(next)) {
+      current[part] = {};
+    }
+    current = current[part] as Record<string, unknown>;
+  }
+  current[parts[parts.length - 1]] = value;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function escapeQuotedParam(value: string): string {
+  return sanitizeHeaderValue(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function randomBoundarySuffix(): string {
+  return Math.random().toString(36).slice(2, 12);
 }
 
 const BINARY_MIME_PREFIXES = [

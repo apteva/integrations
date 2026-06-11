@@ -141,6 +141,8 @@ function generateMcpTool(
       headers,
       body_template: bodyTemplate,
       ...(defaultBody ? { default_body: defaultBody } : {}),
+      ...(tool.request_transform ? { request_transform: tool.request_transform } : {}),
+      ...(tool.response_transform ? { response_transform: tool.response_transform } : {}),
     },
   };
 }
