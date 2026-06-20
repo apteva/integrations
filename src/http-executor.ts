@@ -61,7 +61,8 @@ export async function executeTool(
   const headers = buildHeaders(app, credentials);
   if (tool.headers) {
     for (const [key, template] of Object.entries(tool.headers)) {
-      headers[key] = resolveTemplate(template, credentials);
+      const value = resolveTemplate(template, credentials);
+      if (value) headers[key] = value;
     }
   }
 
@@ -514,7 +515,8 @@ function buildHeaders(
 
   if (app.auth.headers) {
     for (const [key, template] of Object.entries(app.auth.headers)) {
-      headers[key] = resolveTemplate(template, credentials);
+      const value = resolveTemplate(template, credentials);
+      if (value) headers[key] = value;
     }
   }
 

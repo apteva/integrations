@@ -53,6 +53,49 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("omits templated auth headers that resolve empty", async () => {
+    let captured: { init: RequestInit } | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      captured = { init: init || {} };
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app: {
+          ...app,
+          auth: {
+            types: ["bearer"],
+            headers: {
+              Authorization: "Bearer {{token}}",
+              "developer-token": "{{developer_token}}",
+              "login-customer-id": "{{manager_customer_id}}",
+            },
+          },
+        },
+        tool: {
+          name: "list",
+          description: "List",
+          method: "GET",
+          path: "/items",
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok", fields: { developer_token: "dev" } },
+        input: {},
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.init.headers).toEqual({
+      Authorization: "Bearer tok",
+      "developer-token": "dev",
+    });
+  });
+
   test("mime_email builds a Gmail-style raw MIME body", async () => {
     let captured: { url: string; init: RequestInit; body: any } | null = null;
     const originalFetch = globalThis.fetch;
