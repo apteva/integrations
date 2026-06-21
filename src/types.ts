@@ -393,6 +393,10 @@ export interface AppToolTemplate {
   // the body). Without this, http-executor sends every non-path field as
   // body content and the API rejects the request.
   query_params?: string[];
+  // Map friendly input field names to provider-specific query-string keys.
+  // Example: Bunny Stream list_videos exposes collectionId to agents but
+  // Bunny's HTTP API expects the query key collection.
+  query_param_aliases?: Record<string, string>;
   response_path?: string; // JSONPath to extract from response
   // Return the resolved request URL instead of issuing the HTTP call.
   // Useful for deterministic affiliate/link-wrapper URLs where the URL

@@ -89,6 +89,7 @@ export async function executeTool(
   //    - POST/PUT/PATCH: everything left over goes to body.
   const pathParams = extractPathParams(tool.path);
   const declaredQueryParams = tool.query_params || [];
+  const queryParamAliases = tool.query_param_aliases || {};
   const transformedBody = tool.request_transform
     ? applyRequestTransform(tool.request_transform, input)
     : undefined;
@@ -122,7 +123,18 @@ export async function executeTool(
     if (pathParams.includes(k)) continue;
     if (binaryEnvelope && k === binaryParam) continue;
     if (hasRootBody && k === rootParam) continue;
-    if (transformedBody !== undefined && !declaredQueryParams.includes(k)) {
+    if (
+      transformedBody !== undefined &&
+      !declaredQueryParams.includes(k) &&
+      !(k in queryParamAliases)
+    ) {
+      continue;
+    }
+    if (k in queryParamAliases) {
+      const queryName = queryParamAliases[k];
+      if (queryName && v !== undefined && v !== null && v !== "") {
+        toolQueryParams[queryName] = v;
+      }
       continue;
     }
     if (declaredQueryParams.includes(k)) {
