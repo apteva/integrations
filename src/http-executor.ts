@@ -169,11 +169,14 @@ export async function executeTool(
     // if a template mixes raw body with JSON fields it should put those
     // in query_params, which is already the convention.
   } else if (hasRootBody) {
-    // Root-body path: send the named field's value as the entire JSON
-    // body, verbatim — supports top-level arrays (IONOS create-records)
-    // that the object-wrapping path below can't express.
-    fetchOpts.body = JSON.stringify(input[rootParam as string]);
-    if (!headers["Content-Type"] && !headers["content-type"]) {
+    // Root-body path: send the named field's value as the whole request
+    // body. JSON is the default, but text/* endpoints expect raw strings.
+    const contentType = headers["Content-Type"] || headers["content-type"] || "";
+    const rootBody = input[rootParam as string];
+    fetchOpts.body = contentType.toLowerCase().startsWith("text/")
+      ? String(rootBody)
+      : JSON.stringify(rootBody);
+    if (!contentType) {
       headers["Content-Type"] = "application/json";
     }
     fetchOpts.headers = headers;
@@ -582,7 +585,29 @@ function normalizeCredentials(
       if (!out[name]) out[name] = val;
     }
   }
+  if (!out.basic_auth) {
+    const pair = basicAuthPair(out);
+    if (pair) {
+      out.basic_auth = Buffer.from(`${pair.user}:${pair.pass}`, "utf8").toString("base64");
+    }
+  }
   return out;
+}
+
+function basicAuthPair(c: Record<string, string>): { user: string; pass: string } | null {
+  const pairs: Array<[string, string]> = [
+    ["username", "password"],
+    ["login", "password"],
+    ["account_sid", "auth_token"],
+    ["api_key", "api_secret"],
+  ];
+  for (const [userKey, passKey] of pairs) {
+    const user = c[userKey];
+    const pass = c[passKey];
+    if (user && pass) return { user, pass };
+  }
+  if (c.api_key) return { user: c.api_key, pass: "" };
+  return null;
 }
 
 function resolveTemplate(
@@ -626,7 +651,7 @@ function applyResponseTransform(
     case "email_message":
       return normalizeEmailMessage(data);
     case "email_thread":
-      return normalizeEmailThread(data);
+      return normalizeEmailThread(data, transform);
     case "base64_field_decode": {
       const value = getPath(data, transform.source);
       const decoded =
@@ -648,15 +673,46 @@ function applyResponseTransform(
   }
 }
 
-function normalizeEmailThread(data: unknown): unknown {
+function normalizeEmailThread(
+  data: unknown,
+  transform: Extract<ResponseTransform, { type: "email_thread" }>
+): unknown {
   if (!isPlainObject(data)) return data;
   const messages = Array.isArray(data.messages)
     ? data.messages.map((message) => normalizeEmailMessage(message))
     : [];
+  const compactMessages = messages
+    .map((message) => compactEmailMessage(message))
+    .filter((message) => message.id);
   return {
     id: data.id,
     historyId: data.historyId,
-    messages,
+    messageCount: messages.length,
+    messageIds: compactMessages.map((message) => message.id),
+    messages: compactMessages,
+  };
+}
+
+function compactEmailMessage(data: unknown): Record<string, unknown> {
+  if (!isPlainObject(data)) return {};
+  return {
+    id: data.id,
+    threadId: data.threadId,
+    labelIds: data.labelIds,
+    historyId: data.historyId,
+    snippet: data.snippet,
+    sizeEstimate: data.sizeEstimate,
+    internalDate: data.internalDate,
+    receivedAt: data.receivedAt,
+    from: data.from,
+    to: data.to,
+    cc: data.cc,
+    bcc: data.bcc,
+    subject: data.subject,
+    date: data.date,
+    messageId: data.messageId,
+    inReplyTo: data.inReplyTo,
+    references: data.references,
   };
 }
 

@@ -435,6 +435,13 @@ export interface AppToolTemplate {
   // which sends raw/binary bytes. Mirrors AppToolDef.BodyRoot on the Go
   // runner in server/integrations.go.
   body_root_param?: string;
+  // Multipart/form-data request declaration. file_fields maps input field
+  // names to provider form field names, while field_names lists scalar form
+  // fields. File values may be base64 strings, data URLs, or raw strings.
+  multipart_form?: {
+    file_fields?: Record<string, string>;
+    field_names?: string[];
+  };
   // Declarative request-body transform applied after URL interpolation and
   // before the generic query/body split. This lets tools expose agent-friendly
   // inputs while sending provider-specific payload shapes such as encoded MIME

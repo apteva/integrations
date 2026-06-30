@@ -158,6 +158,8 @@ function resolveCredentialTemplate(
     if (credentials.fields?.[key]) return credentials.fields[key];
 
     switch (key) {
+      case "basic_auth":
+        return deriveBasicAuth(credentials);
       case "token":
         return (
           credentials.fields?.token ||
@@ -184,6 +186,32 @@ function resolveCredentialTemplate(
         return "";
     }
   });
+}
+
+function deriveBasicAuth(credentials: Connection["credentials"]): string {
+  const fields = credentials.fields || {};
+  const get = (key: string): string =>
+    String(
+      fields[key] ||
+        (key === "username" ? credentials.username : "") ||
+        (key === "password" ? credentials.password : "") ||
+        (key === "api_key" ? credentials.api_key : "") ||
+        ""
+    );
+
+  const pairs: Array<[string, string]> = [
+    ["username", "password"],
+    ["login", "password"],
+    ["account_sid", "auth_token"],
+    ["api_key", "api_secret"],
+  ];
+  for (const [userKey, passKey] of pairs) {
+    const user = get(userKey);
+    const pass = get(passKey);
+    if (user && pass) return Buffer.from(`${user}:${pass}`, "utf8").toString("base64");
+  }
+  const apiKey = get("api_key");
+  return apiKey ? Buffer.from(`${apiKey}:`, "utf8").toString("base64") : "";
 }
 
 function extractPathParams(path: string): string[] {

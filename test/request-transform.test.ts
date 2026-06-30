@@ -53,6 +53,39 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("body_root_param sends text content as a raw body", async () => {
+    let captured: { headers: HeadersInit | undefined; body: BodyInit | null | undefined } | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      captured = { headers: init?.headers, body: init?.body };
+      return new Response("", { status: 204 });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "update_content",
+          description: "Update",
+          method: "PUT",
+          path: "/content",
+          headers: { "Content-Type": "text/html" },
+          body_root_param: "content",
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok" },
+        input: { content: "<h1>Hello</h1>" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.headers).toEqual({
+      Authorization: "Bearer tok",
+      "Content-Type": "text/html",
+    });
+    expect(captured?.body).toBe("<h1>Hello</h1>");
+  });
+
   test("omits templated auth headers that resolve empty", async () => {
     let captured: { init: RequestInit } | null = null;
     const originalFetch = globalThis.fetch;
@@ -224,7 +257,7 @@ describe("response_transform", () => {
     ]);
   });
 
-  test("email_thread normalizes every Gmail message in a thread", async () => {
+  test("email_thread returns compact message index by default", async () => {
     const threadTool: AppToolTemplate = {
       name: "get_thread",
       description: "Thread",
@@ -235,7 +268,15 @@ describe("response_transform", () => {
     };
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async () =>
-      new Response(JSON.stringify({ id: "thread-1", historyId: "h1", messages: [gmailMessageFixture()] }), {
+      new Response(JSON.stringify({
+        id: "thread-1",
+        historyId: "h1",
+        messages: [
+          gmailMessageFixture({ id: "msg-1", snippet: "First" }),
+          gmailMessageFixture({ id: "msg-2", snippet: "Second" }),
+          gmailMessageFixture({ id: "msg-3", snippet: "Third" }),
+        ],
+      }), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
@@ -252,8 +293,14 @@ describe("response_transform", () => {
     }
 
     expect((result.data as any).id).toBe("thread-1");
-    expect((result.data as any).messages[0].text).toBe("Plain body");
+    expect((result.data as any).messageCount).toBe(3);
+    expect((result.data as any).messageIds).toEqual(["msg-1", "msg-2", "msg-3"]);
+    expect((result.data as any).messages.map((m: any) => m.id)).toEqual(["msg-1", "msg-2", "msg-3"]);
+    expect((result.data as any).messages[0].snippet).toBe("First");
+    expect((result.data as any).messages[0].text).toBeUndefined();
+    expect((result.data as any).messages[0].html).toBeUndefined();
   });
+
 });
 
 function decodeBase64Url(value: string): string {
@@ -269,7 +316,7 @@ function encodeBase64Url(value: string): string {
     .replace(/=+$/g, "");
 }
 
-function gmailMessageFixture() {
+function gmailMessageFixture(overrides: Record<string, unknown> = {}) {
   return {
     id: "msg-1",
     threadId: "thread-1",
@@ -312,5 +359,6 @@ function gmailMessageFixture() {
         },
       ],
     },
+    ...overrides,
   };
 }
