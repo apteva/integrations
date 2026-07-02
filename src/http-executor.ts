@@ -168,6 +168,38 @@ export async function executeTool(
     // Any leftover non-binary, non-query input fields are ignored here —
     // if a template mixes raw body with JSON fields it should put those
     // in query_params, which is already the convention.
+  } else if (tool.multipart_form && tool.method !== "GET") {
+    const form = new FormData();
+    for (const [k, v] of Object.entries(authBodyParams)) {
+      if (v !== undefined && v !== null && v !== "") form.append(k, String(v));
+    }
+    for (const name of tool.multipart_form.field_names || []) {
+      const v = input[name];
+      if (v === undefined || v === null || v === "") continue;
+      form.append(name, multipartTextValue(v));
+    }
+    for (const [inputName, formName] of Object.entries(
+      tool.multipart_form.file_fields || {}
+    )) {
+      const v = input[inputName];
+      if (v === undefined || v === null || v === "") continue;
+      const values = Array.isArray(v) ? v : [v];
+      values.forEach((raw, index) => {
+        const { data, mimeType } = decodeMultipartFileValue(raw);
+        const filename =
+          String(input[`${inputName}_filename`] || "") ||
+          (values.length > 1 ? `${inputName}-${index + 1}` : inputName);
+        const bytes = data.buffer.slice(
+          data.byteOffset,
+          data.byteOffset + data.byteLength
+        ) as ArrayBuffer;
+        form.append(formName, new Blob([bytes], { type: mimeType }), filename);
+      });
+    }
+    delete headers["Content-Type"];
+    delete headers["content-type"];
+    fetchOpts.body = form;
+    fetchOpts.headers = headers;
   } else if (hasRootBody) {
     // Root-body path: send the named field's value as the whole request
     // body. JSON is the default, but text/* endpoints expect raw strings.
@@ -400,6 +432,64 @@ export async function executeTool(
 }
 
 // ─── Helpers ───
+
+function multipartTextValue(v: unknown): string {
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  return JSON.stringify(v);
+}
+
+function decodeMultipartFileValue(raw: unknown): {
+  data: Uint8Array;
+  mimeType: string;
+} {
+  if (raw && typeof raw === "object") {
+    const record = raw as Record<string, unknown>;
+    const base64 = record.base64 || record.data;
+    if (typeof base64 === "string") {
+      return {
+        data: Buffer.from(base64, "base64"),
+        mimeType: String(record.mimeType || "application/octet-stream"),
+      };
+    }
+  }
+  if (typeof raw === "string") {
+    const match = raw.match(/^data:([^;,]+)?(;base64)?,(.*)$/s);
+    if (match) {
+      const mimeType = match[1] || "application/octet-stream";
+      const payload = match[3] || "";
+      return {
+        data: match[2]
+          ? Buffer.from(payload, "base64")
+          : Buffer.from(decodeURIComponent(payload)),
+        mimeType,
+      };
+    }
+    if (looksLikeBase64(raw)) {
+      return {
+        data: Buffer.from(raw, "base64"),
+        mimeType: "application/octet-stream",
+      };
+    }
+    return {
+      data: Buffer.from(raw),
+      mimeType: "text/plain",
+    };
+  }
+  return {
+    data: Buffer.from(String(raw ?? "")),
+    mimeType: "text/plain",
+  };
+}
+
+function looksLikeBase64(s: string): boolean {
+  const compact = s.trim();
+  return (
+    compact.length > 0 &&
+    compact.length % 4 === 0 &&
+    /^[A-Za-z0-9+/]+={0,2}$/.test(compact)
+  );
+}
 
 function integrationProxyEnvName(slug: string): string {
   const normalized = slug

@@ -352,6 +352,9 @@ export interface OAuthConfig {
   scopes: string[];
   client_id_required: boolean;
   pkce: boolean;
+  client_id_param_name?: string;
+  scope_separator?: string;
+  token_auth_basic_only?: boolean;
   setup_url?: string;        // URL to provider's developer console to create an OAuth app
   setup_steps?: string[];    // Brief setup instructions shown in the UI
   // Extra static query parameters merged into the authorize URL after
