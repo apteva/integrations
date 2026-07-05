@@ -320,10 +320,22 @@ export interface AppAuthConfig {
   oauth2?: OAuthConfig;
   aws_sigv4?: AwsSigv4Config;
   shareasale?: ShareASaleAuthConfig;
+  mtls?: MutualTLSConfig;
+  signers?: SignerSpec[];
   headers?: Record<string, string>; // e.g. { "Authorization": "Bearer {{token}}" }
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
   body_params?: Record<string, string>; // e.g. { "key": "{{api_key}}" } for APIs that require auth in JSON body
   credential_fields?: CredentialField[]; // Describes what credentials the user must provide
+}
+
+export interface SignerSpec {
+  name: string;
+  params?: Record<string, unknown>;
+}
+
+export interface MutualTLSConfig {
+  cert_field?: string;
+  key_field?: string;
 }
 
 export interface AwsSigv4Config {
@@ -400,6 +412,7 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
+  signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
   // Return the resolved request URL instead of issuing the HTTP call.
   // Useful for deterministic affiliate/link-wrapper URLs where the URL

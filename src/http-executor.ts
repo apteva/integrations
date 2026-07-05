@@ -6,10 +6,10 @@ import type {
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
-import { createHash } from "node:crypto";
+import { createHash, createSign } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
-import { ProxyAgent } from "undici";
+import { Agent, ProxyAgent } from "undici";
 
 export interface ExecuteToolOptions {
   app: AppTemplate;
@@ -312,6 +312,14 @@ export async function executeTool(
     }
   }
 
+  const signerSpecs = (tool.signing?.signers?.length ? tool.signing.signers : app.auth.signers) || [];
+  for (const spec of signerSpecs) {
+    if (spec.name === "doba") {
+      signDobaRequest(headers, credentials, spec.params || {});
+      fetchOpts.headers = headers;
+    }
+  }
+
   if (tool.return_request_url) {
     return {
       success: true,
@@ -323,7 +331,7 @@ export async function executeTool(
 
   // 5. Execute the request
   try {
-    applyIntegrationProxy(app, fetchOpts);
+    applyIntegrationTransport(app, credentials, fetchOpts);
     const response = await fetch(finalUrl, fetchOpts);
     const responseHeaders: Record<string, string> = {};
     response.headers.forEach((v, k) => {
@@ -512,9 +520,16 @@ function integrationProxyURL(app: AppTemplate): { url: string; env: string } {
   };
 }
 
-function applyIntegrationProxy(app: AppTemplate, fetchOpts: RequestInit): void {
+function applyIntegrationTransport(
+  app: AppTemplate,
+  credentials: ConnectionCredentials,
+  fetchOpts: RequestInit
+): void {
   const { url: proxy, env } = integrationProxyURL(app);
-  if (!proxy) return;
+  if (!proxy) {
+    applyMutualTLS(app, credentials, fetchOpts);
+    return;
+  }
   try {
     new URL(proxy);
   } catch (err) {
@@ -526,6 +541,27 @@ function applyIntegrationProxy(app: AppTemplate, fetchOpts: RequestInit): void {
   }
   (fetchOpts as RequestInit & { dispatcher?: unknown }).dispatcher =
     new ProxyAgent(proxy);
+}
+
+function applyMutualTLS(
+  app: AppTemplate,
+  credentials: ConnectionCredentials,
+  fetchOpts: RequestInit
+): void {
+  if (!app.auth.mtls) return;
+  const norm = normalizeCredentials(credentials);
+  const certField = app.auth.mtls.cert_field || "client_certificate_pem";
+  const keyField = app.auth.mtls.key_field || "client_private_key_pem";
+  const cert = normalizePEM(norm[certField]);
+  const key = normalizePEM(norm[keyField]);
+  if (!cert || !key) return;
+  (fetchOpts as RequestInit & { dispatcher?: unknown }).dispatcher = new Agent({
+    connect: { cert, key },
+  });
+}
+
+function normalizePEM(value: string | undefined): string {
+  return String(value || "").trim().replace(/\\n/g, "\n");
 }
 
 function buildUrl(
@@ -606,7 +642,8 @@ function buildAuthBodyParams(
   const params: Record<string, string> = {};
   if (app.auth.body_params) {
     for (const [key, template] of Object.entries(app.auth.body_params)) {
-      params[key] = resolveTemplate(template, credentials);
+      const value = resolveTemplate(template, credentials);
+      if (value) params[key] = value;
     }
   }
   return params;
@@ -708,6 +745,43 @@ function resolveTemplate(
   return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
     return norm[key] || "";
   });
+}
+
+function signDobaRequest(
+  headers: Record<string, string>,
+  credentials: ConnectionCredentials,
+  params: Record<string, unknown>
+): void {
+  const norm = normalizeCredentials(credentials);
+  const appKeyField = String(params.app_key_field || "app_key");
+  const privateKeyField = String(params.private_key_field || "private_key");
+  const signType = String(params.sign_type || norm.sign_type || "rsa2");
+  const timestampUnit = String(params.timestamp_unit || "ms");
+  const appKey = norm[appKeyField] || norm.appKey;
+  const privateKey = norm[privateKeyField] || norm.privateKey;
+  if (!appKey || !privateKey) return;
+
+  const now = Date.now();
+  const timestamp = timestampUnit === "s"
+    ? String(Math.floor(now / 1000))
+    : String(now);
+  const canonical = `appKey=${appKey}&signType=${signType}&timestamp=${timestamp}`;
+  const signer = createSign("RSA-SHA256");
+  signer.update(canonical);
+  signer.end();
+  const sign = signer.sign(normalizePrivateKeyPem(privateKey), "base64");
+
+  headers[String(params.app_key_header || "appKey")] = appKey;
+  headers[String(params.sign_type_header || "signType")] = signType;
+  headers[String(params.timestamp_header || "timestamp")] = timestamp;
+  headers[String(params.signature_header || "sign")] = sign;
+}
+
+function normalizePrivateKeyPem(privateKey: string): string {
+  const trimmed = privateKey.trim();
+  if (trimmed.includes("BEGIN ")) return trimmed;
+  const wrapped = trimmed.replace(/\s+/g, "").match(/.{1,64}/g)?.join("\n") || trimmed;
+  return `-----BEGIN PRIVATE KEY-----\n${wrapped}\n-----END PRIVATE KEY-----`;
 }
 
 function buildQueryString(params: Record<string, unknown>): string {
