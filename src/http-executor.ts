@@ -233,7 +233,7 @@ export async function executeTool(
       const bodyParams = { ...authQueryParams, ...authBodyParams, ...remainingParams };
       const contentType = headers["Content-Type"] || headers["content-type"] || "";
       if (contentType.includes("x-www-form-urlencoded")) {
-        fetchOpts.body = buildQueryString(bodyParams);
+        fetchOpts.body = buildFormEncodedBody(bodyParams);
       } else {
         fetchOpts.body = JSON.stringify(bodyParams);
       }
@@ -241,7 +241,7 @@ export async function executeTool(
       const bodyParams = { ...authBodyParams, ...remainingParams };
       const contentType = headers["Content-Type"] || headers["content-type"] || "";
       if (contentType.includes("x-www-form-urlencoded")) {
-        fetchOpts.body = buildQueryString(bodyParams);
+        fetchOpts.body = buildFormEncodedBody(bodyParams);
       } else {
         fetchOpts.body = JSON.stringify(bodyParams);
       }
@@ -805,6 +805,49 @@ function buildQueryString(params: Record<string, unknown>): string {
     }
   }
   return parts.join("&");
+}
+
+function buildFormEncodedBody(params: Record<string, unknown>): string {
+  const pairs: Array<[string, string]> = [];
+  const keys = Object.keys(params).sort();
+  for (const key of keys) {
+    appendFormValue(pairs, key, params[key]);
+  }
+  return pairs
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    )
+    .join("&");
+}
+
+function appendFormValue(
+  pairs: Array<[string, string]>,
+  key: string,
+  value: unknown
+): void {
+  if (value === undefined || value === null || value === "") return;
+  if (Array.isArray(value)) {
+    if (value.some((item) => isPlainObject(item) || Array.isArray(item))) {
+      value.forEach((item, index) => {
+        appendFormValue(pairs, `${key}[${index}]`, item);
+      });
+      return;
+    }
+    value.forEach((item) => appendFormValue(pairs, key, item));
+    return;
+  }
+  if (isPlainObject(value)) {
+    for (const child of Object.keys(value).sort()) {
+      appendFormValue(
+        pairs,
+        `${key}[${child}]`,
+        (value as Record<string, unknown>)[child]
+      );
+    }
+    return;
+  }
+  pairs.push([key, String(value)]);
 }
 
 function applyResponseTransform(
