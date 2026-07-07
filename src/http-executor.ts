@@ -6,7 +6,7 @@ import type {
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
-import { createHash, createSign } from "node:crypto";
+import { createHash, createHmac, createSign } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
 import { Agent, ProxyAgent } from "undici";
@@ -316,6 +316,18 @@ export async function executeTool(
   for (const spec of signerSpecs) {
     if (spec.name === "doba") {
       signDobaRequest(headers, credentials, spec.params || {});
+      fetchOpts.headers = headers;
+    } else if (spec.name === "zadarma") {
+      const bodyForSigning =
+        typeof fetchOpts.body === "string"
+          ? fetchOpts.body
+          : fetchOpts.body instanceof Buffer
+            ? fetchOpts.body.toString("utf8")
+            : "";
+      signZadarmaRequest(headers, finalUrl, bodyForSigning, credentials, spec.params || {});
+      fetchOpts.headers = headers;
+    } else if (spec.name === "ghost_admin") {
+      signGhostAdminRequest(headers, credentials, spec.params || {});
       fetchOpts.headers = headers;
     }
   }
@@ -777,6 +789,63 @@ function signDobaRequest(
   headers[String(params.signature_header || "sign")] = sign;
 }
 
+function signZadarmaRequest(
+  headers: Record<string, string>,
+  finalUrl: string,
+  body: string,
+  credentials: ConnectionCredentials,
+  params: Record<string, unknown>
+): void {
+  const norm = normalizeCredentials(credentials);
+  const keyField = String(params.key_field || "api_key");
+  const secretField = String(params.secret_field || "api_secret");
+  const key = norm[keyField];
+  const secret = norm[secretField];
+  if (!key || !secret) return;
+
+  const url = new URL(finalUrl);
+  const paramsString = zadarmaCanonicalParams(url.search ? url.search.slice(1) : "", body);
+  const paramsHash = createHash("md5").update(paramsString).digest("hex");
+  const canonical = `${url.pathname}${paramsString}${paramsHash}`;
+  const signature = createHmac("sha1", secret).update(canonical).digest("base64");
+  headers.Authorization = `${key}:${signature}`;
+}
+
+function signGhostAdminRequest(
+  headers: Record<string, string>,
+  credentials: ConnectionCredentials,
+  params: Record<string, unknown>
+): void {
+  const norm = normalizeCredentials(credentials);
+  const keyField = String(params.key_field || "admin_api_key");
+  const adminKey = norm[keyField];
+  if (!adminKey || !adminKey.includes(":")) return;
+  const [id, secret] = adminKey.split(":", 2);
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "HS256", typ: "JWT", kid: id };
+  const payload = { iat: now, exp: now + 300, aud: "/admin/" };
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const signature = createHmac("sha256", Buffer.from(secret, "hex")).update(unsigned).digest("base64url");
+  headers.Authorization = `Ghost ${unsigned}.${signature}`;
+}
+
+function base64Url(value: string): string {
+  return Buffer.from(value).toString("base64url");
+}
+
+function zadarmaCanonicalParams(rawQuery: string, rawBody: string): string {
+  const params = new URLSearchParams();
+  for (const raw of [rawQuery, rawBody]) {
+    if (!raw) continue;
+    const parsed = new URLSearchParams(raw);
+    for (const [key, value] of parsed.entries()) {
+      params.append(key, value);
+    }
+  }
+  params.sort();
+  return params.toString();
+}
+
 function normalizePrivateKeyPem(privateKey: string): string {
   const trimmed = privateKey.trim();
   if (trimmed.includes("BEGIN ")) return trimmed;
@@ -1073,7 +1142,7 @@ function applyRequestTransform(
       }
       const body: Record<string, unknown> = {};
       if (transform.target) {
-        setPath(body, transform.target, selected);
+        setPath(body, transform.target, transform.as_array ? [selected] : selected);
       } else {
         Object.assign(body, selected);
       }

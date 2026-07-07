@@ -500,6 +500,8 @@ export interface JsonWrapRequestTransform {
   /** Dot path to place selected fields under. Empty/omitted means top-level. */
   target?: string;
   fields: string[];
+  /** Wrap selected fields in a single-element array at target. Useful for APIs like Ghost Admin. */
+  as_array?: boolean;
   include_fields?: Record<string, string>;
 }
 
