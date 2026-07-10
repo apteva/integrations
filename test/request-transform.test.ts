@@ -53,6 +53,88 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("header_params sends an input as a header without leaking it into the body", async () => {
+    let captured: { headers: HeadersInit | undefined; body: BodyInit | null | undefined } | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      captured = { headers: init?.headers, body: init?.body };
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "tts",
+          description: "Generate speech",
+          method: "POST",
+          path: "/tts",
+          header_params: { model: "model" },
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok" },
+        input: { model: "s2-pro", text: "Hello" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.headers).toEqual({
+      Authorization: "Bearer tok",
+      model: "s2-pro",
+    });
+    expect(captured?.body).toBe(JSON.stringify({ text: "Hello" }));
+  });
+
+  test("multipart repeat_fields emits array values as repeated text parts", async () => {
+    let capturedBody: BodyInit | null | undefined;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      capturedBody = init?.body;
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "clone_voice",
+          description: "Clone voice",
+          method: "POST",
+          path: "/model",
+          multipart_form: {
+            field_names: ["title", "texts", "tags"],
+            repeat_fields: ["texts", "tags"],
+            file_fields: { voices: "voices" },
+          },
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok" },
+        input: {
+          title: "Narrator",
+          texts: ["first transcript", "second transcript"],
+          tags: ["english", "narration"],
+          voices: ["UklGRg==", "UklGRw=="],
+          voices_filename: "sample.wav",
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const form = capturedBody as FormData;
+    expect(form.get("title")).toBe("Narrator");
+    expect(form.getAll("texts")).toEqual(["first transcript", "second transcript"]);
+    expect(form.getAll("tags")).toEqual(["english", "narration"]);
+    const voices = form.getAll("voices") as File[];
+    expect(voices).toHaveLength(2);
+    expect(voices.map((voice) => voice.name)).toEqual(["1-sample.wav", "2-sample.wav"]);
+  });
+
   test("body_root_param sends text content as a raw body", async () => {
     let captured: { headers: HeadersInit | undefined; body: BodyInit | null | undefined } | null = null;
     const originalFetch = globalThis.fetch;

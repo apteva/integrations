@@ -412,6 +412,11 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
+  // Map agent-facing input field names to upstream HTTP header names.
+  // Declared fields are removed from the normal body/query buckets.
+  // Example: Fish Audio maps { model: "model" } because its TTS model
+  // selector is a request header rather than a JSON-body field.
+  header_params?: Record<string, string>;
   signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
   // Return the resolved request URL instead of issuing the HTTP call.
@@ -457,6 +462,9 @@ export interface AppToolTemplate {
   multipart_form?: {
     file_fields?: Record<string, string>;
     field_names?: string[];
+    // Text fields whose array values must be emitted as repeated form
+    // parts instead of one JSON-encoded string.
+    repeat_fields?: string[];
   };
   // Declarative request-body transform applied after URL interpolation and
   // before the generic query/body split. This lets tools expose agent-friendly

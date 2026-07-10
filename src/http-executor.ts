@@ -90,6 +90,12 @@ export async function executeTool(
   const pathParams = extractPathParams(tool.path);
   const declaredQueryParams = tool.query_params || [];
   const queryParamAliases = tool.query_param_aliases || {};
+  const headerParams = tool.header_params || {};
+  for (const [inputName, headerName] of Object.entries(headerParams)) {
+    const value = input[inputName];
+    if (!headerName || value === undefined || value === null || value === "") continue;
+    headers[headerName] = String(value);
+  }
   const transformedBody = tool.request_transform
     ? applyRequestTransform(tool.request_transform, input)
     : undefined;
@@ -121,6 +127,7 @@ export async function executeTool(
   const toolQueryParams: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input)) {
     if (pathParams.includes(k)) continue;
+    if (k in headerParams) continue;
     if (binaryEnvelope && k === binaryParam) continue;
     if (hasRootBody && k === rootParam) continue;
     if (
@@ -176,7 +183,15 @@ export async function executeTool(
     for (const name of tool.multipart_form.field_names || []) {
       const v = input[name];
       if (v === undefined || v === null || v === "") continue;
-      form.append(name, multipartTextValue(v));
+      if (tool.multipart_form.repeat_fields?.includes(name) && Array.isArray(v)) {
+        for (const item of v) {
+          if (item !== undefined && item !== null && item !== "") {
+            form.append(name, multipartTextValue(item));
+          }
+        }
+      } else {
+        form.append(name, multipartTextValue(v));
+      }
     }
     for (const [inputName, formName] of Object.entries(
       tool.multipart_form.file_fields || {}
@@ -186,9 +201,12 @@ export async function executeTool(
       const values = Array.isArray(v) ? v : [v];
       values.forEach((raw, index) => {
         const { data, mimeType } = decodeMultipartFileValue(raw);
-        const filename =
-          String(input[`${inputName}_filename`] || "") ||
-          (values.length > 1 ? `${inputName}-${index + 1}` : inputName);
+        const filename = multipartFilename(
+          String(input[`${inputName}_filename`] || ""),
+          inputName,
+          index,
+          values.length
+        );
         const bytes = data.buffer.slice(
           data.byteOffset,
           data.byteOffset + data.byteLength
@@ -457,6 +475,17 @@ function multipartTextValue(v: unknown): string {
   if (typeof v === "string") return v;
   if (typeof v === "number" || typeof v === "boolean") return String(v);
   return JSON.stringify(v);
+}
+
+function multipartFilename(
+  requested: string,
+  fallback: string,
+  index: number,
+  total: number
+): string {
+  const filename = requested || fallback;
+  if (total <= 1) return filename;
+  return `${index + 1}-${filename}`;
 }
 
 function decodeMultipartFileValue(raw: unknown): {
