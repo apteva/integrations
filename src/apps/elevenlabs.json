@@ -110,6 +110,16 @@
             "default": "auto",
             "description": "Text normalization mode."
           },
+          "apply_language_text_normalization": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable language-specific text normalization where supported. This may increase latency."
+          },
+          "use_pvc_as_ivc": {
+            "type": "boolean",
+            "default": false,
+            "description": "Deprecated ElevenLabs compatibility switch for using an instant-clone version of a professional voice clone."
+          },
           "output_format": {
             "type": "string",
             "default": "mp3_44100_128",
