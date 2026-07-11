@@ -347,6 +347,9 @@ export async function executeTool(
     } else if (spec.name === "ghost_admin") {
       signGhostAdminRequest(headers, credentials, spec.params || {});
       fetchOpts.headers = headers;
+    } else if (spec.name === "app_store_connect_jwt") {
+      signAppStoreConnectRequest(headers, credentials);
+      fetchOpts.headers = headers;
     }
   }
 
@@ -858,6 +861,36 @@ function signGhostAdminRequest(
   headers.Authorization = `Ghost ${unsigned}.${signature}`;
 }
 
+function signAppStoreConnectRequest(
+  headers: Record<string, string>,
+  credentials: ConnectionCredentials
+): void {
+  const norm = normalizeCredentials(credentials);
+  const issuerId = norm.issuer_id;
+  const keyId = norm.key_id;
+  const privateKey = norm.private_key;
+  if (!issuerId || !keyId || !privateKey) return;
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "ES256", kid: keyId, typ: "JWT" };
+  const payload = {
+    iss: issuerId,
+    iat: now,
+    exp: now + 1190,
+    aud: "appstoreconnect-v1",
+  };
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const signature = createSign("SHA256")
+    .update(unsigned)
+    .end()
+    .sign({
+      key: privateKey.trim().replace(/\\n/g, "\n"),
+      dsaEncoding: "ieee-p1363",
+    })
+    .toString("base64url");
+  headers.Authorization = `Bearer ${unsigned}.${signature}`;
+}
+
 function base64Url(value: string): string {
   return Buffer.from(value).toString("base64url");
 }
@@ -1177,6 +1210,34 @@ function applyRequestTransform(
       }
       copyIncludedFields(body, input, transform.include_fields);
       return body;
+    }
+    case "json_api": {
+      const data: Record<string, unknown> = { type: transform.resource_type };
+      if (transform.id_field) {
+        const id = input[transform.id_field];
+        if (id !== undefined && id !== null && id !== "") data.id = id;
+      }
+      const attributes: Record<string, unknown> = {};
+      for (const field of transform.attributes || []) {
+        const value = input[field];
+        if (value !== undefined && value !== null) attributes[field] = value;
+      }
+      if (Object.keys(attributes).length > 0) data.attributes = attributes;
+
+      const relationships: Record<string, unknown> = {};
+      for (const [name, relationship] of Object.entries(transform.relationships || {})) {
+        const value = input[relationship.source];
+        if (value === undefined || value === null || value === "") continue;
+        const linkage = relationship.many
+          ? (Array.isArray(value) ? value : [value]).map((id) => ({
+              type: relationship.resource_type,
+              id: String(id),
+            }))
+          : { type: relationship.resource_type, id: String(value) };
+        relationships[name] = { data: linkage };
+      }
+      if (Object.keys(relationships).length > 0) data.relationships = relationships;
+      return { data };
     }
   }
 }

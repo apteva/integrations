@@ -135,6 +135,65 @@ describe("request_transform", () => {
     expect(voices.map((voice) => voice.name)).toEqual(["1-sample.wav", "2-sample.wav"]);
   });
 
+  test("json_api builds attributes and to-one/to-many relationships", async () => {
+    let body = "";
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      body = String(init?.body || "");
+      return new Response(JSON.stringify({ data: { id: "version-1" } }), {
+        status: 201,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "create_version",
+          description: "Create version",
+          method: "POST",
+          path: "/versions",
+          input_schema: { type: "object", properties: {} },
+          request_transform: {
+            type: "json_api",
+            resource_type: "appStoreVersions",
+            attributes: ["versionString", "platform"],
+            relationships: {
+              app: { source: "app_id", resource_type: "apps" },
+              builds: { source: "build_ids", resource_type: "builds", many: true },
+            },
+          },
+        },
+        credentials: { access_token: "tok" },
+        input: {
+          app_id: "app-1",
+          versionString: "2.0",
+          platform: "IOS",
+          build_ids: ["build-1", "build-2"],
+          ignored: "not-on-wire",
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(JSON.parse(body)).toEqual({
+      data: {
+        type: "appStoreVersions",
+        attributes: { versionString: "2.0", platform: "IOS" },
+        relationships: {
+          app: { data: { type: "apps", id: "app-1" } },
+          builds: {
+            data: [
+              { type: "builds", id: "build-1" },
+              { type: "builds", id: "build-2" },
+            ],
+          },
+        },
+      },
+    });
+  });
+
   test("body_root_param sends text content as a raw body", async () => {
     let captured: { headers: HeadersInit | undefined; body: BodyInit | null | undefined } | null = null;
     const originalFetch = globalThis.fetch;

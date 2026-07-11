@@ -356,7 +356,7 @@ export interface CredentialField {
   type?: "password" | "text"; // Default "password"
 }
 
-export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4";
+export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
 
 export interface OAuthConfig {
   authorize_url: string;
@@ -480,7 +480,8 @@ export interface AppToolTemplate {
 export type RequestTransform =
   | MimeEmailRequestTransform
   | Base64FieldRequestTransform
-  | JsonWrapRequestTransform;
+  | JsonWrapRequestTransform
+  | JsonApiRequestTransform;
 
 export interface MimeEmailRequestTransform {
   type: "mime_email";
@@ -511,6 +512,25 @@ export interface JsonWrapRequestTransform {
   /** Wrap selected fields in a single-element array at target. Useful for APIs like Ghost Admin. */
   as_array?: boolean;
   include_fields?: Record<string, string>;
+}
+
+export interface JsonApiRequestTransform {
+  type: "json_api";
+  /** JSON:API resource type placed in data.type. */
+  resource_type: string;
+  /** Optional input field copied to data.id. */
+  id_field?: string;
+  /** Input fields copied verbatim to data.attributes when present. */
+  attributes?: string[];
+  /** Friendly input fields converted to JSON:API relationship linkage. */
+  relationships?: Record<string, JsonApiRelationship>;
+}
+
+export interface JsonApiRelationship {
+  source: string;
+  resource_type: string;
+  /** Build data as an array of linkage objects. The source must be an array of ids. */
+  many?: boolean;
 }
 
 export type ResponseTransform =
