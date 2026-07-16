@@ -541,6 +541,13 @@ export type ResponseTransform =
 
 export interface EmailMessageResponseTransform {
   type: "email_message";
+  /** Input field used to select compact/text/html/both/none body output. Kept local and never sent upstream. */
+  body_mode_param?: string;
+  /** Input field used to cap the total returned body characters. Kept local and never sent upstream. */
+  max_chars_param?: string;
+  default_body_mode?: "compact" | "text" | "html" | "both" | "none";
+  default_max_chars?: number;
+  max_chars_limit?: number;
 }
 
 export interface EmailThreadResponseTransform {

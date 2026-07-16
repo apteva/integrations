@@ -442,6 +442,94 @@ describe("response_transform", () => {
     expect((result.data as any).messages[0].html).toBeUndefined();
   });
 
+  test("email_message applies local compact body controls without forwarding them", async () => {
+    const messageTool: AppToolTemplate = {
+      name: "get_message",
+      description: "Get",
+      method: "GET",
+      path: "/messages/{messageId}",
+      input_schema: { type: "object", properties: {} },
+      response_transform: {
+        type: "email_message",
+        body_mode_param: "body_mode",
+        max_chars_param: "max_chars",
+        default_body_mode: "compact",
+        default_max_chars: 20_000,
+        max_chars_limit: 100_000,
+      },
+    };
+    let requestedUrl = "";
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (request) => {
+      requestedUrl = String(request);
+      return new Response(JSON.stringify(gmailMessageFixture()), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    let result;
+    try {
+      result = await executeTool({
+        app,
+        tool: messageTool,
+        credentials: { access_token: "tok" },
+        input: { messageId: "msg-1", format: "full", body_mode: "compact", max_chars: 5 },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const url = new URL(requestedUrl);
+    expect(url.searchParams.get("format")).toBe("full");
+    expect(url.searchParams.has("body_mode")).toBe(false);
+    expect(url.searchParams.has("max_chars")).toBe(false);
+    expect((result.data as any).body).toBe("Plain");
+    expect((result.data as any).bodyMimeType).toBe("text/plain");
+    expect((result.data as any).text).toBeUndefined();
+    expect((result.data as any).html).toBeUndefined();
+    expect((result.data as any).bodyReturnedChars).toBe(5);
+    expect((result.data as any).bodyTruncated).toBe(true);
+    expect((result.data as any).bodyAvailableChars).toEqual({ text: 10, html: 16 });
+  });
+
+  test("failed Gmail thread responses preserve an explicit non-retryable not_found error", async () => {
+    const threadTool: AppToolTemplate = {
+      name: "get_thread",
+      description: "Thread",
+      method: "GET",
+      path: "/threads/{threadId}",
+      input_schema: { type: "object", properties: {} },
+      response_transform: { type: "email_thread" },
+    };
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({
+        error: { code: 404, message: "Requested entity was not found.", status: "NOT_FOUND" },
+      }), {
+        status: 404,
+        headers: { "content-type": "application/json" },
+      });
+    let result;
+    try {
+      result = await executeTool({
+        app,
+        tool: threadTool,
+        credentials: { access_token: "tok" },
+        input: { threadId: "stale-thread" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(result.success).toBe(false);
+    expect(result.status).toBe(404);
+    expect((result.data as any).error).toBe("not_found");
+    expect((result.data as any).retryable).toBe(false);
+    expect((result.data as any).message).toBe("Requested entity was not found.");
+    expect((result.data as any).instruction).toContain("Do not retry the same resource ID");
+    expect((result.data as any).messages).toBeUndefined();
+  });
+
 });
 
 function decodeBase64Url(value: string): string {

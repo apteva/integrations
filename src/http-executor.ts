@@ -91,6 +91,7 @@ export async function executeTool(
   const declaredQueryParams = tool.query_params || [];
   const queryParamAliases = tool.query_param_aliases || {};
   const headerParams = tool.header_params || {};
+  const localResponseParams = responseTransformLocalParams(tool.response_transform);
   for (const [inputName, headerName] of Object.entries(headerParams)) {
     const value = input[inputName];
     if (!headerName || value === undefined || value === null || value === "") continue;
@@ -128,6 +129,7 @@ export async function executeTool(
   for (const [k, v] of Object.entries(input)) {
     if (pathParams.includes(k)) continue;
     if (k in headerParams) continue;
+    if (localResponseParams.has(k)) continue;
     if (binaryEnvelope && k === binaryParam) continue;
     if (hasRootBody && k === rootParam) continue;
     if (
@@ -442,6 +444,18 @@ export async function executeTool(
       data = await response.text();
     }
 
+    // Response shaping is only valid for successful provider payloads.
+    // Applying a success transform to an error object can erase the actual
+    // error (for example Gmail's NOT_FOUND became an empty thread).
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        data: normalizeIntegrationHttpError(response.status, data),
+        headers: responseHeaders,
+      };
+    }
+
     // Apply response_path extraction if defined — but skip for binary
     // envelopes. extractPath would walk into { _binary, base64, ... }
     // looking for the template's path (e.g. "data") and silently return
@@ -451,7 +465,7 @@ export async function executeTool(
     }
 
     if (tool.response_transform && data && !isBinary) {
-      data = applyResponseTransform(tool.response_transform, data);
+      data = applyResponseTransform(tool.response_transform, data, input);
     }
 
     return {
@@ -983,11 +997,12 @@ function appendFormValue(
 
 function applyResponseTransform(
   transform: ResponseTransform,
-  data: unknown
+  data: unknown,
+  input: Record<string, unknown> = {}
 ): unknown {
   switch (transform.type) {
     case "email_message":
-      return normalizeEmailMessage(data);
+      return normalizeEmailMessage(data, transform, input);
     case "email_thread":
       return normalizeEmailThread(data, transform);
     case "base64_field_decode": {
@@ -1054,7 +1069,11 @@ function compactEmailMessage(data: unknown): Record<string, unknown> {
   };
 }
 
-function normalizeEmailMessage(data: unknown): unknown {
+function normalizeEmailMessage(
+  data: unknown,
+  transform?: Extract<ResponseTransform, { type: "email_message" }>,
+  input: Record<string, unknown> = {}
+): unknown {
   if (!isPlainObject(data)) return data;
   const payload = isPlainObject(data.payload) ? data.payload : {};
   const headerPairs = Array.isArray(payload.headers) ? payload.headers : [];
@@ -1062,7 +1081,7 @@ function normalizeEmailMessage(data: unknown): unknown {
   const bodies = collectEmailBodies(payload);
   const internalDate = parseGmailInternalDate(data.internalDate);
 
-  return {
+  const normalized: Record<string, unknown> = {
     id: data.id,
     threadId: data.threadId,
     labelIds: data.labelIds,
@@ -1081,9 +1100,107 @@ function normalizeEmailMessage(data: unknown): unknown {
     messageId: pickHeader(headers, "message-id"),
     inReplyTo: pickHeader(headers, "in-reply-to"),
     references: pickHeader(headers, "references"),
-    text: bodies.text.join("\n\n").trim(),
-    html: bodies.html.join("\n\n").trim(),
     attachments: bodies.attachments,
+  };
+  return selectEmailBodies(normalized, bodies, transform, input);
+}
+
+type EmailBodyMode = "compact" | "text" | "html" | "both" | "none";
+
+function responseTransformLocalParams(transform?: ResponseTransform): Set<string> {
+  const params = new Set<string>();
+  if (transform?.type === "email_message") {
+    if (transform.body_mode_param) params.add(transform.body_mode_param);
+    if (transform.max_chars_param) params.add(transform.max_chars_param);
+  }
+  return params;
+}
+
+function selectEmailBodies(
+  normalized: Record<string, unknown>,
+  bodies: ReturnType<typeof collectEmailBodies>,
+  transform: Extract<ResponseTransform, { type: "email_message" }> | undefined,
+  input: Record<string, unknown>
+): Record<string, unknown> {
+  const textBody = bodies.text.join("\n\n").trim();
+  const htmlBody = bodies.html.join("\n\n").trim();
+  const requestedMode = transform?.body_mode_param
+    ? String(input[transform.body_mode_param] || "")
+    : "";
+  const allowedModes = new Set<EmailBodyMode>(["compact", "text", "html", "both", "none"]);
+  const configuredMode = transform?.default_body_mode || "both";
+  const mode = allowedModes.has(requestedMode as EmailBodyMode)
+    ? (requestedMode as EmailBodyMode)
+    : configuredMode;
+  const configuredLimit = transform?.default_max_chars;
+  const requestedLimit = transform?.max_chars_param
+    ? Number(input[transform.max_chars_param])
+    : Number.NaN;
+  let maxChars = Number.isFinite(requestedLimit) && requestedLimit > 0
+    ? Math.floor(requestedLimit)
+    : configuredLimit;
+  if (maxChars !== undefined) {
+    maxChars = Math.max(1, Math.floor(maxChars));
+    if (transform?.max_chars_limit && transform.max_chars_limit > 0) {
+      maxChars = Math.min(maxChars, transform.max_chars_limit);
+    }
+  }
+
+  const selected: Array<{ key: "body" | "text" | "html"; value: string }> = [];
+  if (mode === "compact") {
+    selected.push({ key: "body", value: textBody || htmlBody });
+    normalized.bodyMimeType = textBody ? "text/plain" : htmlBody ? "text/html" : "";
+  } else if (mode === "text") {
+    selected.push({ key: "text", value: textBody });
+  } else if (mode === "html") {
+    selected.push({ key: "html", value: htmlBody });
+  } else if (mode === "both") {
+    selected.push({ key: "text", value: textBody }, { key: "html", value: htmlBody });
+  }
+
+  let remaining = maxChars ?? Number.POSITIVE_INFINITY;
+  let returnedChars = 0;
+  let selectedChars = 0;
+  for (const item of selected) {
+    const chars = Array.from(item.value);
+    selectedChars += chars.length;
+    const value = Number.isFinite(remaining)
+      ? chars.slice(0, Math.max(0, remaining)).join("")
+      : item.value;
+    normalized[item.key] = value;
+    const used = Array.from(value).length;
+    returnedChars += used;
+    remaining -= used;
+  }
+
+  normalized.bodyMode = mode;
+  normalized.bodyAvailableChars = {
+    text: Array.from(textBody).length,
+    html: Array.from(htmlBody).length,
+  };
+  normalized.bodyReturnedChars = returnedChars;
+  normalized.bodyTruncated = returnedChars < selectedChars;
+  return normalized;
+}
+
+function normalizeIntegrationHttpError(status: number, data: unknown): unknown {
+  if (status !== 404) return data;
+  let providerMessage = "The requested resource was not found.";
+  if (isPlainObject(data)) {
+    if (typeof data.message === "string" && data.message) providerMessage = data.message;
+    if (isPlainObject(data.error) && typeof data.error.message === "string" && data.error.message) {
+      providerMessage = data.error.message;
+    }
+  } else if (typeof data === "string" && data.trim()) {
+    providerMessage = data.trim();
+  }
+  return {
+    error: "not_found",
+    status,
+    retryable: false,
+    message: providerMessage,
+    instruction: "Do not retry the same resource ID. List or search for the resource again and use a current ID.",
+    provider_error: data,
   };
 }
 
