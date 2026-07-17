@@ -29,6 +29,13 @@ describe("phone number integration catalogs", () => {
     expect(tool("twilio", "buy_phone_number").input_schema.properties?.AddressSid).toBeDefined();
     expect(tool("twilio", "buy_phone_number").input_schema.properties?.BundleSid).toBeDefined();
     expect(tool("telnyx", "search_available_phone_numbers").method).toBe("GET");
+    expect(tool("telnyx", "create_address").path).toBe("/addresses");
+    expect(tool("telnyx", "list_regulatory_requirements").method).toBe("GET");
+    expect(tool("telnyx", "create_requirement_group").path).toBe("/requirement_groups");
+    expect(tool("telnyx", "update_requirement_group").method).toBe("PATCH");
+    expect(tool("telnyx", "submit_requirement_group").path).toContain("submit_for_approval");
+    expect(tool("telnyx", "upload_document").path).toBe("/documents");
+    expect(tool("telnyx", "create_number_order").input_schema.properties?.phone_numbers).toBeDefined();
     expect(tool("plivo", "get_number_pricing").method).toBe("GET");
     expect(tool("signalwire", "search_available_numbers").method).toBe("GET");
     expect(tool("vonage", "numbers_search").method).toBe("GET");
