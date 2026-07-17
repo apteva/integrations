@@ -693,6 +693,44 @@
       }
     },
     {
+      "name": "get_phone_number_pricing",
+      "description": "Retrieve current account-specific monthly phone number prices for a country, grouped by local, mobile, national, and toll-free type.",
+      "method": "GET",
+      "base_url": "https://pricing.twilio.com/v1",
+      "path": "/PhoneNumbers/Countries/{Country}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "Country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code, e.g. US, EE, or DE."
+          }
+        },
+        "required": [
+          "Country"
+        ]
+      }
+    },
+    {
+      "name": "get_voice_pricing",
+      "description": "Retrieve current account-specific inbound and outbound Programmable Voice prices for a country.",
+      "method": "GET",
+      "base_url": "https://pricing.twilio.com/v2",
+      "path": "/Voice/Countries/{Country}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "Country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code, e.g. US, EE, or DE."
+          }
+        },
+        "required": [
+          "Country"
+        ]
+      }
+    },
+    {
       "name": "list_recordings",
       "description": "List call recordings with optional filters.",
       "method": "GET",
