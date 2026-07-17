@@ -19,6 +19,8 @@ describe("phone number integration catalogs", () => {
   test("expose provider inventory and pricing operations", () => {
     expect(tool("twilio", "get_phone_number_pricing").method).toBe("GET");
     expect(tool("twilio", "get_voice_pricing").method).toBe("GET");
+    expect(tool("twilio", "list_addresses").path).toContain("/Addresses.json");
+    expect(tool("twilio", "buy_phone_number").input_schema.properties?.AddressSid).toBeDefined();
     expect(tool("telnyx", "search_available_phone_numbers").method).toBe("GET");
     expect(tool("plivo", "get_number_pricing").method).toBe("GET");
     expect(tool("signalwire", "search_available_numbers").method).toBe("GET");

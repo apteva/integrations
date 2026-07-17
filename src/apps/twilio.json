@@ -442,6 +442,30 @@
       }
     },
     {
+      "name": "list_addresses",
+      "description": "List regulatory addresses available for assigning to Twilio phone numbers.",
+      "method": "GET",
+      "path": "/Accounts/{{account_sid}}/Addresses.json",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "CustomerName": {
+            "type": "string",
+            "description": "Optional exact customer name filter."
+          },
+          "IsoCountry": {
+            "type": "string",
+            "description": "Optional ISO alpha-2 country filter."
+          },
+          "PageSize": {
+            "type": "integer",
+            "default": 50,
+            "description": "Number of results (max 1000)."
+          }
+        }
+      }
+    },
+    {
       "name": "list_phone_numbers",
       "description": "List all phone numbers in your Twilio account with their capabilities and configuration.",
       "method": "GET",
@@ -480,6 +504,10 @@
           "FriendlyName": {
             "type": "string",
             "description": "Friendly name for the number"
+          },
+          "AddressSid": {
+            "type": "string",
+            "description": "Twilio Address SID required for regulated phone numbers."
           },
           "SmsUrl": {
             "type": "string",
