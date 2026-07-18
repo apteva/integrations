@@ -36,7 +36,15 @@ describe("phone number integration catalogs", () => {
     expect(tool("telnyx", "submit_requirement_group").path).toContain("submit_for_approval");
     expect(tool("telnyx", "upload_document").path).toBe("/documents");
     expect(tool("telnyx", "create_number_order").input_schema.properties?.phone_numbers).toBeDefined();
+    expect(tool("telnyx", "make_call").input_schema.properties?.record).toBeDefined();
+    expect(tool("telnyx", "make_call").input_schema.properties?.webhook_url).toBeDefined();
     expect(tool("plivo", "get_number_pricing").method).toBe("GET");
+    expect(tool("plivo", "list_owned_phone_numbers").path).toBe("/Number/");
+    expect(tool("plivo", "create_application").path).toBe("/Application/");
+    expect(tool("plivo", "update_owned_phone_number").method).toBe("POST");
+    expect(tool("plivo", "make_call").input_schema.properties?.ring_url).toBeDefined();
+    expect(tool("plivo", "list_recordings").path).toBe("/Recording/");
+    expect(tool("plivo", "delete_recording").method).toBe("DELETE");
     expect(tool("signalwire", "search_available_numbers").method).toBe("GET");
     expect(tool("vonage", "numbers_search").method).toBe("GET");
   });
