@@ -53,6 +53,51 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("presigned binary upload uses the absolute URL without provider auth", async () => {
+    let captured:
+      | { url: string; headers: HeadersInit | undefined; body: BodyInit | null | undefined }
+      | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), headers: init?.headers, body: init?.body };
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "upload_presigned_file",
+          description: "Upload binary file",
+          method: "PUT",
+          path: "{uploadUrl}",
+          omit_auth_headers: ["Authorization"],
+          body_binary_param: "file",
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "provider-token" },
+        input: {
+          uploadUrl: "https://storage.example/upload?signature=abc",
+          file: {
+            _binary: true,
+            base64: Buffer.from("solid test\nendsolid test\n").toString("base64"),
+            mimeType: "model/stl",
+          },
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.url).toBe("https://storage.example/upload?signature=abc");
+    expect(captured?.headers).toEqual({ "Content-Type": "model/stl" });
+    expect(Buffer.from(captured?.body as Uint8Array).toString()).toBe(
+      "solid test\nendsolid test\n",
+    );
+  });
+
   test("header_params sends an input as a header without leaking it into the body", async () => {
     let captured: { headers: HeadersInit | undefined; body: BodyInit | null | undefined } | null = null;
     const originalFetch = globalThis.fetch;
@@ -133,6 +178,39 @@ describe("request_transform", () => {
     const voices = form.getAll("voices") as File[];
     expect(voices).toHaveLength(2);
     expect(voices.map((voice) => voice.name)).toEqual(["1-sample.wav", "2-sample.wav"]);
+  });
+
+  test("multipart files honor the catalog's generic filename field", async () => {
+    let capturedBody: BodyInit | null | undefined;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      capturedBody = init?.body;
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "upload_model",
+          description: "Upload model",
+          method: "POST",
+          path: "/models",
+          multipart_form: { file_fields: { file: "file" } },
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok" },
+        input: { file: "c29saWQ=", filename: "part.stl" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const uploaded = (capturedBody as FormData).get("file") as File;
+    expect(uploaded.name).toBe("part.stl");
+    expect(await uploaded.text()).toBe("solid");
   });
 
   test("json_api builds attributes and to-one/to-many relationships", async () => {

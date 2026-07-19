@@ -59,6 +59,11 @@ export async function executeTool(
 
   // 2. Build headers from app auth config + credentials
   const headers = buildHeaders(app, credentials);
+  for (const omitted of tool.omit_auth_headers || []) {
+    for (const key of Object.keys(headers)) {
+      if (key.toLowerCase() === omitted.toLowerCase()) delete headers[key];
+    }
+  }
   if (tool.headers) {
     for (const [key, template] of Object.entries(tool.headers)) {
       const value = resolveTemplate(template, credentials);
@@ -204,7 +209,7 @@ export async function executeTool(
       values.forEach((raw, index) => {
         const { data, mimeType } = decodeMultipartFileValue(raw);
         const filename = multipartFilename(
-          String(input[`${inputName}_filename`] || ""),
+          multipartRequestedFilename(input, inputName),
           inputName,
           index,
           values.length
@@ -505,6 +510,23 @@ function multipartFilename(
   return `${index + 1}-${filename}`;
 }
 
+function multipartRequestedFilename(
+  input: Record<string, unknown>,
+  inputName: string
+): string {
+  for (const name of [
+    "filename",
+    "fileName",
+    `${inputName}_filename`,
+    `${inputName}Filename`,
+    `${inputName}FileName`,
+  ]) {
+    const value = input[name];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return "";
+}
+
 function decodeMultipartFileValue(raw: unknown): {
   data: Uint8Array;
   mimeType: string;
@@ -656,7 +678,11 @@ function buildUrl(
     const key = match[1];
     const value = input[key];
     if (value !== undefined) {
-      resolved = resolved.replace(`{${key}}`, encodeURIComponent(String(value)));
+      const text = String(value);
+      resolved =
+        resolved === `{${key}}` && /^https?:\/\//.test(text)
+          ? text
+          : resolved.replace(`{${key}}`, encodeURIComponent(text));
     }
   }
   // Absolute-path passthrough: tools whose endpoint lives on a different

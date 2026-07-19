@@ -394,6 +394,10 @@ export interface AppToolTemplate {
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
   /** Optional per-tool request headers. Overrides app-level auth headers. */
   headers?: Record<string, string>;
+  /** App-level auth headers to suppress for this route. Used for presigned
+   * upload URLs where forwarding the provider bearer token would invalidate
+   * the signed request. */
+  omit_auth_headers?: string[];
   input_schema: Record<string, unknown>;
   // Canned response returned for this tool when it runs inside a test
   // World (the agent-testing sandbox) and there's no per-eval fixture or
