@@ -104,6 +104,7 @@ describe("Facebook Ads integration catalog", () => {
         "pages_show_list",
         "pages_read_engagement",
         "pages_manage_ads",
+        "pages_manage_posts",
         "leads_retrieval",
       ]),
     );
