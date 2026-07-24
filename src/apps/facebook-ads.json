@@ -152,6 +152,10 @@
           "end_time": {
             "type": "string",
             "description": "End time (ISO format, required for lifetime budget)"
+          },
+          "is_adset_budget_sharing_enabled": {
+            "type": "boolean",
+            "description": "Required by Meta when the campaign has no daily_budget or lifetime_budget. Set false for ordinary ad-set budgets."
           }
         },
         "required": [
@@ -647,6 +651,10 @@
               "PAUSED"
             ],
             "description": "Ad status"
+          },
+          "creative": {
+            "type": "object",
+            "description": "Replacement creative reference: {\"creative_id\":\"CREATIVE_ID\"}"
           }
         },
         "required": [
@@ -899,7 +907,7 @@
           },
           "fields": {
             "type": "string",
-            "default": "id,name,subtype,approximate_count,delivery_status,description",
+            "default": "id,name,subtype,approximate_count_lower_bound,approximate_count_upper_bound,delivery_status,description",
             "description": "Comma-separated fields"
           },
           "limit": {

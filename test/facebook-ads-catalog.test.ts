@@ -104,4 +104,21 @@ describe("Facebook Ads integration catalog", () => {
       ]),
     );
   });
+
+  test("uses fields and write parameters accepted by current Marketing API", () => {
+    const campaignCreate = facebookAdsTool("campaign_create");
+    expect(campaignCreate.input_schema.properties?.is_adset_budget_sharing_enabled).toMatchObject({
+      type: "boolean",
+    });
+
+    const adUpdate = facebookAdsTool("ad_update");
+    expect(adUpdate.input_schema.properties?.creative).toMatchObject({
+      type: "object",
+    });
+
+    const audienceFields = facebookAdsTool("audience_list").input_schema.properties?.fields?.default;
+    expect(audienceFields).toContain("approximate_count_lower_bound");
+    expect(audienceFields).toContain("approximate_count_upper_bound");
+    expect(audienceFields).not.toContain("approximate_count,");
+  });
 });
