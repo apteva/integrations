@@ -34,7 +34,7 @@ describe("Facebook Ads integration catalog", () => {
       ["creative_upload_image", "POST", "/{adAccountId}/adimages"],
       ["creative_upload_video", "POST", "/{adAccountId}/advideos"],
       ["video_status", "GET", "/{videoId}"],
-      ["video_delete", "DELETE", "/{videoId}"],
+      ["video_delete", "DELETE", "/{adAccountId}/advideos"],
       ["audience_list", "GET", "/{adAccountId}/customaudiences"],
       ["insights_get", "GET", "/{objectId}/insights"],
       ["pixel_create", "POST", "/{adAccountId}/adspixels"],

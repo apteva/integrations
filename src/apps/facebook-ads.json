@@ -945,23 +945,24 @@
     },
     {
       "name": "video_delete",
-      "description": "Delete an uploaded ad video. Remove creatives and ads that reference it first.",
+      "description": "Delete an uploaded video from an ad account. Remove creatives and ads that reference it first.",
       "method": "DELETE",
-      "path": "/{videoId}",
+      "path": "/{adAccountId}/advideos",
       "input_schema": {
         "type": "object",
         "properties": {
-          "videoId": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Ad Account ID (format: act_123456789)"
+          },
+          "video_id": {
             "type": "string",
             "description": "Uploaded ad video ID to delete"
-          },
-          "access_token": {
-            "type": "string",
-            "description": "Optional Page access token used when Meta requires Page authorization for deletion"
           }
         },
         "required": [
-          "videoId"
+          "adAccountId",
+          "video_id"
         ]
       }
     },
