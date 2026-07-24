@@ -800,6 +800,24 @@
       }
     },
     {
+      "name": "creative_delete",
+      "description": "Delete an ad creative. The creative must not be used by a live ad.",
+      "method": "DELETE",
+      "path": "/{creativeId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "creativeId": {
+            "type": "string",
+            "description": "Ad creative ID to delete"
+          }
+        },
+        "required": [
+          "creativeId"
+        ]
+      }
+    },
+    {
       "name": "creative_upload_image",
       "description": "Upload an image to your ad account. Returns an image_hash for use in creatives. Note: creative-create also accepts image URLs directly (Facebook downloads them), so this is only needed if you want to reuse the same image hash across multiple creatives.",
       "method": "POST",
@@ -886,6 +904,24 @@
             "type": "string",
             "default": "id,title,status,length,source,thumbnails,created_time",
             "description": "Comma-separated fields"
+          }
+        },
+        "required": [
+          "videoId"
+        ]
+      }
+    },
+    {
+      "name": "video_delete",
+      "description": "Delete an uploaded ad video. Remove creatives and ads that reference it first.",
+      "method": "DELETE",
+      "path": "/{videoId}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "videoId": {
+            "type": "string",
+            "description": "Uploaded ad video ID to delete"
           }
         },
         "required": [
