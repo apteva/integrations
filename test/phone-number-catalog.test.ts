@@ -46,6 +46,8 @@ describe("phone number integration catalogs", () => {
     expect(tool("plivo", "list_recordings").path).toBe("/Recording/");
     expect(tool("plivo", "delete_recording").method).toBe("DELETE");
     expect(tool("signalwire", "search_available_numbers").method).toBe("GET");
+    expect(tool("signalwire", "make_call").input_schema.properties?.StatusCallbackEvent).toBeDefined();
+    expect(tool("twilio", "make_call").input_schema.properties?.StatusCallbackEvent).toBeDefined();
     expect(tool("vonage", "numbers_search").method).toBe("GET");
   });
 
@@ -138,5 +140,48 @@ describe("phone number integration catalogs", () => {
     const upload = captured[1]?.init.body as FormData;
     expect(upload.get("FriendlyName")).toBe("Identity");
     expect((upload.get("File") as File).name).toBe("identity.pdf");
+  });
+
+  test("encodes Twilio call progress subscriptions as repeated form fields", async () => {
+    const captured: Array<{ url: string; init: RequestInit }> = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured.push({ url: String(url), init: init || {} });
+      return new Response(JSON.stringify({ sid: "CA00000000000000000000000000000001" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    try {
+      await executeTool({
+        app: integration("twilio"),
+        tool: tool("twilio", "make_call"),
+        credentials: {
+          access_token: "",
+          fields: { account_sid: "AC00000000000000000000000000000000", auth_token: "secret" },
+        },
+        input: {
+          To: "+14155550100",
+          From: "+14155550101",
+          Twiml: "<Response><Say>test</Say></Response>",
+          StatusCallback: "https://example.test/status",
+          StatusCallbackMethod: "POST",
+          StatusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const body = String(captured[0]?.init.body);
+    const encoded = new URLSearchParams(body);
+    expect(encoded.getAll("StatusCallbackEvent")).toEqual([
+      "initiated",
+      "ringing",
+      "answered",
+      "completed",
+    ]);
+    expect(encoded.get("StatusCallbackMethod")).toBe("POST");
   });
 });
