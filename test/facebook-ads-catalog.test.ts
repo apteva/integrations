@@ -19,6 +19,8 @@ describe("Facebook Ads integration catalog", () => {
   test("uses Meta Graph API resource edges instead of legacy pseudo-routes", () => {
     const expectedRoutes: Array<[string, string, string]> = [
       ["account_list", "GET", "/me/adaccounts"],
+      ["page_list", "GET", "/me/accounts"],
+      ["permission_list", "GET", "/me/permissions"],
       ["campaign_create", "POST", "/{adAccountId}/campaigns"],
       ["campaign_list", "GET", "/{adAccountId}/campaigns"],
       ["campaign_update", "POST", "/{campaignId}"],
