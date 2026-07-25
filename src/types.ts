@@ -356,6 +356,11 @@ export interface CredentialField {
   description?: string; // Help text
   required?: boolean; // Default true
   type?: "password" | "text"; // Default "password"
+  /** Who supplies the value. OAuth-generated fields are never rendered as
+   * operator inputs; user fields remain visible during OAuth setup. */
+  source?: "user" | "oauth";
+  /** Explicit UI suppression for generated/internal credential metadata. */
+  hidden?: boolean;
 }
 
 export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
