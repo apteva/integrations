@@ -283,6 +283,8 @@ export interface WebhookRegistrationConfig {
   content_type?: string;
   /** Where to find the webhook ID in the response (dot-notation, e.g. "id" or "result.id") */
   id_field?: string;
+  /** Where to find a provider-generated signing secret in the create response. */
+  response_secret_field?: string;
   /** HTTP method + path to delete a webhook. {id} placeholder for webhook ID */
   delete_path?: string;
   delete_method?: "DELETE" | "POST";
