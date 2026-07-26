@@ -24,6 +24,8 @@ export interface ExecuteToolOptions {
   // JSON and text responses are not capped here (fetch itself bounds them
   // via the server and the timeout).
   maxBinaryBytes?: number;
+  /** Internal retry guard for short-lived credential exchanges. */
+  credentialTokenRetried?: boolean;
 }
 
 const DEFAULT_MAX_BINARY_BYTES = 25 * 1024 * 1024;
@@ -53,7 +55,10 @@ export async function executeTool(
     // audio); finally the 30s default. Capped at 10 minutes.
     timeout = Math.min(tool.timeout_ms ?? 30000, 600000),
     maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
+    credentialTokenRetried = false,
   } = opts;
+
+  await ensureCredentialToken(app, credentials);
 
   // 1. Build the URL with path parameter + credential interpolation
   const url = buildUrl(tool.base_url || app.base_url, tool.path, input, credentials);
@@ -457,6 +462,14 @@ export async function executeTool(
     // Applying a success transform to an error object can erase the actual
     // error (for example Gmail's NOT_FOUND became an empty thread).
     if (!response.ok) {
+      if (
+        response.status === 401 &&
+        app.auth.token_exchange &&
+        !credentialTokenRetried
+      ) {
+        await ensureCredentialToken(app, credentials, true);
+        return executeTool({ ...opts, credentialTokenRetried: true });
+      }
       return {
         success: false,
         status: response.status,
@@ -492,6 +505,90 @@ export async function executeTool(
       data: { error: message },
       headers: {},
     };
+  }
+}
+
+async function ensureCredentialToken(
+  app: AppTemplate,
+  credentials: ConnectionCredentials,
+  force = false
+): Promise<void> {
+  const exchange = app.auth.token_exchange;
+  if (!exchange) return;
+
+  const expiresAt = credentials.token_expires_at
+    ? new Date(credentials.token_expires_at).getTime()
+    : 0;
+  const skewMs = (exchange.expiry_skew_seconds ?? 60) * 1000;
+  if (
+    !force &&
+    credentials.access_token &&
+    Number.isFinite(expiresAt) &&
+    expiresAt > Date.now() + skewMs
+  ) {
+    return;
+  }
+
+  const contentType =
+    exchange.content_type || "application/x-www-form-urlencoded";
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": contentType,
+  };
+  for (const [key, template] of Object.entries(exchange.headers || {})) {
+    const value = resolveTemplate(template, credentials);
+    if (value) headers[key] = value;
+  }
+
+  const body: Record<string, string> = {};
+  for (const [key, template] of Object.entries(exchange.body_params)) {
+    const value = resolveTemplate(template, credentials);
+    if (value) body[key] = value;
+  }
+  const encodedBody =
+    contentType === "application/json"
+      ? JSON.stringify(body)
+      : new URLSearchParams(body).toString();
+
+  const response = await fetch(exchange.url, {
+    method: exchange.method || "POST",
+    headers,
+    body: encodedBody,
+    signal: AbortSignal.timeout(15000),
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(
+      `credential token exchange failed (${response.status}): ${text}`
+    );
+  }
+
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("credential token exchange returned invalid JSON");
+  }
+  const accessToken = getPath(
+    data,
+    exchange.access_token_path || "access_token"
+  );
+  if (typeof accessToken !== "string" || !accessToken) {
+    throw new Error("credential token exchange returned no access token");
+  }
+  credentials.access_token = accessToken;
+
+  const expiresIn = Number(
+    getPath(data, exchange.expires_in_path || "expires_in")
+  );
+  if (Number.isFinite(expiresIn) && expiresIn > 0) {
+    credentials.token_expires_at = new Date(
+      Date.now() + expiresIn * 1000
+    ).toISOString();
+  } else {
+    credentials.token_expires_at = new Date(
+      Date.now() + 5 * 60 * 1000
+    ).toISOString();
   }
 }
 
@@ -732,20 +829,19 @@ function buildUrl(
     );
   }
 
-  // Replace {param} placeholders with input values
-  const paramRegex = /\{(\w+)\}/g;
-  let match;
-  while ((match = paramRegex.exec(resolved)) !== null) {
-    const key = match[1];
+  // Replace every input placeholder in one pass. Mutating the string while
+  // advancing RegExp.lastIndex can skip later placeholders when an earlier
+  // replacement is shorter than "{parameter}".
+  const originalResolved = resolved;
+  resolved = resolved.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
     const value = input[key];
-    if (value !== undefined) {
-      const text = String(value);
-      resolved =
-        resolved === `{${key}}` && /^https?:\/\//.test(text)
-          ? text
-          : resolved.replace(`{${key}}`, encodeURIComponent(text));
+    if (value === undefined) return placeholder;
+    const text = String(value);
+    if (originalResolved === placeholder && /^https?:\/\//.test(text)) {
+      return text;
     }
-  }
+    return encodeURIComponent(text);
+  });
   // Absolute-path passthrough: tools whose endpoint lives on a different
   // host than the integration's primary base_url (YouTube's resumable
   // upload init, Pinecone per-index data plane, etc.) declare the full
@@ -887,7 +983,7 @@ function resolveTemplate(
   credentials: ConnectionCredentials
 ): string {
   const norm = normalizeCredentials(credentials);
-  return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+  return template.replace(/\{\{(?:credential\.)?(\w+)\}\}/g, (_match, key) => {
     return norm[key] || "";
   });
 }

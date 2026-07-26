@@ -320,6 +320,7 @@ export interface WebhookPollConfig {
 export interface AppAuthConfig {
   types: AuthType[];
   oauth2?: OAuthConfig;
+  token_exchange?: CredentialTokenExchangeConfig;
   aws_sigv4?: AwsSigv4Config;
   shareasale?: ShareASaleAuthConfig;
   mtls?: MutualTLSConfig;
@@ -328,6 +329,22 @@ export interface AppAuthConfig {
   query_params?: Record<string, string>; // e.g. { "api_key": "{{api_key}}" }
   body_params?: Record<string, string>; // e.g. { "key": "{{api_key}}" } for APIs that require auth in JSON body
   credential_fields?: CredentialField[]; // Describes what credentials the user must provide
+}
+
+/**
+ * Exchanges durable credentials for a short-lived bearer token before an API
+ * request. This is for service APIs such as Appcircle whose organization API
+ * key cannot authenticate data-plane calls directly.
+ */
+export interface CredentialTokenExchangeConfig {
+  url: string;
+  method?: "POST";
+  content_type?: "application/x-www-form-urlencoded" | "application/json";
+  headers?: Record<string, string>;
+  body_params: Record<string, string>;
+  access_token_path?: string;
+  expires_in_path?: string;
+  expiry_skew_seconds?: number;
 }
 
 export interface SignerSpec {
