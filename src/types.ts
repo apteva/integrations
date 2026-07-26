@@ -361,6 +361,9 @@ export interface CredentialField {
   source?: "user" | "oauth";
   /** Explicit UI suppression for generated/internal credential metadata. */
   hidden?: boolean;
+  /** Public fields may be returned to a bound app without exposing the rest of
+   * the connection credential bundle. Defaults to secret. */
+  exposure?: "secret" | "public";
 }
 
 export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
