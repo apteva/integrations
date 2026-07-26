@@ -133,6 +133,80 @@ describe("request_transform", () => {
     expect(captured?.body).toBe(JSON.stringify({ text: "Hello" }));
   });
 
+  test("byte_range header transform builds an inclusive Range header without leaking local inputs", async () => {
+    let captured: { url: string; headers: HeadersInit | undefined } | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), headers: init?.headers };
+      return new Response(new Uint8Array([1, 2, 3, 4]), {
+        status: 206,
+        headers: {
+          "content-type": "application/octet-stream",
+          "content-range": "bytes 0-4194303/125829120",
+        },
+      });
+    };
+    try {
+      const result = await executeTool({
+        app,
+        tool: {
+          name: "download_file",
+          description: "Download a file range",
+          method: "GET",
+          path: "/drive/v3/files/{fileId}?alt=media",
+          header_transforms: [{
+            type: "byte_range",
+            header: "Range",
+            start_param: "start_byte",
+            end_param: "end_byte",
+          }],
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { access_token: "tok" },
+        input: {
+          fileId: "file-123",
+          start_byte: 0,
+          end_byte: 4194303,
+        },
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.status).toBe(206);
+      expect(result.headers["content-range"]).toBe("bytes 0-4194303/125829120");
+      expect(result.data).toMatchObject({ _binary: true, size: 4 });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.url).toBe(
+      "https://example.test/drive/v3/files/file-123?alt=media",
+    );
+    expect(captured?.headers).toMatchObject({
+      Authorization: "Bearer tok",
+      Range: "bytes=0-4194303",
+    });
+  });
+
+  test("byte_range header transform rejects an end without a start", async () => {
+    await expect(executeTool({
+      app,
+      tool: {
+        name: "download_file",
+        description: "Download a file range",
+        method: "GET",
+        path: "/drive/v3/files/{fileId}?alt=media",
+        header_transforms: [{
+          type: "byte_range",
+          start_param: "start_byte",
+          end_param: "end_byte",
+        }],
+        input_schema: { type: "object", properties: {} },
+      },
+      credentials: { access_token: "tok" },
+      input: { fileId: "file-123", end_byte: 10 },
+    })).rejects.toThrow("end_byte requires start_byte");
+  });
+
   test("multipart repeat_fields emits array values as repeated text parts", async () => {
     let capturedBody: BodyInit | null | undefined;
     const originalFetch = globalThis.fetch;

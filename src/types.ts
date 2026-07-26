@@ -431,6 +431,10 @@ export interface AppToolTemplate {
   // Example: Fish Audio maps { model: "model" } because its TTS model
   // selector is a request header rather than a JSON-body field.
   header_params?: Record<string, string>;
+  // Build request headers from multiple agent-facing inputs. Transform
+  // inputs are local to the runner and are not forwarded in the query/body.
+  // byte_range emits e.g. Range: bytes=0-4194303.
+  header_transforms?: HeaderTransform[];
   signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
   // Return the resolved request URL instead of issuing the HTTP call.
@@ -496,6 +500,18 @@ export type RequestTransform =
   | Base64FieldRequestTransform
   | JsonWrapRequestTransform
   | JsonApiRequestTransform;
+
+export type HeaderTransform = ByteRangeHeaderTransform;
+
+export interface ByteRangeHeaderTransform {
+  type: "byte_range";
+  /** Upstream header name. Defaults to "Range". */
+  header?: string;
+  /** Input containing the inclusive first byte. */
+  start_param: string;
+  /** Input containing the inclusive last byte. Omit for an open-ended range. */
+  end_param?: string;
+}
 
 export interface MimeEmailRequestTransform {
   type: "mime_email";

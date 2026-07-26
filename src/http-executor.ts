@@ -3,6 +3,7 @@ import type {
   AppToolTemplate,
   Connection,
   ConnectionCredentials,
+  HeaderTransform,
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
@@ -96,12 +97,14 @@ export async function executeTool(
   const declaredQueryParams = tool.query_params || [];
   const queryParamAliases = tool.query_param_aliases || {};
   const headerParams = tool.header_params || {};
+  const localHeaderTransformParams = headerTransformLocalParams(tool.header_transforms);
   const localResponseParams = responseTransformLocalParams(tool.response_transform);
   for (const [inputName, headerName] of Object.entries(headerParams)) {
     const value = input[inputName];
     if (!headerName || value === undefined || value === null || value === "") continue;
     headers[headerName] = String(value);
   }
+  applyHeaderTransforms(tool.header_transforms, input, headers);
   const transformedBody = tool.request_transform
     ? applyRequestTransform(tool.request_transform, input)
     : undefined;
@@ -134,6 +137,7 @@ export async function executeTool(
   for (const [k, v] of Object.entries(input)) {
     if (pathParams.includes(k)) continue;
     if (k in headerParams) continue;
+    if (localHeaderTransformParams.has(k)) continue;
     if (localResponseParams.has(k)) continue;
     if (binaryEnvelope && k === binaryParam) continue;
     if (hasRootBody && k === rootParam) continue;
@@ -497,6 +501,63 @@ function multipartTextValue(v: unknown): string {
   if (typeof v === "string") return v;
   if (typeof v === "number" || typeof v === "boolean") return String(v);
   return JSON.stringify(v);
+}
+
+function applyHeaderTransforms(
+  transforms: HeaderTransform[] | undefined,
+  input: Record<string, unknown>,
+  headers: Record<string, string>,
+): void {
+  for (const transform of transforms || []) {
+    if (transform.type !== "byte_range") {
+      throw new Error(`unsupported header transform: ${(transform as { type?: string }).type || ""}`);
+    }
+
+    const startRaw = input[transform.start_param];
+    const endRaw = transform.end_param ? input[transform.end_param] : undefined;
+    const hasStart = startRaw !== undefined && startRaw !== null && startRaw !== "";
+    const hasEnd = endRaw !== undefined && endRaw !== null && endRaw !== "";
+    if (!hasStart && !hasEnd) continue;
+    if (!hasStart) {
+      throw new Error(`${transform.end_param || "end byte"} requires ${transform.start_param}`);
+    }
+
+    const start = nonNegativeInteger(startRaw, transform.start_param);
+    let value = `bytes=${start}-`;
+    if (hasEnd) {
+      const endParam = transform.end_param || "end byte";
+      const end = nonNegativeInteger(endRaw, endParam);
+      if (end < start) {
+        throw new Error(`${endParam} must be greater than or equal to ${transform.start_param}`);
+      }
+      value += end;
+    }
+    headers[transform.header || "Range"] = value;
+  }
+}
+
+function headerTransformLocalParams(
+  transforms: HeaderTransform[] | undefined,
+): Set<string> {
+  const names = new Set<string>();
+  for (const transform of transforms || []) {
+    if (transform.start_param) names.add(transform.start_param);
+    if (transform.end_param) names.add(transform.end_param);
+  }
+  return names;
+}
+
+function nonNegativeInteger(value: unknown, name: string): number {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : Number.NaN;
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new Error(`${name} must be a non-negative integer`);
+  }
+  return parsed;
 }
 
 function multipartFilename(
