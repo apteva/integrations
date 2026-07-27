@@ -366,6 +366,9 @@ export async function executeTool(
     } else if (spec.name === "app_store_connect_jwt") {
       signAppStoreConnectRequest(headers, credentials);
       fetchOpts.headers = headers;
+    } else if (spec.name === "apns_jwt") {
+      finalUrl = signAPNsRequest(headers, finalUrl, credentials);
+      fetchOpts.headers = headers;
     }
   }
 
@@ -1081,11 +1084,73 @@ function signAppStoreConnectRequest(
     .update(unsigned)
     .end()
     .sign({
-      key: privateKey.trim().replace(/\\n/g, "\n"),
+      key: normalizeAppStoreConnectPrivateKey(privateKey),
       dsaEncoding: "ieee-p1363",
     })
     .toString("base64url");
   headers.Authorization = `Bearer ${unsigned}.${signature}`;
+}
+
+function signAPNsRequest(
+  headers: Record<string, string>,
+  finalUrl: string,
+  credentials: ConnectionCredentials
+): string {
+  const norm = normalizeCredentials(credentials);
+  const teamId = norm.team_id;
+  const keyId = norm.key_id;
+  const privateKey = norm.private_key;
+  const bundleId = norm.bundle_id;
+  if (!teamId || !keyId || !privateKey || !bundleId) return finalUrl;
+
+  const environment = (norm.environment || "production").trim().toLowerCase();
+  const url = new URL(finalUrl);
+  if (environment === "sandbox") {
+    url.protocol = "https:";
+    url.host = "api.sandbox.push.apple.com";
+  } else if (environment === "production") {
+    url.protocol = "https:";
+    url.host = "api.push.apple.com";
+  } else {
+    throw new Error('APNs environment must be "production" or "sandbox"');
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "ES256", kid: keyId, typ: "JWT" };
+  const payload = { iss: teamId, iat: now };
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const signature = createSign("SHA256")
+    .update(unsigned)
+    .end()
+    .sign({
+      key: normalizeAppStoreConnectPrivateKey(privateKey),
+      dsaEncoding: "ieee-p1363",
+    })
+    .toString("base64url");
+  headers.Authorization = `Bearer ${unsigned}.${signature}`;
+  headers["apns-topic"] = bundleId;
+  return url.toString();
+}
+
+function normalizeAppStoreConnectPrivateKey(raw: string): string {
+  const normalized = raw
+    .trim()
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n")
+    .replace(/\r\n?/g, "\n");
+  const begin = "-----BEGIN PRIVATE KEY-----";
+  const end = "-----END PRIVATE KEY-----";
+  const beginAt = normalized.indexOf(begin);
+  const endAt = normalized.indexOf(end);
+  if (beginAt < 0 || endAt <= beginAt) return normalized;
+
+  const body = normalized
+    .slice(beginAt + begin.length, endAt)
+    .replace(/\s+/g, "");
+  if (!body) return normalized;
+  const lines = body.match(/.{1,64}/g) || [];
+  return `${begin}\n${lines.join("\n")}\n${end}\n`;
 }
 
 function base64Url(value: string): string {

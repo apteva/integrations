@@ -372,7 +372,7 @@ export interface CredentialField {
   label: string; // Display label
   description?: string; // Help text
   required?: boolean; // Default true
-  type?: "password" | "text"; // Default "password"
+  type?: "password" | "text" | "multiline_password"; // Default "password"
   /** Who supplies the value. OAuth-generated fields are never rendered as
    * operator inputs; user fields remain visible during OAuth setup. */
   source?: "user" | "oauth";
