@@ -11,6 +11,14 @@ describe("Apple Push Notifications integration", () => {
     expect(
       app?.auth.credential_fields?.find((field) => field.name === "private_key"),
     ).toMatchObject({ type: "multiline_password" });
+    expect(
+      app?.auth.credential_fields?.find((field) => field.name === "relay_encryption_key"),
+    ).toMatchObject({
+      type: "password",
+      source: "generated",
+      hidden: true,
+      required: false,
+    });
     expect(app?.tools.map((tool) => tool.name)).toEqual(["send_notification"]);
   });
 

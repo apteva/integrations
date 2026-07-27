@@ -375,7 +375,7 @@ export interface CredentialField {
   type?: "password" | "text" | "multiline_password"; // Default "password"
   /** Who supplies the value. OAuth-generated fields are never rendered as
    * operator inputs; user fields remain visible during OAuth setup. */
-  source?: "user" | "oauth";
+  source?: "user" | "oauth" | "generated";
   /** Explicit UI suppression for generated/internal credential metadata. */
   hidden?: boolean;
   /** Public fields may be returned to a bound app without exposing the rest of
