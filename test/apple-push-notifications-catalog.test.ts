@@ -19,6 +19,8 @@ describe("Apple Push Notifications integration", () => {
       hidden: true,
       required: false,
     });
+    expect(app?.auth.credential_fields?.some((field) => field.name === "bundle_id")).toBe(false);
+    expect(app?.auth.credential_fields?.some((field) => field.name === "environment")).toBe(false);
     expect(app?.tools.map((tool) => tool.name)).toEqual(["send_notification"]);
     expect(
       app?.auth.credential_fields?.filter((field) => !field.hidden).map((field) => field.name),
@@ -82,6 +84,7 @@ describe("Apple Push Notifications integration", () => {
     expect(requestURL).toBe("https://api.sandbox.push.apple.com/3/device/abc123");
     expect(requestHeaders.Authorization).toStartWith("Bearer ");
     expect(requestHeaders["apns-topic"]).toBe("ai.apteva.mobile");
+    expect(requestHeaders["x-apteva-apns-environment"]).toBeUndefined();
     expect(requestHeaders["apns-push-type"]).toBe("alert");
     expect(requestHeaders["apns-priority"]).toBe("10");
     expect(requestHeaders["apns-collapse-id"]).toBe("inbox");

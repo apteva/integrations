@@ -12,7 +12,7 @@
     "credential_fields": [
       { "name": "issuer_id", "label": "Issuer ID", "type": "text", "description": "Issuer ID shown on App Store Connect > Users and Access > Integrations." },
       { "name": "key_id", "label": "Key ID", "type": "text", "description": "ID of the App Store Connect API key." },
-      { "name": "private_key", "label": "API Private Key (.p8)", "type": "password", "description": "Full contents of the AuthKey_<KEY_ID>.p8 file, including BEGIN/END PRIVATE KEY lines." }
+      { "name": "private_key", "label": "API Private Key (.p8)", "type": "multiline_password", "description": "Paste the full contents of the AuthKey_<KEY_ID>.p8 file, including BEGIN/END PRIVATE KEY lines. Multiline, escaped-newline, CRLF, and flattened PEM text are normalized before signing." }
     ]
   },
   "health_check": { "tool": "list_apps", "input": { "limit": 1 } },
