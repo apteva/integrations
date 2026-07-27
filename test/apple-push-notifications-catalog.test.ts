@@ -20,6 +20,9 @@ describe("Apple Push Notifications integration", () => {
       required: false,
     });
     expect(app?.tools.map((tool) => tool.name)).toEqual(["send_notification"]);
+    expect(
+      app?.auth.credential_fields?.filter((field) => !field.hidden).map((field) => field.name),
+    ).toEqual(["team_id", "key_id", "private_key"]);
   });
 
   test("signs a sandbox request and keeps transport fields out of the payload", async () => {
@@ -55,12 +58,12 @@ describe("Apple Push Notifications integration", () => {
             team_id: "TEAM123456",
             key_id: "KEY1234567",
             private_key: pem,
-            bundle_id: "ai.apteva.mobile",
-            environment: "sandbox",
           },
         },
         input: {
           device_token: "abc123",
+          topic: "ai.apteva.mobile",
+          environment: "sandbox",
           push_type: "alert",
           priority: 10,
           collapse_id: "inbox",
@@ -82,6 +85,7 @@ describe("Apple Push Notifications integration", () => {
     expect(requestHeaders["apns-push-type"]).toBe("alert");
     expect(requestHeaders["apns-priority"]).toBe("10");
     expect(requestHeaders["apns-collapse-id"]).toBe("inbox");
+    expect(requestHeaders["x-apteva-apns-environment"]).toBeUndefined();
     expect(JSON.parse(requestBody)).toEqual({
       aps: {
         alert: { title: "Approval required", body: "Open Apteva to review." },

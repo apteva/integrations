@@ -1100,10 +1100,17 @@ function signAPNsRequest(
   const teamId = norm.team_id;
   const keyId = norm.key_id;
   const privateKey = norm.private_key;
-  const bundleId = norm.bundle_id;
-  if (!teamId || !keyId || !privateKey || !bundleId) return finalUrl;
+  const topic = headers["apns-topic"] || headers["Apns-Topic"];
+  const requestedEnvironment =
+    headers["x-apteva-apns-environment"] ||
+    headers["X-Apteva-Apns-Environment"] ||
+    norm.environment;
+  delete headers["x-apteva-apns-environment"];
+  delete headers["X-Apteva-Apns-Environment"];
+  if (!teamId || !keyId || !privateKey) return finalUrl;
+  if (!topic) throw new Error("APNs topic is required");
 
-  const environment = (norm.environment || "production").trim().toLowerCase();
+  const environment = (requestedEnvironment || "production").trim().toLowerCase();
   const url = new URL(finalUrl);
   if (environment === "sandbox") {
     url.protocol = "https:";
@@ -1128,7 +1135,6 @@ function signAPNsRequest(
     })
     .toString("base64url");
   headers.Authorization = `Bearer ${unsigned}.${signature}`;
-  headers["apns-topic"] = bundleId;
   return url.toString();
 }
 
