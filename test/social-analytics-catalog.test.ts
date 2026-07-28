@@ -16,6 +16,16 @@ function tool(template: AppTemplate, name: string): AppToolTemplate {
 }
 
 describe("Social analytics integration catalogs", () => {
+  test("requests the X scopes required by every exposed inbox tool", () => {
+    const twitter = app("twitter-api");
+    expect(twitter.auth.oauth2?.scopes).toEqual(
+      expect.arrayContaining(["dm.read", "dm.write"]),
+    );
+    for (const name of ["get_dm_events", "send_dm", "send_dm_to_conversation"]) {
+      expect(tool(twitter, name)).toBeDefined();
+    }
+  });
+
   test("puts TikTok fields in the URL and filters in the POST body", async () => {
     const tiktok = app("tiktok-api");
     const originalFetch = globalThis.fetch;
