@@ -14,7 +14,11 @@ describe("App Store Connect bundle capability catalog", () => {
     expect(tool("list_bundle_id_capabilities")).toMatchObject({
       method: "GET",
       path: "/bundleIds/{bundle_id}/bundleIdCapabilities",
+      query_params: ["fields[bundleIdCapabilities]"],
     });
+    expect(tool("list_bundle_id_capabilities").input_schema.properties).not.toHaveProperty(
+      "limit",
+    );
     expect(tool("list_bundle_id_capabilities").input_schema.required).toContain(
       "bundle_id",
     );
