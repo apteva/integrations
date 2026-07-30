@@ -346,7 +346,9 @@ export async function executeTool(
     }
   }
 
-  const signerSpecs = (tool.signing?.signers?.length ? tool.signing.signers : app.auth.signers) || [];
+  const signerSpecs = tool.signing
+    ? (tool.signing.signers || [])
+    : (app.auth.signers || []);
   for (const spec of signerSpecs) {
     if (spec.name === "doba") {
       signDobaRequest(headers, credentials, spec.params || {});
@@ -368,6 +370,9 @@ export async function executeTool(
       fetchOpts.headers = headers;
     } else if (spec.name === "apns_jwt") {
       finalUrl = signAPNsRequest(headers, finalUrl, credentials);
+      fetchOpts.headers = headers;
+    } else if (spec.name === "vonage_jwt") {
+      signVonageRequest(headers, credentials);
       fetchOpts.headers = headers;
     }
   }
@@ -553,7 +558,8 @@ async function ensureCredentialToken(
       ? JSON.stringify(body)
       : new URLSearchParams(body).toString();
 
-  const response = await fetch(exchange.url, {
+  const exchangeUrl = resolveTemplate(exchange.url, credentials);
+  const response = await fetch(exchangeUrl, {
     method: exchange.method || "POST",
     headers,
     body: encodedBody,
@@ -1138,6 +1144,33 @@ function signAPNsRequest(
   return url.toString();
 }
 
+function signVonageRequest(
+  headers: Record<string, string>,
+  credentials: ConnectionCredentials
+): void {
+  const norm = normalizeCredentials(credentials);
+  const applicationId = norm.application_id;
+  const privateKey = norm.private_key;
+  if (!applicationId || !privateKey) {
+    throw new Error("Vonage Voice API requires application_id and private_key");
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    application_id: applicationId,
+    iat: now,
+    exp: now + 900,
+    jti: `apteva-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  };
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const signature = createSign("RSA-SHA256")
+    .update(unsigned)
+    .end()
+    .sign(normalizePastedPrivateKey(privateKey))
+    .toString("base64url");
+  headers.Authorization = `Bearer ${unsigned}.${signature}`;
+}
+
 function normalizeAppStoreConnectPrivateKey(raw: string): string {
   const normalized = raw
     .trim()
@@ -1181,6 +1214,30 @@ function normalizePrivateKeyPem(privateKey: string): string {
   if (trimmed.includes("BEGIN ")) return trimmed;
   const wrapped = trimmed.replace(/\s+/g, "").match(/.{1,64}/g)?.join("\n") || trimmed;
   return `-----BEGIN PRIVATE KEY-----\n${wrapped}\n-----END PRIVATE KEY-----`;
+}
+
+function normalizePastedPrivateKey(raw: string): string {
+  const normalized = raw
+    .trim()
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n")
+    .replace(/\r\n?/g, "\n");
+  for (const [begin, end] of [
+    ["-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----"],
+    ["-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----"],
+  ]) {
+    const beginAt = normalized.indexOf(begin);
+    const endAt = normalized.indexOf(end);
+    if (beginAt < 0 || endAt <= beginAt) continue;
+    const body = normalized
+      .slice(beginAt + begin.length, endAt)
+      .replace(/\s+/g, "");
+    if (!body) return normalized;
+    const lines = body.match(/.{1,64}/g)?.join("\n") || body;
+    return `${begin}\n${lines}\n${end}\n`;
+  }
+  return normalized;
 }
 
 function buildQueryString(params: Record<string, unknown>): string {

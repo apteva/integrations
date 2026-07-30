@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { generateKeyPairSync } from "node:crypto";
 import { getAppTemplate } from "../src/apps/index.js";
 import { executeTool } from "../src/http-executor.js";
 import type { AppTemplate, AppToolTemplate } from "../src/types.js";
@@ -36,8 +37,8 @@ describe("phone number integration catalogs", () => {
     expect(tool("telnyx", "submit_requirement_group").path).toContain("submit_for_approval");
     expect(tool("telnyx", "upload_document").path).toBe("/documents");
     expect(tool("telnyx", "create_number_order").input_schema.properties?.phone_numbers).toBeDefined();
-    expect(tool("telnyx", "make_call").input_schema.properties?.record).toBeDefined();
-    expect(tool("telnyx", "make_call").input_schema.properties?.webhook_url).toBeDefined();
+    expect(tool("telnyx", "dial_call").input_schema.properties?.record).toBeDefined();
+    expect(tool("telnyx", "dial_call").input_schema.properties?.webhook_url).toBeDefined();
     expect(tool("plivo", "get_number_pricing").method).toBe("GET");
     expect(tool("plivo", "list_owned_phone_numbers").path).toBe("/Number/");
     expect(tool("plivo", "create_application").path).toBe("/Application/");
@@ -48,7 +49,7 @@ describe("phone number integration catalogs", () => {
     expect(tool("signalwire", "search_available_numbers").method).toBe("GET");
     expect(tool("signalwire", "make_call").input_schema.properties?.StatusCallbackEvent).toBeDefined();
     expect(tool("twilio", "make_call").input_schema.properties?.StatusCallbackEvent).toBeDefined();
-    expect(tool("vonage", "numbers_search").method).toBe("GET");
+    expect(tool("vonage", "search_available_numbers").method).toBe("GET");
   });
 
   test("uses classic Vonage credentials only on number endpoints", async () => {
@@ -63,19 +64,24 @@ describe("phone number integration catalogs", () => {
     };
 
     try {
+      const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
       const credentials = {
-        access_token: "voice-jwt",
-        fields: { api_key: "number-key", api_secret: "number-secret" },
+        fields: {
+          api_key: "number-key",
+          api_secret: "number-secret",
+          application_id: "app-123",
+          private_key: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+        },
       };
       await executeTool({
         app: integration("vonage"),
-        tool: tool("vonage", "numbers_search"),
+        tool: tool("vonage", "search_available_numbers"),
         credentials,
         input: { country: "EE", type: "landline", size: 5 },
       });
       await executeTool({
         app: integration("vonage"),
-        tool: tool("vonage", "create_voice_call"),
+        tool: tool("vonage", "create_call"),
         credentials,
         input: {
           to: [{ type: "phone", number: "3725550100" }],
@@ -92,7 +98,9 @@ describe("phone number integration catalogs", () => {
     );
     expect(captured[1]?.url).toBe("https://api.nexmo.com/v1/calls");
     expect(captured[1]?.url).not.toContain("number-secret");
-    expect(captured[1]?.init.headers).toMatchObject({ Authorization: "Bearer voice-jwt" });
+    expect(captured[1]?.init.headers).toMatchObject({
+      Authorization: expect.stringContaining("Bearer "),
+    });
   });
 
   test("routes Twilio regulatory calls and document uploads to the correct hosts", async () => {
