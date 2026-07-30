@@ -28,4 +28,11 @@ describe("Stripe integration catalog", () => {
       path: "/payment_methods/{payment_method_id}/detach",
     });
   });
+
+  test("accepts the current hosted checkout presentation", () => {
+    const checkout = stripe.tools.find((tool) => tool.name === "create_checkout_session");
+    const uiMode = checkout?.input_schema?.properties?.ui_mode;
+    expect(uiMode?.default).toBe("hosted_page");
+    expect(uiMode?.enum).toContain("hosted_page");
+  });
 });
