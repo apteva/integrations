@@ -418,9 +418,10 @@
               "WHATSAPP",
               "INSTAGRAM_DIRECT",
               "PHONE_CALL",
-              "ON_PAGE"
+              "ON_PAGE",
+              "ON_AD"
             ],
-            "description": "Where people go when they click. WEBSITE for sales/leads/traffic. ON_PAGE for PAGE_LIKES campaigns (REQUIRED). Do NOT set for POST_ENGAGEMENT or AWARENESS."
+            "description": "Where people go when they click. WEBSITE for site destinations, ON_AD for Instant Forms, and ON_PAGE for PAGE_LIKES campaigns. Do not set for POST_ENGAGEMENT or AWARENESS."
           },
           "dsa_beneficiary": {
             "type": "string",
