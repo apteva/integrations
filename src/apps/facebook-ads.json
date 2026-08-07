@@ -1478,19 +1478,28 @@
     },
     {
       "name": "leadform_delete",
-      "description": "Archive a lead form (Facebook archives rather than permanently deletes).",
-      "method": "DELETE",
+      "description": "Archive a lead form. Meta lead forms are archived with status=ARCHIVED rather than permanently deleted.",
+      "method": "POST",
       "path": "/{formId}",
       "input_schema": {
         "type": "object",
         "properties": {
           "formId": {
             "type": "string",
-            "description": "Lead form ID to delete"
+            "description": "Lead form ID to archive"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ARCHIVED"
+            ],
+            "default": "ARCHIVED",
+            "description": "Archive status"
           }
         },
         "required": [
-          "formId"
+          "formId",
+          "status"
         ]
       }
     },
