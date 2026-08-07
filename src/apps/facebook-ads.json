@@ -1234,6 +1234,38 @@
       }
     },
     {
+      "name": "pixel_list",
+      "description": "List Meta Pixels available in an ad account.",
+      "method": "GET",
+      "path": "/{adAccountId}/adspixels",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Ad Account ID (format: act_123456789)"
+          },
+          "fields": {
+            "type": "string",
+            "default": "id,name,last_fired_time,is_unavailable",
+            "description": "Comma-separated Pixel fields"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100,
+            "description": "Maximum number of Pixels"
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          }
+        },
+        "required": [
+          "adAccountId"
+        ]
+      }
+    },
+    {
       "name": "pixel_create",
       "description": "Create a Facebook pixel for conversion tracking.",
       "method": "POST",
