@@ -7,7 +7,7 @@ import type {
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
-import { createHash, createHmac, createSign } from "node:crypto";
+import { createHash, createHmac, createSign, randomBytes } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
 import { Agent, ProxyAgent } from "undici";
@@ -62,6 +62,10 @@ export async function executeTool(
 
   // 1. Build the URL with path parameter + credential interpolation
   const url = buildUrl(tool.base_url || app.base_url, tool.path, input, credentials);
+  const continuationParam = tool.continuation_url_param;
+  const continuationUrl = continuationParam
+    ? String(input[continuationParam] || "").trim()
+    : "";
 
   // 2. Build headers from app auth config + credentials
   const headers = buildHeaders(app, credentials);
@@ -140,6 +144,8 @@ export async function executeTool(
   const remainingParams: Record<string, unknown> = {};
   const toolQueryParams: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input)) {
+    if (continuationUrl) continue;
+    if (continuationParam && k === continuationParam) continue;
     if (pathParams.includes(k)) continue;
     if (k in headerParams) continue;
     if (localHeaderTransformParams.has(k)) continue;
@@ -171,8 +177,12 @@ export async function executeTool(
     remainingParams[k] = v;
   }
 
-  let finalUrl = url;
-  const allQueryParams = { ...authQueryParams, ...toolQueryParams };
+  let finalUrl = continuationUrl
+    ? validateContinuationUrl(continuationUrl, tool.base_url || app.base_url, credentials)
+    : url;
+  const allQueryParams = continuationUrl
+    ? {}
+    : { ...authQueryParams, ...toolQueryParams };
 
   if (binaryEnvelope) {
     // Binary-body path: decode the envelope and send its bytes raw.
@@ -350,7 +360,11 @@ export async function executeTool(
     ? (tool.signing.signers || [])
     : (app.auth.signers || []);
   for (const spec of signerSpecs) {
-    if (spec.name === "doba") {
+    if (spec.name === "oauth1") {
+      const bodyForSigning = typeof fetchOpts.body === "string" ? fetchOpts.body : "";
+      signOAuth1Request(headers, finalUrl, tool.method, bodyForSigning, credentials, spec.params || {});
+      fetchOpts.headers = headers;
+    } else if (spec.name === "doba") {
       signDobaRequest(headers, credentials, spec.params || {});
       fetchOpts.headers = headers;
     } else if (spec.name === "zadarma") {
@@ -514,6 +528,81 @@ export async function executeTool(
       headers: {},
     };
   }
+}
+
+function validateContinuationUrl(
+  continuationUrl: string,
+  baseUrl: string,
+  credentials: ConnectionCredentials
+): string {
+  let candidate: URL;
+  let base: URL;
+  try {
+    candidate = new URL(continuationUrl);
+    base = new URL(resolveTemplate(baseUrl, credentials));
+  } catch {
+    throw new Error("continuation URL must be absolute");
+  }
+  if (
+    (candidate.protocol !== "https:" && candidate.protocol !== "http:") ||
+    candidate.protocol !== base.protocol ||
+    candidate.host !== base.host
+  ) {
+    throw new Error("continuation URL must use the integration API origin");
+  }
+  return candidate.toString();
+}
+
+export function signOAuth1Request(
+  headers: Record<string, string>,
+  rawUrl: string,
+  method: string,
+  body: string,
+  credentials: ConnectionCredentials,
+  params: Record<string, unknown> = {},
+  fixed?: { nonce?: string; timestamp?: string },
+): void {
+  const norm = normalizeCredentials(credentials);
+  const field = (name: string, fallback: string) =>
+    typeof params[name] === "string" && params[name] ? String(params[name]) : fallback;
+  const pick = (...keys: string[]) => keys.map((key) => norm[key]).find(Boolean) || "";
+  const consumerKey = pick(field("consumer_key_field", "client_id"), "consumer_key", "api_key");
+  const consumerSecret = pick(field("consumer_secret_field", "client_secret"), "consumer_secret", "api_secret");
+  const token = pick(field("token_field", "oauth_token"), "token");
+  const tokenSecret = pick(field("token_secret_field", "oauth_token_secret"), "token_secret");
+  if (!consumerKey || !consumerSecret) throw new Error("oauth1: missing consumer key or secret");
+  if (!token || !tokenSecret) throw new Error("oauth1: missing access token or token secret");
+
+  const oauth: Record<string, string> = {
+    oauth_consumer_key: consumerKey,
+    oauth_nonce: fixed?.nonce || randomBytes(16).toString("hex"),
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: fixed?.timestamp || Math.floor(Date.now() / 1000).toString(),
+    oauth_token: token,
+  };
+  const url = new URL(rawUrl);
+  const pairs: Array<[string, string]> = [];
+  url.searchParams.forEach((value, key) => pairs.push([oauth1Escape(key), oauth1Escape(value)]));
+  const contentType = headers["Content-Type"] || headers["content-type"] || "";
+  if (contentType.toLowerCase().startsWith("application/x-www-form-urlencoded") && body) {
+    new URLSearchParams(body).forEach((value, key) => pairs.push([oauth1Escape(key), oauth1Escape(value)]));
+  }
+  Object.entries(oauth).forEach(([key, value]) => pairs.push([oauth1Escape(key), oauth1Escape(value)]));
+  pairs.sort(([ak, av], [bk, bv]) => ak === bk ? av.localeCompare(bv) : ak.localeCompare(bk));
+  const normalized = pairs.map(([key, value]) => `${key}=${value}`).join("&");
+  url.search = "";
+  url.hash = "";
+  const base = `${method.toUpperCase()}&${oauth1Escape(url.toString())}&${oauth1Escape(normalized)}`;
+  const signingKey = `${oauth1Escape(consumerSecret)}&${oauth1Escape(tokenSecret)}`;
+  oauth.oauth_signature = createHmac("sha1", signingKey).update(base).digest("base64");
+  headers.Authorization = "OAuth " + Object.keys(oauth).sort()
+    .map((key) => `${oauth1Escape(key)}=\"${oauth1Escape(oauth[key])}\"`).join(", ");
+}
+
+function oauth1Escape(value: string): string {
+  return encodeURIComponent(value).replace(/[!'()*]/g, (char) =>
+    `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
 }
 
 async function ensureCredentialToken(

@@ -319,6 +319,7 @@ export interface WebhookPollConfig {
 
 export interface AppAuthConfig {
   types: AuthType[];
+  oauth1?: OAuth1Config;
   oauth2?: OAuthConfig;
   token_exchange?: CredentialTokenExchangeConfig;
   aws_sigv4?: AwsSigv4Config;
@@ -383,7 +384,17 @@ export interface CredentialField {
   exposure?: "secret" | "public";
 }
 
-export type AuthType = "api_key" | "bearer" | "basic" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
+export type AuthType = "api_key" | "bearer" | "basic" | "oauth1" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
+
+export interface OAuth1Config {
+  request_token_url: string;
+  authorize_url: string;
+  access_token_url: string;
+  client_id_required: boolean;
+  signature_method?: "HMAC-SHA1";
+  setup_url?: string;
+  setup_steps?: string[];
+}
 
 export interface OAuthConfig {
   authorize_url: string;
@@ -443,6 +454,11 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
+  // Name of an input field containing a provider-returned absolute URL for
+  // the next page. The executor only accepts URLs with the same scheme and
+  // host as this tool's resolved base URL, then uses the URL verbatim. This
+  // is required for APIs such as Reddit Ads whose next_url is opaque.
+  continuation_url_param?: string;
   // Map agent-facing input field names to upstream HTTP header names.
   // Declared fields are removed from the normal body/query buckets.
   // Example: Fish Audio maps { model: "model" } because its TTS model
