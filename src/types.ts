@@ -344,6 +344,7 @@ export interface CredentialTokenExchangeConfig {
   headers?: Record<string, string>;
   body_params: Record<string, string>;
   access_token_path?: string;
+  expires_at_path?: string;
   expires_in_path?: string;
   expiry_skew_seconds?: number;
 }
