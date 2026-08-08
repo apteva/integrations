@@ -23,6 +23,10 @@ describe("X Ads integration contract", () => {
     expect(tools.get("create_line_item")?.path).toBe("/accounts/{account_id}/line_items");
     expect(tools.get("create_promoted_tweet")?.path).toBe("/accounts/{account_id}/promoted_tweets");
     expect(tools.get("get_stats")?.path).toBe("/stats/accounts/{account_id}");
+    expect(tools.get("get_custom_audience")?.path).toBe("/accounts/{account_id}/custom_audiences/{custom_audience_id}");
+    expect(tools.get("add_custom_audience_users")?.body_root_param).toBe("users");
+    expect(tools.get("remove_custom_audience_users")?.body_root_param).toBe("users");
+    expect(tools.get("get_custom_audience_usage")?.path).toBe("/accounts/{account_id}/custom_audiences/{custom_audience_id}/targeted");
     expect(tools.has("update_promoted_tweet")).toBe(false);
     expect(app.tools.some((tool) => tool.path.startsWith("/list-") || tool.path.startsWith("/get-"))).toBe(false);
   });
@@ -44,6 +48,7 @@ describe("Reddit Ads integration contract", () => {
     expect(tools.get("list_communities")?.path).toBe("/targeting/communities");
     expect(tools.get("list_languages")?.path).toBe("/targeting/languages");
     expect(tools.get("list_saved_audiences")?.path).toBe("/ad_accounts/{ad_account_id}/saved_audiences");
+    expect(tools.get("delete_saved_audience")?.path).toBe("/saved_audiences/{saved_audience_id}");
     expect(tools.get("get_report")?.continuation_url_param).toBe("next_url");
     expect(tools.has("delete_campaign")).toBe(false);
     expect(tools.has("delete_ad_group")).toBe(false);
