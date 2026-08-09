@@ -44,6 +44,7 @@ describe("mobile store publishing catalogs", () => {
     expect(named("app-store-connect", "list_screenshot_sets").query_param_aliases).toMatchObject({
       display_type: "filter[screenshotDisplayType]",
     });
+    expect(getAppTemplate("app-store-connect")?.tools.some((tool) => tool.name === "update_app_availability")).toBe(false);
     expect(named("app-store-connect", "list_app_schedule_manual_prices").query_param_aliases).toMatchObject({
       fields_app_price_points: "fields[appPricePoints]",
       fields_app_prices: "fields[appPrices]",
