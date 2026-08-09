@@ -24,13 +24,25 @@ describe("mobile store publishing catalogs", () => {
       "update_app_info_categories",
       "get_app_age_rating_declaration",
       "update_age_rating_declaration",
+      "list_territories",
+      "list_app_price_points",
+      "list_app_schedule_manual_prices",
       "create_app_price_schedule",
+      "list_app_availability_territories",
       "create_app_availability",
     ]) {
       expect(named("app-store-connect", tool)).toBeDefined();
     }
     expect(named("app-store-connect", "update_age_rating_declaration")).toMatchObject({
       body_root_param: "body",
+    });
+    expect(named("app-store-connect", "get_app_age_rating_declaration")).toMatchObject({
+      path: "/appInfos/{app_info_id}/ageRatingDeclaration",
+    });
+    expect(named("app-store-connect", "list_screenshots").query_params).not.toContain("limit");
+    expect(named("app-store-connect", "list_screenshot_sets").query_params).not.toContain("limit");
+    expect(named("app-store-connect", "list_screenshot_sets").query_param_aliases).toMatchObject({
+      display_type: "filter[screenshotDisplayType]",
     });
   });
 
