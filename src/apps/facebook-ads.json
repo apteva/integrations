@@ -1093,11 +1093,11 @@
             "description": "Prefill with existing data"
           }
         },
-        "required": [
-          "adAccountId",
-          "name",
-          "subtype"
-        ]
+      "required": [
+        "adAccountId",
+        "name",
+        "subtype"
+      ]
       }
     },
     {

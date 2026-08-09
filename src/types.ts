@@ -119,12 +119,26 @@ export interface UIComponent {
    *  the AVAILABLE COMPONENTS catalog by the chat.message_attachment
    *  slot before showing it to the agent. */
   slots?: string[];
+  /** Semantic dashboard widget sizes offered by the host. */
+  supported_sizes?: Array<"half" | "full">;
+  default_size?: "half" | "full";
   /** JSON-Schema-shaped props contract. Required key list +
    *  property types are surfaced in the agent-facing description. */
   props_schema?: {
     type?: "object";
     required?: string[];
     properties?: Record<string, { type?: string; description?: string }>;
+  };
+  /** Operator-owned settings stored per dashboard widget instance. */
+  settings_schema?: {
+    type?: "object";
+    properties?: Record<string, {
+      type?: string;
+      title?: string;
+      description?: string;
+      default?: unknown;
+      enum?: unknown[];
+    }>;
   };
   /** Soft preview convention: when the dashboard's app-detail panel
    *  mounts this component for visual preview, it spreads these
