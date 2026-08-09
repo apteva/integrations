@@ -18,6 +18,8 @@ describe("mobile store publishing catalogs", () => {
       "commit_preview",
       "get_version_review_detail",
       "create_version_review_detail",
+      "update_app",
+      "list_review_submissions",
       "reserve_review_attachment",
       "commit_review_attachment",
       "list_app_infos",
@@ -38,6 +40,16 @@ describe("mobile store publishing catalogs", () => {
     });
     expect(named("app-store-connect", "get_app_age_rating_declaration")).toMatchObject({
       path: "/appInfos/{app_info_id}/ageRatingDeclaration",
+    });
+    expect(named("app-store-connect", "update_app").request_transform).toMatchObject({
+      resource_type: "apps",
+      id_field: "app_id",
+      attributes: ["contentRightsDeclaration"],
+    });
+    expect(named("app-store-connect", "list_review_submissions").query_param_aliases).toMatchObject({
+      platform: "filter[platform]",
+      state: "filter[state]",
+      limit_items: "limit[items]",
     });
     expect(named("app-store-connect", "list_screenshots").query_params).not.toContain("limit");
     expect(named("app-store-connect", "list_screenshot_sets").query_params).not.toContain("limit");
