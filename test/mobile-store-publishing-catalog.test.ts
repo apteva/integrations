@@ -44,6 +44,11 @@ describe("mobile store publishing catalogs", () => {
     expect(named("app-store-connect", "list_screenshot_sets").query_param_aliases).toMatchObject({
       display_type: "filter[screenshotDisplayType]",
     });
+    expect(named("app-store-connect", "list_app_schedule_manual_prices").query_param_aliases).toMatchObject({
+      fields_app_price_points: "fields[appPricePoints]",
+      fields_app_prices: "fields[appPrices]",
+      fields_territories: "fields[territories]",
+    });
   });
 
   test("Google Play exposes deterministic image replacement and Data Safety", () => {
