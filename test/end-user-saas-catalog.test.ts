@@ -13,7 +13,7 @@ const expectedToolCounts: Record<string, number> = {
   gorgias: 17,
   freshservice: 19,
   "adobe-acrobat-sign": 14,
-  pandadoc: 15,
+  pandadoc: 30,
   greenhouse: 19,
   lever: 18,
   personio: 18,
