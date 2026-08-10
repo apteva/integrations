@@ -504,8 +504,31 @@ export async function executeTool(
     // envelopes. extractPath would walk into { _binary, base64, ... }
     // looking for the template's path (e.g. "data") and silently return
     // undefined, destroying the payload.
-    if (tool.response_path && data && typeof data === "object" && !isBinary) {
-      data = extractPath(data, tool.response_path);
+    if (tool.response_path && !isBinary) {
+      if (!isPlainObject(data)) {
+        return {
+          success: false,
+          status: response.status,
+          data: {
+            error: "response contract violation",
+            detail: `Expected a JSON object containing response_path ${tool.response_path}`,
+          },
+          headers: responseHeaders,
+        };
+      }
+      const extracted = extractPath(data, tool.response_path);
+      if (extracted === undefined || extracted === null) {
+        return {
+          success: false,
+          status: response.status,
+          data: {
+            error: "response contract violation",
+            detail: `Missing response_path ${tool.response_path}`,
+          },
+          headers: responseHeaders,
+        };
+      }
+      data = extracted;
     }
 
     if (tool.response_transform && data && !isBinary) {

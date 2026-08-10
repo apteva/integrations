@@ -38,6 +38,8 @@ describe("Codemagic integration catalog", () => {
     expect(tool("get_build")).toMatchObject({
       method: "GET",
       path: "/api/v3/builds/{build_id}",
+      headers: { Accept: "application/json" },
+      response_path: "data",
     });
     expect(tool("list_build_actions")).toMatchObject({
       method: "GET",
@@ -51,6 +53,44 @@ describe("Codemagic integration catalog", () => {
       secure: { type: "boolean" },
       variables: { type: "array", minItems: 1 },
     });
+  });
+
+  test("extracts a valid build and rejects an HTML 200 response", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+      globalThis.fetch = async () => new Response(JSON.stringify({
+        data: { _id: "build-123", status: "building" },
+      }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+      const valid = await executeTool({
+        app: codemagic(), tool: tool("get_build"),
+        credentials: { fields: { token: "cm-token" } },
+        input: { build_id: "build-123" },
+      });
+      expect(valid).toMatchObject({
+        success: true,
+        data: { _id: "build-123", status: "building" },
+      });
+
+      globalThis.fetch = async () => new Response("<!doctype html><html>Codemagic</html>", {
+        status: 200,
+        headers: { "content-type": "text/html" },
+      });
+      const invalid = await executeTool({
+        app: codemagic(), tool: tool("get_build"),
+        credentials: { fields: { token: "cm-token" } },
+        input: { build_id: "build-ghost" },
+      });
+      expect(invalid).toMatchObject({
+        success: false,
+        status: 200,
+        data: { error: "response contract violation" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   test("keeps every path parameter explicit and required", () => {
