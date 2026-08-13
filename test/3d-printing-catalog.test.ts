@@ -5,6 +5,7 @@ import type { AppTemplate, AppToolTemplate } from "../src/types.js";
 const productionProviders = [
   "craftcloud",
   "imaterialise",
+  "quote3d",
   "sculpteo",
   "shapeways",
   "slant3d",
@@ -75,6 +76,27 @@ describe("3D-printing service catalogs", () => {
       path: "/v1/quotations/{quotationId}/order",
     });
 
+    expect(tool("quote3d", "upload_file").multipart_form?.file_fields).toEqual({
+      file: "file",
+    });
+    expect(tool("quote3d", "upload_file_with_id")).toMatchObject({
+      method: "POST",
+      path: "/v2/file/public/{upload_id}",
+      omit_auth_headers: ["Authorization"],
+    });
+    expect(tool("quote3d", "create_quote")).toMatchObject({
+      method: "POST",
+      path: "/v2/file/quote/{file_id}",
+    });
+    expect(tool("quote3d", "create_quote").input_schema.properties).toHaveProperty(
+      "printer_config",
+    );
+    expect(tool("quote3d", "get_job").path).toBe("/v2/jobs/{job_id}");
+    expect(tool("quote3d", "create_webhook").input_schema.required).toEqual([
+      "url",
+      "events",
+    ]);
+
     expect(tool("sculpteo", "upload_design").multipart_form?.file_fields).toEqual({ file: "file" });
     expect(app("sculpteo").auth.headers?.["X-Requested-With"]).toBe("XMLHttpRequest");
     expect(Object.keys(tool("sculpteo", "create_order").input_schema.properties ?? {})).toContain(
@@ -121,7 +143,8 @@ describe("3D-printing service catalogs", () => {
   test("declares read-only credential probes where the upstream supports one", () => {
     expect(app("craftcloud").health_check?.tool).toBe("health_check");
     expect(app("imaterialise").health_check?.tool).toBe("list_technologies");
-    expect(app("shapeways").health_check?.tool).toBe("list_materials");
+    expect(app("quote3d").health_check?.tool).toBe("get_user");
+    expect(app("shapeways").health_check?.tool).toBe("list_models");
     expect(app("slant3d").health_check?.tool).toBe("list_filaments");
     expect(app("treatstock").health_check?.tool).toBe("list_material_group_colors");
   });

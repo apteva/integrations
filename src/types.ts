@@ -122,6 +122,10 @@ export interface UIComponent {
   /** Semantic dashboard widget sizes offered by the host. */
   supported_sizes?: Array<"half" | "full">;
   default_size?: "half" | "full";
+  /** Project-wide or attached-agent contextual availability. */
+  visibility?: "attached" | "project";
+  /** App-bus topics that should refresh this component. */
+  refresh_topics?: string[];
   /** JSON-Schema-shaped props contract. Required key list +
    *  property types are surfaced in the agent-facing description. */
   props_schema?: {
