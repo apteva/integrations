@@ -59,6 +59,32 @@ export interface AppTemplate {
    *  only (handy when an auth-introspection endpoint lives on a
    *  different host than the data-plane). */
   health_check?: AppHealthCheck;
+  /** Provider-owned URL properties that must be configured before selected
+   * tools can ask the provider to fetch media from Apteva. */
+  url_properties?: IntegrationURLProperty[];
+}
+
+export interface IntegrationURLProperty {
+  id: string;
+  label: string;
+  purpose?: string;
+  types: Array<"url_prefix" | "domain">;
+  verification_methods: Array<"file">;
+  setup_url?: string;
+}
+
+export interface ExternalFetchInput {
+  /** Dot path in the tool input. A [] suffix applies to every array value. */
+  path: string;
+  /** ID of the AppTemplate.url_properties entry authorizing this fetch. */
+  property: string;
+  relay?: "required" | "optional";
+  https_required?: boolean;
+  redirects_allowed?: boolean;
+  ttl_seconds?: number;
+  max_bytes?: number;
+  mime_types?: string[];
+  when?: { path: string; equals: unknown };
 }
 
 /** Per-app credential probe used by the dashboard's "Test"
@@ -545,6 +571,9 @@ export interface AppToolTemplate {
   // response_omit. This lets tools return agent-friendly output for provider
   // payloads such as nested email/MIME trees or encoded fields.
   response_transform?: ResponseTransform;
+  /** Inputs that an external provider fetches itself. The server rewrites
+   * eligible signed Storage URLs to a verified, redirect-free relay URL. */
+  external_fetch_inputs?: ExternalFetchInput[];
 }
 
 export type RequestTransform =

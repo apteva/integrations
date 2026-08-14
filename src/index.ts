@@ -8,6 +8,8 @@ export type {
   OAuthConfig,
   CredentialField,
   AppToolTemplate,
+  IntegrationURLProperty,
+  ExternalFetchInput,
   AppWebhookConfig,
   AppWebhookEvent,
   WebhookRegistrationConfig,
