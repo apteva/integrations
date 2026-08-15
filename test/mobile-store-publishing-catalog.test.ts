@@ -22,6 +22,7 @@ describe("mobile store publishing catalogs", () => {
       "list_review_submissions",
       "get_review_submission",
       "list_review_submission_items",
+      "update_review_submission_item",
       "reserve_review_attachment",
       "commit_review_attachment",
       "list_app_infos",
@@ -61,6 +62,19 @@ describe("mobile store publishing catalogs", () => {
       query_param_aliases: {
         item_fields: "fields[reviewSubmissionItems]",
         version_fields: "fields[appStoreVersions]",
+      },
+    });
+    expect(named("app-store-connect", "update_review_submission_item")).toMatchObject({
+      method: "PATCH",
+      path: "/reviewSubmissionItems/{item_id}",
+      request_transform: {
+        resource_type: "reviewSubmissionItems",
+        id_field: "item_id",
+        attributes: ["resolved", "removed"],
+      },
+      input_schema: {
+        required: ["item_id"],
+        anyOf: [{ required: ["resolved"] }, { required: ["removed"] }],
       },
     });
     expect(named("app-store-connect", "list_screenshots").query_params).not.toContain("limit");
