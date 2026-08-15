@@ -20,6 +20,8 @@ describe("mobile store publishing catalogs", () => {
       "create_version_review_detail",
       "update_app",
       "list_review_submissions",
+      "get_review_submission",
+      "list_review_submission_items",
       "reserve_review_attachment",
       "commit_review_attachment",
       "list_app_infos",
@@ -50,6 +52,16 @@ describe("mobile store publishing catalogs", () => {
       platform: "filter[platform]",
       state: "filter[state]",
       limit_items: "limit[items]",
+      submission_fields: "fields[reviewSubmissions]",
+      item_fields: "fields[reviewSubmissionItems]",
+      version_fields: "fields[appStoreVersions]",
+    });
+    expect(named("app-store-connect", "list_review_submission_items")).toMatchObject({
+      path: "/reviewSubmissions/{submission_id}/items",
+      query_param_aliases: {
+        item_fields: "fields[reviewSubmissionItems]",
+        version_fields: "fields[appStoreVersions]",
+      },
     });
     expect(named("app-store-connect", "list_screenshots").query_params).not.toContain("limit");
     expect(named("app-store-connect", "list_screenshot_sets").query_params).not.toContain("limit");
