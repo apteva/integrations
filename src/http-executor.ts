@@ -58,6 +58,7 @@ export async function executeTool(
     credentialTokenRetried = false,
   } = opts;
 
+  applyCredentialDefaults(app, credentials);
   await ensureCredentialToken(app, credentials);
 
   // 1. Build the URL with path parameter + credential interpolation
@@ -553,6 +554,19 @@ export async function executeTool(
   }
 }
 
+function applyCredentialDefaults(
+  app: AppTemplate,
+  credentials: ConnectionCredentials,
+): void {
+  for (const field of app.auth.credential_fields || []) {
+    if (!field.default) continue;
+    credentials.fields ||= {};
+    if (!credentials.fields[field.name]?.trim()) {
+      credentials.fields[field.name] = field.default;
+    }
+  }
+}
+
 function validateContinuationUrl(
   continuationUrl: string,
   baseUrl: string,
@@ -670,7 +684,7 @@ async function ensureCredentialToken(
       ? JSON.stringify(body)
       : new URLSearchParams(body).toString();
 
-  const exchangeUrl = resolveTemplate(exchange.url, credentials);
+  const exchangeUrl = credentialTokenExchangeUrl(exchange, credentials);
   const response = await fetch(exchangeUrl, {
     method: exchange.method || "POST",
     headers,
@@ -711,6 +725,28 @@ async function ensureCredentialToken(
       Date.now() + 5 * 60 * 1000
     ).toISOString();
   }
+}
+
+function credentialTokenExchangeUrl(
+  exchange: NonNullable<AppTemplate["auth"]["token_exchange"]>,
+  credentials: ConnectionCredentials,
+): string {
+  const selector = exchange.url_selector;
+  if (!selector) return resolveTemplate(exchange.url, credentials);
+
+  const value = normalizeCredentials(credentials)[selector.credential_field]?.trim();
+  if (!value) {
+    throw new Error(
+      `credential token exchange requires ${selector.credential_field}`,
+    );
+  }
+  const selectedUrl = selector.values[value];
+  if (!selectedUrl) {
+    throw new Error(
+      `credential token exchange does not support the supplied ${selector.credential_field}`,
+    );
+  }
+  return resolveTemplate(selectedUrl, credentials);
 }
 
 // ─── Helpers ───
@@ -1089,6 +1125,7 @@ function basicAuthPair(c: Record<string, string>): { user: string; pass: string 
     ["login", "password"],
     ["account_sid", "auth_token"],
     ["api_key", "api_secret"],
+    ["client_id", "client_secret"],
   ];
   for (const [userKey, passKey] of pairs) {
     const user = c[userKey];

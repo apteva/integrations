@@ -383,6 +383,12 @@ export interface AppAuthConfig {
  */
 export interface CredentialTokenExchangeConfig {
   url: string;
+  /** Select an exchange URL from a durable credential value. Useful when a
+   * provider assigns the token region as part of its credential version. */
+  url_selector?: {
+    credential_field: string;
+    values: Record<string, string>;
+  };
   method?: "POST";
   content_type?: "application/x-www-form-urlencoded" | "application/json";
   headers?: Record<string, string>;
@@ -418,6 +424,7 @@ export interface CredentialField {
   label: string; // Display label
   description?: string; // Help text
   required?: boolean; // Default true
+  default?: string; // Applied when the user leaves an optional field empty
   type?: "password" | "text" | "multiline_password"; // Default "password"
   /** Who supplies the value. OAuth-generated fields are never rendered as
    * operator inputs; user fields remain visible during OAuth setup. */
