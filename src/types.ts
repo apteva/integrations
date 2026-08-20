@@ -62,6 +62,49 @@ export interface AppTemplate {
   /** Provider-owned URL properties that must be configured before selected
    * tools can ask the provider to fetch media from Apteva. */
   url_properties?: IntegrationURLProperty[];
+  /** Marks this app as an agent-runtime backend — an LLM, embedding, or
+   *  TTS provider whose credentials get injected into apteva-core's
+   *  environment rather than only being called over HTTP by the server.
+   *
+   *  Presence of this block is what makes a connection eligible for env
+   *  injection. Without it a connection is a plain integration and its
+   *  credentials never reach a spawned core. Categories can't serve this
+   *  role — 62 catalog apps carry the "ai" tag but only a handful are
+   *  runtimes. */
+  runtime?: AppRuntimeConfig;
+}
+
+export interface AppRuntimeConfig {
+  /** Which runtime pool this app feeds. Only "llm" entries land in
+   *  config.json's providers[]; the others export env vars only. */
+  role: "llm" | "embeddings" | "tts";
+  /** Concrete provider name apteva-core expects in config.json — e.g.
+   *  "anthropic", "openai-codex". Replaces the legacy
+   *  `type === "llm" ? name : type` normalization that both the server
+   *  and the dashboard used to do independently. */
+  provider_key: string;
+  /** Env vars to inject into the core process, as
+   *  ENV_NAME -> template. Three template sources are available:
+   *
+   *    {{credentials.X}}  decrypted connection credentials, resolved
+   *                       AFTER any OAuth refresh so access tokens are
+   *                       live. Dots traverse nested objects.
+   *    {{config.X}}       the connection's runtime_config JSON — model
+   *                       picks and non-secret knobs like base URLs.
+   *    {{connection.X}}   row metadata; `id` and `legacy_provider_id`
+   *                       are the ones core cares about.
+   *
+   *  A template whose value resolves empty is omitted from the env map
+   *  entirely rather than injected as an empty string — core treats an
+   *  empty key as "configured but broken". */
+  env: Record<string, string>;
+  /** Optional runtime capabilities. "subscription_usage" means the
+   *  provider exposes a quota endpoint the dashboard can poll. */
+  capabilities?: string[];
+  /** No default model list here on purpose: model ids churn faster than
+   *  the catalog ships, so a hardcoded default goes stale and fails at
+   *  first inference. The server fetches the provider's live model list
+   *  and caches it in the connection's runtime_config instead. */
 }
 
 export interface IntegrationURLProperty {
@@ -473,6 +516,46 @@ export interface OAuthConfig {
   // consent and skips the consent screen by default for already-
   // authorized apps.
   extra_authorize_params?: Record<string, string>;
+  // ─────────────────────────────────────────────────────────────────
+  // The three fields below describe Meta's Instagram/Threads login,
+  // which does not fit the RFC 6749 mold. Implemented server-side in
+  // oauth_token_calls.go — declaring them in a catalog entry is enough,
+  // no per-slug Go. See instagram-api.json.
+  //
+  // Note the engine refreshes BEFORE expiry (from expires_at, recorded
+  // at exchange time), not only on a 401: an expired Instagram token
+  // cannot be refreshed at all, so a 401 is already too late.
+  // ─────────────────────────────────────────────────────────────────
+  /** Dotted path to the token object inside a non-flat token response.
+   *  Numeric segments index arrays. Instagram returns
+   *  {"data":[{"access_token":…,"user_id":…}]} → "data.0". */
+  token_response_path?: string;
+  /** A second call made right after the authorization_code grant,
+   *  trading the short-lived token for a long-lived one. Instagram's
+   *  code grant yields a 1-hour token; ig_exchange_token upgrades it to
+   *  60 days. Merged over the first response. */
+  long_lived_exchange?: OAuthTokenCall;
+  /** Replaces the standard refresh_token grant for providers that renew
+   *  using the access token itself and never issue a refresh_token. */
+  refresh?: OAuthTokenCall;
+}
+
+/** A token call that isn't an RFC 6749 form-POST: different host, a GET,
+ *  a vendor grant_type, and the current access token standing in for a
+ *  refresh_token. Meta ships this shape twice — Instagram on
+ *  graph.instagram.com and Threads on graph.threads.net. */
+export interface OAuthTokenCall {
+  url: string;
+  /** Defaults to GET. */
+  method?: "GET" | "POST";
+  /** Static query params, typically the vendor grant_type. */
+  params?: Record<string, string>;
+  /** Whether to send client_secret. Required by Instagram's long-lived
+   *  exchange; rejected by its refresh call — hence per-call, not global. */
+  send_client_secret?: boolean;
+  /** Credential key holding the token to send as access_token.
+   *  Defaults to "access_token". Only consulted on the refresh path. */
+  credential?: string;
 }
 
 export interface AppToolTemplate {
