@@ -34,4 +34,32 @@ describe("Telnyx integration catalog", () => {
     expect(properties.stream_establish_before_call_originate).toBeDefined();
     expect(properties.send_silence_when_idle).toBeDefined();
   });
+
+  test("exposes outbound voice profiles for generic call readiness", () => {
+    const app = getAppTemplate("telnyx")!;
+    const tool = app.tools.find(
+      (candidate) => candidate.name === "list_outbound_voice_profiles",
+    );
+
+    expect(tool?.method).toBe("GET");
+    expect(tool?.path).toBe("/outbound_voice_profiles");
+    expect(tool?.query_params).toContain("page[number]");
+    expect(tool?.query_params).toContain("page[size]");
+  });
+
+  test("can apply a requirement group to a pending sub-number order", () => {
+    const app = getAppTemplate("telnyx")!;
+    const tool = app.tools.find(
+      (candidate) =>
+        candidate.name === "update_sub_number_order_requirement_group",
+    );
+
+    expect(tool?.method).toBe("POST");
+    expect(tool?.path).toBe("/sub_number_orders/{id}/requirement_group");
+    expect(tool?.path_params).toEqual(["id"]);
+    expect(tool?.input_schema.required).toEqual([
+      "id",
+      "requirement_group_id",
+    ]);
+  });
 });
