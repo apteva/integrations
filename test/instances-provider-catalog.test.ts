@@ -100,6 +100,39 @@ describe("Instances provider integration contracts", () => {
     }
   });
 
+  test("Scaleway cloud-init uses the official PATCH user-data contract", async () => {
+    const originalFetch = globalThis.fetch;
+    let request: { url: string; method: string; body: string; contentType: string | null } | undefined;
+    globalThis.fetch = async (url, init) => {
+      const headers = new Headers(init?.headers);
+      request = {
+        url: String(url),
+        method: String(init?.method),
+        body: String(init?.body || ""),
+        contentType: headers.get("content-type"),
+      };
+      return new Response(null, { status: 204 });
+    };
+    try {
+      const result = await executeTool({
+        app: app("scaleway"),
+        tool: tool("scaleway", "server_set_cloud_init"),
+        credentials: { fields: { token: "secret" } },
+        input: { zone: "fr-par-1", server_id: "server-1", content: "#cloud-config\nusers: []\n" },
+      });
+
+      expect(result.success).toBe(true);
+      expect(request).toEqual({
+        url: "https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/server-1/user_data/cloud-init",
+        method: "PATCH",
+        body: "#cloud-config\nusers: []\n",
+        contentType: "text/plain",
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   test("AWS EC2 create uses bound network settings and SigV4", async () => {
     const originalFetch = globalThis.fetch;
     let requestUrl = "";

@@ -959,7 +959,7 @@
     {
       "name": "server_set_cloud_init",
       "description": "Set cloud-init user data before starting a Scaleway server",
-      "method": "PUT",
+      "method": "PATCH",
       "path": "/instance/v1/zones/{zone}/servers/{server_id}/user_data/cloud-init",
       "headers": { "Content-Type": "text/plain" },
       "body_root_param": "content",
