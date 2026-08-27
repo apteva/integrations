@@ -22,6 +22,14 @@
       {
         "name": "token",
         "label": "Secret Key"
+      },
+      {
+        "name": "project_id",
+        "label": "Default Project ID",
+        "description": "Optional Scaleway Project ID used for provisioning. Recommended when the account has more than one project.",
+        "type": "text",
+        "required": false,
+        "exposure": "public"
       }
     ]
   },
@@ -467,7 +475,7 @@
       "name": "security_group_list",
       "description": "List all security groups in a Scaleway zone",
       "method": "GET",
-      "path": "/security-group-list",
+      "path": "/instance/v1/zones/{zone}/security_groups",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -491,8 +499,13 @@
           "project": {
             "type": "string",
             "description": "Filter by project ID"
+          },
+          "project_default": {
+            "type": "boolean",
+            "description": "Only return the default security group for each project"
           }
-        }
+        },
+        "required": ["zone"]
       }
     },
     {
@@ -898,9 +911,14 @@
       "input_schema": {
         "type": "object",
         "properties": {
+          "organization_id": { "type": "string" },
+          "name": { "type": "string" },
           "page": { "type": "integer" },
-          "page_size": { "type": "integer" }
-        }
+          "page_size": { "type": "integer" },
+          "order_by": { "type": "string" },
+          "project_ids": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["organization_id"]
       }
     },
     {

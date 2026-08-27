@@ -59,6 +59,38 @@ describe("Instances provider integration contracts", () => {
     }
   });
 
+  test("Scaleway project discovery uses valid Account and Instance API parameters", async () => {
+    const originalFetch = globalThis.fetch;
+    const urls: string[] = [];
+    globalThis.fetch = async (url) => {
+      urls.push(String(url));
+      return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const credentials = { fields: { token: "secret", project_id: "project-1" } };
+    try {
+      await executeTool({
+        app: app("scaleway"),
+        tool: tool("scaleway", "project_list"),
+        credentials,
+        input: { organization_id: "organization-1", page_size: 100 },
+      });
+      await executeTool({
+        app: app("scaleway"),
+        tool: tool("scaleway", "security_group_list"),
+        credentials,
+        input: { zone: "fr-par-1", project_default: true, per_page: 100 },
+      });
+
+      expect(urls[0]).toBe("https://api.scaleway.com/account/v3/projects?organization_id=organization-1&page_size=100");
+      expect(urls[1]).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/security_groups?project_default=true&per_page=100");
+
+      const projectField = app("scaleway").auth.credential_fields?.find((field) => field.name === "project_id");
+      expect(projectField).toMatchObject({ required: false, exposure: "public" });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   test("AWS EC2 create uses bound network settings and SigV4", async () => {
     const originalFetch = globalThis.fetch;
     let requestUrl = "";
