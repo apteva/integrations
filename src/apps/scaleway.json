@@ -155,6 +155,21 @@
           "project": { "type": "string" },
           "dynamic_ip_required": { "type": "boolean" },
           "routed_ip_enabled": { "type": "boolean" }
+          ,
+          "volumes": {
+            "type": "object",
+            "description": "Optional boot/data volume map keyed by device slot. Example: {\"0\":{\"size\":80000000000,\"volume_type\":\"sbs_volume\",\"boot\":true}}. Omit to use the image default volume.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "description": "Existing volume UUID to attach" },
+                "name": { "type": "string" },
+                "size": { "type": "integer", "description": "Size in bytes" },
+                "volume_type": { "type": "string", "enum": ["sbs_volume", "l_ssd"] },
+                "boot": { "type": "boolean" }
+              }
+            }
+          }
         },
         "required": [
           "name",
@@ -224,9 +239,9 @@
     },
     {
       "name": "volume_list",
-      "description": "List all block storage volumes in a Scaleway zone",
+      "description": "List modern Scaleway Block Storage volumes (SBS 5K/15K) in a zone",
       "method": "GET",
-      "path": "/volume-list",
+      "path": "/block/v1/zones/{zone}/volumes",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -243,10 +258,7 @@
             "type": "integer",
             "description": "Results per page"
           },
-          "volume_type": {
-            "type": "string",
-            "description": "Filter by volume type (l_ssd, b_ssd)"
-          },
+          "project_id": { "type": "string", "description": "Optional project UUID filter" },
           "name": {
             "type": "string",
             "description": "Filter by name"
@@ -258,7 +270,7 @@
       "name": "volume_get",
       "description": "Get details of a specific Scaleway volume by ID",
       "method": "GET",
-      "path": "/volume-get",
+      "path": "/block/v1/zones/{zone}/volumes/{volume_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -279,9 +291,9 @@
     },
     {
       "name": "volume_create",
-      "description": "Create a new Scaleway block storage volume",
-      "method": "GET",
-      "path": "/volume-create",
+      "description": "Create a modern Scaleway Block Storage volume. For an empty volume pass from_empty.size in bytes and perf_iops 5000 or 15000.",
+      "method": "POST",
+      "path": "/block/v1/zones/{zone}/volumes",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -294,14 +306,13 @@
             "type": "string",
             "description": "Volume name"
           },
-          "volume_type": {
-            "type": "string",
-            "description": "Volume type (b_ssd, l_ssd)",
-            "default": "b_ssd"
-          },
-          "size": {
-            "type": "integer",
-            "description": "Volume size in bytes (e.g., 10000000000 for 10GB)"
+          "project_id": { "type": "string", "description": "Project UUID" },
+          "perf_iops": { "type": "integer", "enum": [5000, 15000], "default": 5000 },
+          "from_empty": {
+            "type": "object",
+            "description": "Empty-volume source",
+            "properties": { "size": { "type": "integer", "description": "Volume size in bytes" } },
+            "required": ["size"]
           },
           "tags": {
             "type": "array",
@@ -313,15 +324,34 @@
         },
         "required": [
           "name",
-          "size"
+          "project_id",
+          "from_empty"
         ]
+      }
+    },
+    {
+      "name": "volume_update",
+      "description": "Update a Scaleway Block Storage volume, including increasing its size",
+      "method": "PATCH",
+      "path": "/block/v1/zones/{zone}/volumes/{volume_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zone": { "type": "string", "default": "fr-par-1" },
+          "volume_id": { "type": "string" },
+          "name": { "type": "string" },
+          "size": { "type": "integer", "description": "New size in bytes; shrinking is not supported" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "perf_iops": { "type": "integer", "enum": [5000, 15000] }
+        },
+        "required": ["volume_id"]
       }
     },
     {
       "name": "volume_delete",
       "description": "Delete a Scaleway block storage volume",
-      "method": "GET",
-      "path": "/volume-delete",
+      "method": "DELETE",
+      "path": "/block/v1/zones/{zone}/volumes/{volume_id}",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -338,6 +368,37 @@
         "required": [
           "volume_id"
         ]
+      }
+    },
+    {
+      "name": "server_volume_attach",
+      "description": "Attach a Block Storage volume to a Scaleway Instance server",
+      "method": "POST",
+      "path": "/instance/v1/zones/{zone}/servers/{server_id}/attach-volume",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zone": { "type": "string", "default": "fr-par-1" },
+          "server_id": { "type": "string" },
+          "volume_id": { "type": "string" },
+          "volume_type": { "type": "string", "enum": ["sbs_volume", "l_ssd"], "default": "sbs_volume" }
+        },
+        "required": ["server_id", "volume_id"]
+      }
+    },
+    {
+      "name": "server_volume_detach",
+      "description": "Detach a volume from a Scaleway Instance server without deleting it",
+      "method": "POST",
+      "path": "/instance/v1/zones/{zone}/servers/{server_id}/detach-volume",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "zone": { "type": "string", "default": "fr-par-1" },
+          "server_id": { "type": "string" },
+          "volume_id": { "type": "string" }
+        },
+        "required": ["server_id", "volume_id"]
       }
     },
     {

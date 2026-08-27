@@ -220,6 +220,55 @@
           "instance_id"
         ]
       }
+    },
+    {
+      "name": "block_storage_list",
+      "description": "List Vultr block storage subscriptions",
+      "method": "GET",
+      "path": "/blocks",
+      "input_schema": { "type": "object", "properties": { "per_page": { "type": "integer" }, "cursor": { "type": "string" } } }
+    },
+    {
+      "name": "block_storage_get",
+      "description": "Get a block storage subscription",
+      "method": "GET",
+      "path": "/blocks/{block_id}",
+      "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" } }, "required": ["block_id"] }
+    },
+    {
+      "name": "block_storage_create",
+      "description": "Create a Vultr block storage subscription",
+      "method": "POST",
+      "path": "/blocks",
+      "input_schema": { "type": "object", "properties": { "region": { "type": "string" }, "size_gb": { "type": "integer", "minimum": 10 }, "label": { "type": "string" }, "block_type": { "type": "string", "enum": ["storage_opt", "high_perf"] }, "live": { "type": "boolean" } }, "required": ["region", "size_gb"] }
+    },
+    {
+      "name": "block_storage_update",
+      "description": "Rename or expand a block storage subscription",
+      "method": "PATCH",
+      "path": "/blocks/{block_id}",
+      "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" }, "label": { "type": "string" }, "size_gb": { "type": "integer", "description": "New larger size in GiB" } }, "required": ["block_id"] }
+    },
+    {
+      "name": "block_storage_attach",
+      "description": "Attach block storage to an instance in the same region",
+      "method": "POST",
+      "path": "/blocks/{block_id}/attach",
+      "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" }, "instance_id": { "type": "string" }, "live": { "type": "boolean" } }, "required": ["block_id", "instance_id"] }
+    },
+    {
+      "name": "block_storage_detach",
+      "description": "Detach block storage without deleting it",
+      "method": "POST",
+      "path": "/blocks/{block_id}/detach",
+      "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" }, "live": { "type": "boolean" } }, "required": ["block_id"] }
+    },
+    {
+      "name": "block_storage_delete",
+      "description": "Delete a block storage subscription",
+      "method": "DELETE",
+      "path": "/blocks/{block_id}",
+      "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" } }, "required": ["block_id"] }
     }
   ]
 }

@@ -38,6 +38,58 @@ describe("Instances provider integration contracts", () => {
     }
   });
 
+  test("exposes the generic block-volume lifecycle for supported providers", () => {
+    const required: Record<string, string[]> = {
+      hetzner: ["volume_list", "volume_get", "volume_create", "volume_attach", "volume_detach", "volume_resize", "volume_delete"],
+      digitalocean: ["volume_list", "volume_get", "volume_create", "volume_action", "volume_delete"],
+      vultr: ["block_storage_list", "block_storage_get", "block_storage_create", "block_storage_attach", "block_storage_detach", "block_storage_update", "block_storage_delete"],
+      "aws-ec2": ["volume_list", "volume_create", "volume_attach", "volume_detach", "volume_resize", "volume_delete"],
+      scaleway: ["volume_list", "volume_get", "volume_create", "server_volume_attach", "server_volume_detach", "volume_update", "volume_delete"],
+      "huawei-cloud": ["list_volumes", "get_volume", "create_volume", "attach_volume", "detach_volume", "resize_volume", "delete_volume"],
+      linode: ["list_volumes", "get_volume", "create_volume", "attach_volume", "detach_volume", "resize_volume", "delete_volume"],
+      ovhcloud: ["list_volumes", "get_volume", "create_volume", "attach_volume", "detach_volume", "resize_volume", "delete_volume"],
+      runpod: ["list_network_volumes", "get_network_volume", "create_network_volume", "delete_network_volume"],
+    };
+    for (const [slug, names] of Object.entries(required)) {
+      const available = new Set(app(slug).tools.map((candidate) => candidate.name));
+      for (const name of names) expect(available.has(name), `${slug}.${name}`).toBe(true);
+    }
+  });
+
+  test("Scaleway storage tools use current Block and Instance API contracts", async () => {
+    const originalFetch = globalThis.fetch;
+    const requests: Array<{ url: string; method: string; body: string }> = [];
+    globalThis.fetch = async (url, init) => {
+      requests.push({ url: String(url), method: String(init?.method), body: String(init?.body || "") });
+      return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+    };
+    try {
+      const credentials = { fields: { token: "secret" } };
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "server_create"), credentials,
+        input: { zone: "fr-par-1", name: "vm-1", commercial_type: "POP2-HC-2C-4G", image: "image-1", volumes: { "0": { size: 80_000_000_000, volume_type: "sbs_volume", boot: true } } },
+      });
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "volume_create"), credentials,
+        input: { zone: "fr-par-1", project_id: "project-1", name: "data-1", perf_iops: 5000, from_empty: { size: 80_000_000_000 } },
+      });
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "server_volume_attach"), credentials,
+        input: { zone: "fr-par-1", server_id: "server-1", volume_id: "volume-1", volume_type: "sbs_volume" },
+      });
+
+      expect(requests[0]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers");
+      expect(JSON.parse(requests[0]?.body || "{}").volumes).toEqual({ "0": { size: 80_000_000_000, volume_type: "sbs_volume", boot: true } });
+      expect(requests[1]?.url).toBe("https://api.scaleway.com/block/v1/zones/fr-par-1/volumes");
+      expect(requests[1]?.method).toBe("POST");
+      expect(JSON.parse(requests[1]?.body || "{}")).toMatchObject({ project_id: "project-1", perf_iops: 5000, from_empty: { size: 80_000_000_000 } });
+      expect(requests[2]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/server-1/attach-volume");
+      expect(JSON.parse(requests[2]?.body || "{}")).toEqual({ volume_id: "volume-1", volume_type: "sbs_volume" });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   test("Scaleway Apple silicon tools use the official API routes", async () => {
     const originalFetch = globalThis.fetch;
     const requests: Array<{ url: string; method: string; body: string }> = [];
