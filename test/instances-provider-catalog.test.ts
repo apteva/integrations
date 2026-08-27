@@ -23,6 +23,8 @@ describe("Instances provider integration contracts", () => {
       "aws-ec2": ["create_instance", "list_instances", "terminate_instance", "list_instance_types", "list_availability_zones", "list_images"],
       scaleway: [
         "api_key_get", "server_create", "server_get", "server_delete", "server_action", "server_set_cloud_init", "project_list", "server_types_list", "image_list",
+        "dedibox_offers_list", "dedibox_server_create", "dedibox_service_get", "dedibox_service_delete", "dedibox_server_get", "dedibox_server_delete",
+        "dedibox_os_list", "dedibox_server_install", "dedibox_install_get", "dedibox_server_reboot",
         "apple_products_list", "apple_server_types_list", "apple_os_list", "apple_servers_list", "apple_server_get", "apple_server_create",
         "apple_server_update", "apple_server_delete", "apple_server_reboot", "apple_server_reinstall", "ssh_keys_list", "ssh_key_create", "ssh_key_delete",
       ],
@@ -54,6 +56,38 @@ describe("Instances provider integration contracts", () => {
       expect(requests[1]?.method).toBe("POST");
       expect(JSON.parse(requests[1]?.body || "{}")).toMatchObject({ type: "M4-S", os_id: "os-1", commitment_type: "duration_24h" });
       expect(requests[2]?.url).toBe("https://api.scaleway.com/iam/v1alpha1/ssh-keys");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("Scaleway Dedibox tools use the Phoenix API order and install routes", async () => {
+    const originalFetch = globalThis.fetch;
+    const requests: Array<{ url: string; method: string; body: string }> = [];
+    globalThis.fetch = async (url, init) => {
+      requests.push({ url: String(url), method: String(init?.method), body: String(init?.body || "") });
+      return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const credentials = { fields: { token: "secret" } };
+    try {
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "dedibox_offers_list"), credentials,
+        input: { zone: "fr-par-1", project_id: "project-1", page_size: 100, available_only: true },
+      });
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "dedibox_server_create"), credentials,
+        input: { zone: "fr-par-1", offer_id: 1531, project_id: "project-1", server_option_ids: [] },
+      });
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "dedibox_server_install"), credentials,
+        input: { zone: "fr-par-1", server_id: 42, os_id: 24, hostname: "dedibox-1", user_login: "apteva", ssh_key_ids: ["key-1"] },
+      });
+
+      expect(requests[0]?.url).toBe("https://api.scaleway.com/dedibox/v1/zones/fr-par-1/offers?project_id=project-1&page_size=100&available_only=true");
+      expect(requests[1]?.url).toBe("https://api.scaleway.com/dedibox/v1/zones/fr-par-1/servers");
+      expect(JSON.parse(requests[1]?.body || "{}")).toEqual({ offer_id: 1531, project_id: "project-1", server_option_ids: [] });
+      expect(requests[2]?.url).toBe("https://api.scaleway.com/dedibox/v1/zones/fr-par-1/servers/42/install");
+      expect(JSON.parse(requests[2]?.body || "{}")).toMatchObject({ os_id: 24, hostname: "dedibox-1", user_login: "apteva", ssh_key_ids: ["key-1"] });
     } finally {
       globalThis.fetch = originalFetch;
     }
