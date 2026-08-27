@@ -22,7 +22,7 @@ describe("Instances provider integration contracts", () => {
       vultr: ["create_instance", "get_instance", "delete_instance", "list_plans", "list_regions", "list_os"],
       "aws-ec2": ["create_instance", "list_instances", "terminate_instance", "list_instance_types", "list_availability_zones", "list_images"],
       scaleway: [
-        "server_create", "server_get", "server_delete", "server_action", "server_set_cloud_init", "project_list", "server_types_list", "image_list",
+        "api_key_get", "server_create", "server_get", "server_delete", "server_action", "server_set_cloud_init", "project_list", "server_types_list", "image_list",
         "apple_products_list", "apple_server_types_list", "apple_os_list", "apple_servers_list", "apple_server_get", "apple_server_create",
         "apple_server_update", "apple_server_delete", "apple_server_reboot", "apple_server_reinstall", "ssh_keys_list", "ssh_key_create", "ssh_key_delete",
       ],
@@ -70,6 +70,12 @@ describe("Instances provider integration contracts", () => {
     try {
       await executeTool({
         app: app("scaleway"),
+        tool: tool("scaleway", "api_key_get"),
+        credentials,
+        input: { access_key: "SCWACCESSKEY" },
+      });
+      await executeTool({
+        app: app("scaleway"),
         tool: tool("scaleway", "project_list"),
         credentials,
         input: { organization_id: "organization-1", page_size: 100 },
@@ -81,11 +87,14 @@ describe("Instances provider integration contracts", () => {
         input: { zone: "fr-par-1", project_default: true, per_page: 100 },
       });
 
-      expect(urls[0]).toBe("https://api.scaleway.com/account/v3/projects?organization_id=organization-1&page_size=100");
-      expect(urls[1]).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/security_groups?project_default=true&per_page=100");
+      expect(urls[0]).toBe("https://api.scaleway.com/iam/v1alpha1/api-keys/SCWACCESSKEY");
+      expect(urls[1]).toBe("https://api.scaleway.com/account/v3/projects?organization_id=organization-1&page_size=100");
+      expect(urls[2]).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/security_groups?project_default=true&per_page=100");
 
       const projectField = app("scaleway").auth.credential_fields?.find((field) => field.name === "project_id");
       expect(projectField).toMatchObject({ required: false, exposure: "public" });
+      const accessKeyField = app("scaleway").auth.credential_fields?.find((field) => field.name === "access_key");
+      expect(accessKeyField).toMatchObject({ exposure: "public" });
     } finally {
       globalThis.fetch = originalFetch;
     }

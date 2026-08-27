@@ -20,8 +20,16 @@
     },
     "credential_fields": [
       {
+        "name": "access_key",
+        "label": "Access Key",
+        "description": "Scaleway Access Key paired with the Secret Key. Used to load the API key's default Project automatically.",
+        "type": "text",
+        "exposure": "public"
+      },
+      {
         "name": "token",
-        "label": "Secret Key"
+        "label": "Secret Key",
+        "description": "Scaleway Secret Key paired with the Access Key"
       },
       {
         "name": "project_id",
@@ -34,6 +42,19 @@
     ]
   },
   "tools": [
+    {
+      "name": "api_key_get",
+      "description": "Get the current Scaleway API key metadata, including its default project",
+      "method": "GET",
+      "path": "/iam/v1alpha1/api-keys/{access_key}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "access_key": { "type": "string" }
+        },
+        "required": ["access_key"]
+      }
+    },
     {
       "name": "server_list",
       "description": "List all Scaleway servers/instances in a zone. Returns server details including ID, name, state, IP addresses, and type.",
