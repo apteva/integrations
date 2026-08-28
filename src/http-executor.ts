@@ -245,6 +245,9 @@ export async function executeTool(
     delete headers["content-type"];
     fetchOpts.body = form;
     fetchOpts.headers = headers;
+  } else if (tool.body_none) {
+    // Intentionally empty. This must run before root/transformed/default body
+    // handling so signed endpoints hash the true zero-byte payload.
   } else if (hasRootBody) {
     // Root-body path: send the named field's value as the whole request
     // body. JSON is the default, but text/* endpoints expect raw strings.
@@ -361,7 +364,46 @@ export async function executeTool(
     ? (tool.signing.signers || [])
     : (app.auth.signers || []);
   for (const spec of signerSpecs) {
-    if (spec.name === "oauth1") {
+    if (spec.name === "aws_sigv4") {
+      const params = spec.params || {};
+      const norm = normalizeCredentials(credentials);
+      const accessKeyField = String(params.access_key_field || "access_key_id");
+      const secretKeyField = String(params.secret_key_field || "secret_access_key");
+      const sessionTokenField = String(params.session_token_field || "session_token");
+      const regionField = String(params.region_field || "region");
+      const regionInput = String(params.region_input || "");
+      const accessKeyInput = String(params.access_key_input || "");
+      const secretKeyInput = String(params.secret_key_input || "");
+      const service = String(params.service || "");
+      const accessKeyId = accessKeyInput ? String(input[accessKeyInput] || "") : norm[accessKeyField];
+      const secretAccessKey = secretKeyInput ? String(input[secretKeyInput] || "") : norm[secretKeyField];
+      const region = regionInput ? String(input[regionInput] || "") : norm[regionField];
+      const sessionToken = norm[sessionTokenField];
+      if (!service || !accessKeyId || !secretAccessKey || !region) {
+        throw new Error(`aws_sigv4 signer for ${tool.name} is missing service, access key, secret key, or region`);
+      }
+      const bodyForSigning =
+        typeof fetchOpts.body === "string"
+          ? fetchOpts.body
+          : fetchOpts.body instanceof Buffer
+            ? fetchOpts.body
+            : undefined;
+      const sigHeaders = signAwsRequest({
+        method: tool.method,
+        url: finalUrl,
+        headers,
+        body: bodyForSigning,
+        service,
+        region,
+        accessKeyId,
+        secretAccessKey,
+        sessionToken,
+      });
+      delete headers["Authorization"];
+      delete headers["authorization"];
+      Object.assign(headers, sigHeaders);
+      fetchOpts.headers = headers;
+    } else if (spec.name === "oauth1") {
       const bodyForSigning = typeof fetchOpts.body === "string" ? fetchOpts.body : "";
       signOAuth1Request(headers, finalUrl, tool.method, bodyForSigning, credentials, spec.params || {});
       fetchOpts.headers = headers;

@@ -269,6 +269,79 @@
       "method": "DELETE",
       "path": "/blocks/{block_id}",
       "input_schema": { "type": "object", "properties": { "block_id": { "type": "string" } }, "required": ["block_id"] }
+    },
+    {
+      "name": "object_storage_clusters_list",
+      "description": "List Vultr Object Storage clusters and their regions",
+      "method": "GET",
+      "path": "/object-storage/clusters",
+      "input_schema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "object_storage_tiers_list",
+      "description": "List Vultr Object Storage subscription tiers",
+      "method": "GET",
+      "path": "/object-storage/tiers",
+      "input_schema": { "type": "object", "properties": {} }
+    },
+    {
+      "name": "object_storage_list",
+      "description": "List Vultr Object Storage subscriptions and S3 endpoints",
+      "method": "GET",
+      "path": "/object-storage",
+      "input_schema": {
+        "type": "object",
+        "properties": { "per_page": { "type": "integer" }, "cursor": { "type": "string" } }
+      }
+    },
+    {
+      "name": "object_storage_get",
+      "description": "Get a Vultr Object Storage subscription",
+      "method": "GET",
+      "path": "/object-storage/{object_storage_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "object_storage_id": { "type": "string" } },
+        "required": ["object_storage_id"]
+      }
+    },
+    {
+      "name": "object_storage_create",
+      "description": "Provision a Vultr Object Storage subscription. The response includes its S3 endpoint and credentials.",
+      "method": "POST",
+      "path": "/object-storage",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "cluster_id": { "type": "integer" },
+          "tier_id": { "type": "integer" }
+        },
+        "required": ["label", "cluster_id"]
+      }
+    },
+    {
+      "name": "object_storage_rotate_credentials",
+      "description": "Regenerate a Vultr Object Storage subscription's S3 credentials and invalidate the previous pair",
+      "method": "POST",
+      "path": "/object-storage/{object_storage_id}/regenerate-keys",
+      "body_none": true,
+      "input_schema": {
+        "type": "object",
+        "properties": { "object_storage_id": { "type": "string" } },
+        "required": ["object_storage_id"]
+      }
+    },
+    {
+      "name": "object_storage_delete",
+      "description": "Delete a Vultr Object Storage subscription",
+      "method": "DELETE",
+      "path": "/object-storage/{object_storage_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "object_storage_id": { "type": "string" } },
+        "required": ["object_storage_id"]
+      }
     }
   ]
 }

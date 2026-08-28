@@ -571,6 +571,9 @@ export interface AppToolTemplate {
    * upload URLs where forwarding the provider bearer token would invalidate
    * the signed request. */
   omit_auth_headers?: string[];
+  /** Send no request body for a body-bearing method. Some signed APIs (notably
+   * S3 CreateBucket) require an exactly empty payload rather than JSON `{}`. */
+  body_none?: boolean;
   input_schema: Record<string, unknown>;
   // Canned response returned for this tool when it runs inside a test
   // World (the agent-testing sandbox) and there's no per-eval fixture or

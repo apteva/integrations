@@ -53,6 +53,61 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("per-tool SigV4 can reuse differently named provider credentials with an empty body", async () => {
+    let captured: { url: string; headers: Record<string, string>; body: BodyInit | null | undefined } | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = {
+        url: String(url),
+        headers: init?.headers as Record<string, string>,
+        body: init?.body,
+      };
+      return new Response(null, { status: 200 });
+    };
+    try {
+      await executeTool({
+        app: {
+          ...app,
+          slug: "scaleway-test",
+          auth: {
+            types: ["api_key"],
+            headers: { "X-Auth-Token": "{{token}}" },
+          },
+        },
+        tool: {
+          name: "object_bucket_create",
+          description: "Create bucket",
+          method: "PUT",
+          path: "https://{bucket}.s3.{region}.scw.cloud/",
+          omit_auth_headers: ["X-Auth-Token"],
+          body_none: true,
+          signing: { signers: [{
+            name: "aws_sigv4",
+            params: {
+              service: "s3",
+              region_input: "region",
+              access_key_field: "access_key",
+              secret_key_field: "token",
+            },
+          }] },
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { fields: { access_key: "SCWTESTACCESS", token: "test-secret" } },
+        input: { bucket: "media-test", region: "fr-par" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.url).toBe("https://media-test.s3.fr-par.scw.cloud/");
+    expect(captured?.body).toBeUndefined();
+    expect(captured?.headers["X-Auth-Token"]).toBeUndefined();
+    expect(captured?.headers.Authorization).toStartWith("AWS4-HMAC-SHA256 ");
+    expect(new Headers(captured?.headers).get("x-amz-content-sha256")).toBe(
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
+  });
+
   test("presigned binary upload uses the absolute URL without provider auth", async () => {
     let captured:
       | { url: string; headers: HeadersInit | undefined; body: BodyInit | null | undefined }

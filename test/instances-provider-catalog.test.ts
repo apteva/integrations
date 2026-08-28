@@ -19,7 +19,11 @@ describe("Instances provider integration contracts", () => {
   test("exposes every lifecycle tool used by the Instances adapters", () => {
     const required: Record<string, string[]> = {
       contabo: ["instance_create", "instance_get", "image_list"],
-      vultr: ["create_instance", "get_instance", "delete_instance", "list_plans", "list_regions", "list_os"],
+      vultr: [
+        "create_instance", "get_instance", "delete_instance", "list_plans", "list_regions", "list_os",
+        "object_storage_clusters_list", "object_storage_tiers_list", "object_storage_list", "object_storage_get",
+        "object_storage_create", "object_storage_rotate_credentials", "object_storage_delete",
+      ],
       "aws-ec2": ["create_instance", "list_instances", "terminate_instance", "list_instance_types", "list_availability_zones", "list_images"],
       scaleway: [
         "api_key_get", "server_create", "server_get", "server_delete", "server_action", "server_set_cloud_init", "project_list", "server_types_list", "image_list",
@@ -27,6 +31,8 @@ describe("Instances provider integration contracts", () => {
         "dedibox_os_list", "dedibox_server_install", "dedibox_install_get", "dedibox_server_reboot",
         "apple_products_list", "apple_server_types_list", "apple_os_list", "apple_servers_list", "apple_server_get", "apple_server_create",
         "apple_server_update", "apple_server_delete", "apple_server_reboot", "apple_server_reinstall", "ssh_keys_list", "ssh_key_create", "ssh_key_delete",
+        "project_get", "iam_application_create", "iam_application_delete", "iam_policy_create", "iam_policy_delete",
+        "iam_api_key_create", "iam_api_key_delete", "object_bucket_create", "object_bucket_delete",
       ],
       "huawei-cloud": ["create_server", "get_server", "delete_servers", "get_job", "list_flavors", "list_images", "list_availability_zones", "list_vpcs", "list_subnets"],
       linode: ["create_instance", "get_instance", "delete_instance", "list_types", "list_regions", "list_images"],

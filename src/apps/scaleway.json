@@ -1408,6 +1408,164 @@
         },
         "required": ["ssh_key_id"]
       }
+    },
+    {
+      "name": "project_get",
+      "description": "Get a Scaleway project, including its Organization ID",
+      "method": "GET",
+      "path": "/account/v3/projects/{project_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "project_id": { "type": "string" } },
+        "required": ["project_id"]
+      }
+    },
+    {
+      "name": "iam_security_settings_get",
+      "description": "Get Organization security settings, including the maximum allowed API-key lifetime",
+      "method": "GET",
+      "path": "/iam/v1alpha1/organizations/{organization_id}/security-settings",
+      "input_schema": {
+        "type": "object",
+        "properties": { "organization_id": { "type": "string" } },
+        "required": ["organization_id"]
+      }
+    },
+    {
+      "name": "iam_application_create",
+      "description": "Create a Scaleway IAM application for machine credentials",
+      "method": "POST",
+      "path": "/iam/v1alpha1/applications",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "organization_id": { "type": "string" }
+        },
+        "required": ["name", "organization_id"]
+      }
+    },
+    {
+      "name": "iam_application_delete",
+      "description": "Delete a Scaleway IAM application",
+      "method": "DELETE",
+      "path": "/iam/v1alpha1/applications/{application_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "application_id": { "type": "string" } },
+        "required": ["application_id"]
+      }
+    },
+    {
+      "name": "iam_policy_create",
+      "description": "Create a Scaleway IAM policy with project- or Organization-scoped rules",
+      "method": "POST",
+      "path": "/iam/v1alpha1/policies",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "organization_id": { "type": "string" },
+          "application_id": { "type": "string" },
+          "rules": { "type": "array", "items": { "type": "object" } },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["name", "organization_id", "application_id", "rules"]
+      }
+    },
+    {
+      "name": "iam_policy_delete",
+      "description": "Delete a Scaleway IAM policy",
+      "method": "DELETE",
+      "path": "/iam/v1alpha1/policies/{policy_id}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "policy_id": { "type": "string" } },
+        "required": ["policy_id"]
+      }
+    },
+    {
+      "name": "iam_api_key_create",
+      "description": "Create an API key. The secret_key is returned only by this call.",
+      "method": "POST",
+      "path": "/iam/v1alpha1/api-keys",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "application_id": { "type": "string" },
+          "user_id": { "type": "string" },
+          "default_project_id": { "type": "string" },
+          "description": { "type": "string" },
+          "expires_at": { "type": "string" }
+        },
+        "required": ["application_id", "default_project_id"]
+      }
+    },
+    {
+      "name": "iam_api_key_delete",
+      "description": "Revoke a Scaleway API key",
+      "method": "DELETE",
+      "path": "/iam/v1alpha1/api-keys/{access_key}",
+      "input_schema": {
+        "type": "object",
+        "properties": { "access_key": { "type": "string" } },
+        "required": ["access_key"]
+      }
+    },
+    {
+      "name": "object_bucket_create",
+      "description": "Create an empty Scaleway Object Storage bucket using the core Scaleway connection credentials",
+      "method": "PUT",
+      "path": "https://{bucket}.s3.{region}.scw.cloud/",
+      "omit_auth_headers": ["X-Auth-Token"],
+      "body_none": true,
+      "signing": {
+        "signers": [{
+          "name": "aws_sigv4",
+          "params": {
+            "service": "s3",
+            "region_input": "region",
+            "access_key_field": "access_key",
+            "secret_key_field": "token"
+          }
+        }]
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": { "type": "string" },
+          "region": { "type": "string", "enum": ["fr-par", "nl-ams", "pl-waw", "it-mil"], "default": "fr-par" }
+        },
+        "required": ["bucket", "region"]
+      }
+    },
+    {
+      "name": "object_bucket_delete",
+      "description": "Delete an empty Scaleway Object Storage bucket using the core Scaleway connection credentials",
+      "method": "DELETE",
+      "path": "https://{bucket}.s3.{region}.scw.cloud/",
+      "omit_auth_headers": ["X-Auth-Token"],
+      "signing": {
+        "signers": [{
+          "name": "aws_sigv4",
+          "params": {
+            "service": "s3",
+            "region_input": "region",
+            "access_key_field": "access_key",
+            "secret_key_field": "token"
+          }
+        }]
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bucket": { "type": "string" },
+          "region": { "type": "string", "enum": ["fr-par", "nl-ams", "pl-waw", "it-mil"], "default": "fr-par" }
+        },
+        "required": ["bucket", "region"]
+      }
     }
   ]
 }
