@@ -27,7 +27,7 @@ describe("Instances provider integration contracts", () => {
       "aws-ec2": ["create_instance", "list_instances", "terminate_instance", "list_instance_types", "list_availability_zones", "list_images"],
       scaleway: [
         "api_key_get", "server_create", "server_get", "server_delete", "server_action", "server_set_cloud_init", "project_list", "server_types_list", "image_list",
-        "instance_volume_get",
+        "instance_volume_get", "instance_volume_delete",
         "dedibox_offers_list", "dedibox_server_create", "dedibox_service_get", "dedibox_service_delete", "dedibox_server_get", "dedibox_server_delete",
         "dedibox_os_list", "dedibox_server_install", "dedibox_install_get", "dedibox_server_reboot",
         "apple_products_list", "apple_server_types_list", "apple_os_list", "apple_servers_list", "apple_server_get", "apple_server_create",
@@ -74,14 +74,18 @@ describe("Instances provider integration contracts", () => {
       const credentials = { fields: { token: "secret" } };
       await executeTool({
         app: app("scaleway"), tool: tool("scaleway", "server_create"), credentials,
-        input: { zone: "fr-par-1", name: "vm-1", commercial_type: "POP2-HC-2C-4G", image: "image-1", volumes: { "0": { size: 80_000_000_000, volume_type: "sbs_volume", boot: true } } },
+        input: { zone: "fr-par-1", name: "vm-1", commercial_type: "POP2-HC-2C-4G", image: "image-1", volumes: { "0": { size: 80_000_000_000, volume_type: "sbs_volume" } } },
       });
       await executeTool({
         app: app("scaleway"), tool: tool("scaleway", "server_create"), credentials,
-        input: { zone: "fr-par-1", name: "vm-local", commercial_type: "DEV1-L", image: "image-local", volumes: { "0": { size: 80_000_000_000, volume_type: "l_ssd", boot: true } } },
+        input: { zone: "fr-par-1", name: "vm-local", commercial_type: "DEV1-L", image: "image-local", volumes: { "0": { size: 40_000_000_000, volume_type: "l_ssd" } } },
       });
       await executeTool({
         app: app("scaleway"), tool: tool("scaleway", "instance_volume_get"), credentials,
+        input: { zone: "fr-par-1", volume_id: "local-volume-1" },
+      });
+      await executeTool({
+        app: app("scaleway"), tool: tool("scaleway", "instance_volume_delete"), credentials,
         input: { zone: "fr-par-1", volume_id: "local-volume-1" },
       });
       await executeTool({
@@ -94,16 +98,18 @@ describe("Instances provider integration contracts", () => {
       });
 
       expect(requests[0]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers");
-      expect(JSON.parse(requests[0]?.body || "{}").volumes).toEqual({ "0": { size: 80_000_000_000, volume_type: "sbs_volume", boot: true } });
+      expect(JSON.parse(requests[0]?.body || "{}").volumes).toEqual({ "0": { size: 80_000_000_000, volume_type: "sbs_volume" } });
       expect(requests[1]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers");
-      expect(JSON.parse(requests[1]?.body || "{}").volumes).toEqual({ "0": { size: 80_000_000_000, volume_type: "l_ssd", boot: true } });
+      expect(JSON.parse(requests[1]?.body || "{}").volumes).toEqual({ "0": { size: 40_000_000_000, volume_type: "l_ssd" } });
       expect(requests[2]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/local-volume-1");
       expect(requests[2]?.method).toBe("GET");
-      expect(requests[3]?.url).toBe("https://api.scaleway.com/block/v1/zones/fr-par-1/volumes");
-      expect(requests[3]?.method).toBe("POST");
-      expect(JSON.parse(requests[3]?.body || "{}")).toMatchObject({ project_id: "project-1", perf_iops: 5000, from_empty: { size: 80_000_000_000 } });
-      expect(requests[4]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/server-1/attach-volume");
-      expect(JSON.parse(requests[4]?.body || "{}")).toEqual({ volume_id: "volume-1", volume_type: "sbs_volume" });
+      expect(requests[3]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/local-volume-1");
+      expect(requests[3]?.method).toBe("DELETE");
+      expect(requests[4]?.url).toBe("https://api.scaleway.com/block/v1/zones/fr-par-1/volumes");
+      expect(requests[4]?.method).toBe("POST");
+      expect(JSON.parse(requests[4]?.body || "{}")).toMatchObject({ project_id: "project-1", perf_iops: 5000, from_empty: { size: 80_000_000_000 } });
+      expect(requests[5]?.url).toBe("https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/server-1/attach-volume");
+      expect(JSON.parse(requests[5]?.body || "{}")).toEqual({ volume_id: "volume-1", volume_type: "sbs_volume" });
     } finally {
       globalThis.fetch = originalFetch;
     }
