@@ -53,6 +53,39 @@ const draftTool: AppToolTemplate = {
 };
 
 describe("request_transform", () => {
+  test("json_wrap can emit a provider-required root array", async () => {
+    let body: unknown;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      body = JSON.parse(String(init?.body));
+      return Response.json({ ok: true });
+    };
+    try {
+      await executeTool({
+        app,
+        tool: {
+          name: "task_post",
+          description: "Post one task",
+          method: "POST",
+          path: "/tasks",
+          request_transform: {
+            type: "json_wrap",
+            fields: ["keyword", "location_code"],
+            constants: { source: "catalog" },
+            as_array: true,
+          },
+          input_schema: { type: "object", properties: {} },
+        },
+        credentials: { fields: { token: "test" } },
+        input: { keyword: "robot vacuum", location_code: 2840, ignored: true },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(body).toEqual([{ source: "catalog", keyword: "robot vacuum", location_code: 2840 }]);
+  });
+
   test("per-tool SigV4 can reuse differently named provider credentials with an empty body", async () => {
     let captured: { url: string; headers: Record<string, string>; body: BodyInit | null | undefined } | null = null;
     const originalFetch = globalThis.fetch;

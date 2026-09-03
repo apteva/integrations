@@ -61,4 +61,38 @@ describe("DataForSEO integration catalog", () => {
     ]);
     expect(calls[1].url).toBe("https://api.dataforseo.com/v3/serp/google/organic/task_get/advanced/task%2F123");
   });
+
+  test("turns easy Amazon tool inputs into DataForSEO task arrays", async () => {
+    const app = getAppTemplate("dataforseo");
+    if (!app) throw new Error("Missing DataForSEO integration catalog");
+    const tool = app.tools.find((candidate) => candidate.name === "amazon_labs_ranked_keywords");
+    if (!tool) throw new Error("Missing Amazon ranked-keywords tool");
+
+    let call: { url: string; init?: RequestInit } | undefined;
+    globalThis.fetch = (async (input, init) => {
+      call = { url: String(input), init };
+      return Response.json({ status_code: 20000, tasks: [] });
+    }) as typeof fetch;
+
+    await executeTool({
+      app,
+      tool,
+      credentials: { fields: { login: "user@example.com", password: "secret" } },
+      input: {
+        asin: "B0EXAMPLE1",
+        location_code: 2840,
+        language_code: "en",
+        limit: 25,
+      },
+    });
+
+    expect(tool.body_root_param).toBeUndefined();
+    expect(tool.request_transform).toMatchObject({ type: "json_wrap", as_array: true });
+    expect(JSON.parse(String(call?.init?.body))).toEqual([{
+      asin: "B0EXAMPLE1",
+      location_code: 2840,
+      language_code: "en",
+      limit: 25,
+    }]);
+  });
 });

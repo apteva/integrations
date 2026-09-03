@@ -4,19 +4,30 @@
   "description": "Pinterest API v5 for organic accounts, boards, sections, Pins, media uploads, and analytics",
   "logo": "https://www.google.com/s2/favicons?domain=pinterest.com&sz=128",
   "categories": ["social", "content", "marketing", "visual"],
-  "base_url": "https://api.pinterest.com/v5",
+  "base_url": "https://{{credential.api_host}}/v5",
   "auth": {
     "types": ["oauth2", "bearer"],
     "headers": { "Authorization": "Bearer {{token}}" },
     "credential_fields": [
-      { "name": "token", "label": "access_token", "type": "password" },
-      { "name": "refresh_token", "label": "refresh_token", "type": "password" },
-      { "name": "expires_in", "label": "expires_in" },
-      { "name": "scope", "label": "scope" }
+      { "name": "token", "label": "access_token", "type": "password", "source": "oauth", "hidden": true },
+      { "name": "refresh_token", "label": "refresh_token", "type": "password", "source": "oauth", "hidden": true },
+      { "name": "expires_in", "label": "expires_in", "source": "oauth", "hidden": true },
+      { "name": "scope", "label": "scope", "source": "oauth", "hidden": true },
+      {
+        "name": "api_host",
+        "label": "API environment",
+        "description": "Use Production for approved Pinterest apps. Pinterest Trial apps must use Sandbox; sandbox boards and Pins are separate from production data.",
+        "required": true,
+        "type": "select",
+        "options": ["api.pinterest.com", "api-sandbox.pinterest.com"],
+        "default": "api.pinterest.com",
+        "source": "user",
+        "exposure": "public"
+      }
     ],
     "oauth2": {
       "authorize_url": "https://www.pinterest.com/oauth/",
-      "token_url": "https://api.pinterest.com/v5/oauth/token",
+      "token_url": "https://{{credential.api_host}}/v5/oauth/token",
       "scopes": [
         "user_accounts:read",
         "boards:read", "boards:write", "pins:read", "pins:write",
@@ -29,6 +40,7 @@
       "setup_steps": [
         "Create or select a Pinterest developer app with API access.",
         "Add the Apteva callback URL shown here to the app's redirect URIs.",
+        "Choose Production or Sandbox before authorizing; Pinterest issues environment-specific tokens and keeps their boards and Pins separate.",
         "Copy the Pinterest App ID and App secret into this connection."
       ]
     }
@@ -50,7 +62,8 @@
       "input_schema": { "type": "object", "properties": {
         "ad_account_id": { "type": "string" }, "name": { "type": "string", "maxLength": 180 },
         "description": { "type": "string", "maxLength": 500 }, "privacy": { "type": "string", "enum": ["PUBLIC", "SECRET"], "default": "PUBLIC" }
-      }, "required": ["name"] }
+      }, "required": ["name"] },
+      "mock_response": { "id": "800000000000000002", "name": "Launch ideas", "description": "Campaign concepts", "privacy": "PUBLIC", "pin_count": 0, "follower_count": 0, "created_at": "2026-09-03T00:00:00Z" }
     },
     {
       "name": "get_board", "description": "Get a Pinterest board", "method": "GET", "path": "/boards/{board_id}", "query_params": ["ad_account_id"],
@@ -101,7 +114,8 @@
     {
       "name": "list_pins", "description": "List Pins created by the authenticated Pinterest account", "method": "GET", "path": "/pins",
       "query_params": ["ad_account_id", "bookmark", "page_size", "pin_filter", "include_protected_pins", "pin_type", "creative_types"],
-      "input_schema": { "type": "object", "properties": { "ad_account_id": { "type": "string" }, "bookmark": { "type": "string" }, "page_size": { "type": "integer", "minimum": 1, "maximum": 250, "default": 25 }, "pin_filter": { "type": "string" }, "include_protected_pins": { "type": "boolean" }, "pin_type": { "type": "string" }, "creative_types": { "type": "array", "items": { "type": "string" } } } }
+      "input_schema": { "type": "object", "properties": { "ad_account_id": { "type": "string" }, "bookmark": { "type": "string" }, "page_size": { "type": "integer", "minimum": 1, "maximum": 250, "default": 25 }, "pin_filter": { "type": "string" }, "include_protected_pins": { "type": "boolean" }, "pin_type": { "type": "string" }, "creative_types": { "type": "array", "items": { "type": "string" } } } },
+      "mock_response": { "items": [{ "id": "900000000000000099", "created_at": "2026-05-22T12:00:00Z", "link": "https://example.com/article", "title": "A great idea", "description": "Pin description", "board_id": "800000000000000001", "media": { "media_type": "image" } }], "bookmark": null }
     },
     {
       "name": "get_pin", "description": "Get a Pinterest Pin", "method": "GET", "path": "/pins/{pin_id}", "query_params": ["ad_account_id", "pin_metrics"],

@@ -14,6 +14,7 @@ export interface OAuthCallbackOptions {
   clientSecret: string;
   redirectUri: string;
   code: string;
+  credentials?: ConnectionCredentials;
 }
 
 export interface OAuthRefreshOptions {
@@ -21,6 +22,7 @@ export interface OAuthRefreshOptions {
   clientId: string;
   clientSecret: string;
   refreshToken: string;
+  credentials?: ConnectionCredentials;
 }
 
 export interface OAuthTokenResult {
@@ -29,6 +31,20 @@ export interface OAuthTokenResult {
   expires_in?: number;
   token_type?: string;
   scope?: string;
+}
+
+function oauthTokenUrl(
+  app: AppTemplate,
+  credentials?: ConnectionCredentials,
+): string {
+  const fields: Record<string, string> = { ...(credentials?.fields || {}) };
+  for (const field of app.auth.credential_fields || []) {
+    if (!fields[field.name] && field.default) fields[field.name] = field.default;
+  }
+  return app.auth.oauth2!.token_url.replace(
+    /\{\{(?:credential\.)?([^}]+)\}\}/g,
+    (_match, key: string) => fields[key] || "",
+  );
 }
 
 /**
@@ -88,7 +104,7 @@ export async function exchangeCode(
     client_secret: opts.clientSecret,
   });
 
-  const response = await fetch(oauth.token_url, {
+  const response = await fetch(oauthTokenUrl(opts.app, opts.credentials), {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -138,7 +154,7 @@ export async function refreshAccessToken(
     client_secret: opts.clientSecret,
   });
 
-  const response = await fetch(oauth.token_url, {
+  const response = await fetch(oauthTokenUrl(opts.app, opts.credentials), {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",

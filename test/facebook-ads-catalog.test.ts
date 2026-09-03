@@ -18,6 +18,7 @@ function facebookAdsTool(name: string): AppToolTemplate {
 describe("Facebook Ads integration catalog", () => {
   test("uses Meta Graph API resource edges instead of legacy pseudo-routes", () => {
     const expectedRoutes: Array<[string, string, string]> = [
+      ["ad_library_search", "GET", "/ads_archive"],
       ["account_list", "GET", "/me/adaccounts"],
       ["page_list", "GET", "/me/accounts"],
       ["permission_list", "GET", "/me/permissions"],
@@ -97,6 +98,56 @@ describe("Facebook Ads integration catalog", () => {
     });
   });
 
+  test("searches the Meta Ad Library with JSON-array filters intact", async () => {
+    let captured: { url: string; init: RequestInit } | undefined;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init: init || {} };
+      return new Response(JSON.stringify({ data: [], paging: {} }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    try {
+      await executeTool({
+        app: facebookAds(),
+        tool: facebookAdsTool("ad_library_search"),
+        credentials: { access_token: "meta-token" },
+        input: {
+          ad_reached_countries: '["FR","DE"]',
+          search_terms: "solar panels",
+          search_type: "KEYWORD_EXACT_PHRASE",
+          ad_active_status: "ACTIVE",
+          ad_type: "ALL",
+          publisher_platforms: '["FACEBOOK","INSTAGRAM"]',
+          media_type: "VIDEO",
+          fields: "id,page_id,page_name,ad_snapshot_url",
+          limit: 25,
+          after: "next-cursor",
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const url = new URL(captured?.url || "https://invalid.test");
+    expect(url.origin + url.pathname).toBe(
+      "https://graph.facebook.com/v25.0/ads_archive",
+    );
+    expect(url.searchParams.get("ad_reached_countries")).toBe('["FR","DE"]');
+    expect(url.searchParams.get("publisher_platforms")).toBe(
+      '["FACEBOOK","INSTAGRAM"]',
+    );
+    expect(url.searchParams.get("search_terms")).toBe("solar panels");
+    expect(url.searchParams.get("search_type")).toBe("KEYWORD_EXACT_PHRASE");
+    expect(url.searchParams.get("after")).toBe("next-cursor");
+    expect(captured?.init.method).toBe("GET");
+    expect(captured?.init.headers).toMatchObject({
+      Authorization: "Bearer meta-token",
+    });
+  });
+
   test("requests the permissions needed by ads and lead workflows", () => {
     expect(facebookAds().auth.oauth2?.scopes).toEqual(
       expect.arrayContaining([
@@ -113,6 +164,19 @@ describe("Facebook Ads integration catalog", () => {
   });
 
   test("uses fields and write parameters accepted by current Marketing API", () => {
+    const adLibrarySearch = facebookAdsTool("ad_library_search");
+    expect(adLibrarySearch.input_schema.required).toContain("ad_reached_countries");
+    expect(adLibrarySearch.input_schema.properties?.search_type).toMatchObject({
+      enum: ["KEYWORD_UNORDERED", "KEYWORD_EXACT_PHRASE"],
+    });
+    expect(adLibrarySearch.input_schema.properties?.ad_type).toMatchObject({
+      enum: expect.arrayContaining([
+        "ALL",
+        "FINANCIAL_PRODUCTS_AND_SERVICES_ADS",
+        "POLITICAL_AND_ISSUE_ADS",
+      ]),
+    });
+
     const campaignCreate = facebookAdsTool("campaign_create");
     expect(campaignCreate.input_schema.properties?.is_adset_budget_sharing_enabled).toMatchObject({
       type: "boolean",

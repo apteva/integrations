@@ -1814,12 +1814,15 @@ function applyRequestTransform(
       return body;
     }
     case "json_wrap": {
-      const selected: Record<string, unknown> = {};
+      const selected: Record<string, unknown> = { ...(transform.constants || {}) };
       for (const field of transform.fields) {
         const value = input[field];
         if (value !== undefined && value !== null) {
           selected[field] = value;
         }
+      }
+      if (!transform.target && transform.as_array) {
+        return [selected];
       }
       const body: Record<string, unknown> = {};
       if (transform.target) {

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { getAppTemplate } from "../src/apps/index.js";
 import { executeTool } from "../src/http-executor.js";
+import { exchangeCode } from "../src/oauth.js";
 import type { AppTemplate, AppToolTemplate } from "../src/types.js";
 
 const pinterest = getAppTemplate("pinterest") as AppTemplate;
@@ -20,7 +21,7 @@ describe("Pinterest organic catalog", () => {
   test("declares a complete OAuth flow and the scopes used by its tools", () => {
     expect(pinterest.auth.oauth2).toMatchObject({
       authorize_url: "https://www.pinterest.com/oauth/",
-      token_url: "https://api.pinterest.com/v5/oauth/token",
+      token_url: "https://{{credential.api_host}}/v5/oauth/token",
       client_id_required: true,
       pkce: false,
       token_auth_basic_only: true,
@@ -33,6 +34,28 @@ describe("Pinterest organic catalog", () => {
       "pins:write",
     ]));
     expect(pinterest.health_check).toEqual({ tool: "get_user_account", input: {} });
+  });
+
+  test("supports explicit production and sandbox API environments", () => {
+    expect(pinterest.base_url).toBe("https://{{credential.api_host}}/v5");
+
+    const environment = pinterest.auth.credential_fields.find(
+      (field) => field.name === "api_host",
+    );
+    expect(environment).toMatchObject({
+      type: "select",
+      default: "api.pinterest.com",
+      source: "user",
+      exposure: "public",
+      options: ["api.pinterest.com", "api-sandbox.pinterest.com"],
+    });
+
+    for (const name of ["token", "refresh_token", "expires_in", "scope"]) {
+      const field = pinterest.auth.credential_fields.find(
+        (candidate) => candidate.name === name,
+      );
+      expect(field).toMatchObject({ source: "oauth", hidden: true });
+    }
   });
 
   test("exposes the organic lifecycle used by Social", () => {
@@ -78,6 +101,53 @@ describe("Pinterest organic catalog", () => {
       description: "A full description",
       media_source: { source_type: "image_url", url: "https://media.example/image.jpg" },
     });
+  });
+
+  test("routes Pin calls to the explicitly selected sandbox", async () => {
+    let capturedURL = "";
+    globalThis.fetch = async (url) => {
+      capturedURL = String(url);
+      return new Response(JSON.stringify({ items: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    await executeTool({
+      app: pinterest,
+      tool: tool("list_boards"),
+      credentials: {
+        fields: {
+          access_token: "pinterest-token",
+          api_host: "api-sandbox.pinterest.com",
+        },
+      },
+      input: {},
+    });
+
+    expect(capturedURL).toBe("https://api-sandbox.pinterest.com/v5/boards");
+  });
+
+  test("exchanges sandbox OAuth codes at the sandbox token endpoint", async () => {
+    let capturedURL = "";
+    globalThis.fetch = async (url) => {
+      capturedURL = String(url);
+      return new Response(JSON.stringify({ access_token: "sandbox-token" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    await exchangeCode({
+      app: pinterest,
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      redirectUri: "https://example.test/callback",
+      code: "oauth-code",
+      credentials: { fields: { api_host: "api-sandbox.pinterest.com" } },
+    });
+
+    expect(capturedURL).toBe("https://api-sandbox.pinterest.com/v5/oauth/token");
   });
 
   test("keeps update and analytics parameters out of the wrong transport", async () => {

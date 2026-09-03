@@ -112,7 +112,7 @@ export class LocalIntegrationProvider {
   async handleOAuthCallback(
     appSlug: string,
     code: string,
-    opts: { clientId: string; clientSecret: string; connectionName?: string; projectId?: string | null }
+    opts: { clientId: string; clientSecret: string; connectionName?: string; projectId?: string | null; credentials?: ConnectionCredentials }
   ): Promise<Connection> {
     const app = getAppTemplate(appSlug);
     if (!app) throw new Error(`Unknown app: ${appSlug}`);
@@ -123,6 +123,7 @@ export class LocalIntegrationProvider {
       clientSecret: opts.clientSecret,
       redirectUri: this.oauthRedirectUri,
       code,
+      credentials: opts.credentials,
     });
 
     const credentials = tokensToCredentials(tokens, opts.clientId, opts.clientSecret) as ConnectionCredentials;
@@ -154,6 +155,7 @@ export class LocalIntegrationProvider {
         clientId: conn.credentials.client_id || "",
         clientSecret: conn.credentials.client_secret || "",
         refreshToken: conn.credentials.refresh_token,
+        credentials: conn.credentials,
       });
 
       const newCreds = tokensToCredentials(tokens);

@@ -468,7 +468,9 @@ export interface CredentialField {
   description?: string; // Help text
   required?: boolean; // Default true
   default?: string; // Applied when the user leaves an optional field empty
-  type?: "password" | "text" | "multiline_password"; // Default "password"
+  type?: "password" | "text" | "multiline_password" | "select"; // Default "password"
+  /** Closed choices for type=select. */
+  options?: string[];
   /** Who supplies the value. OAuth-generated fields are never rendered as
    * operator inputs; user fields remain visible during OAuth setup. */
   source?: "user" | "oauth" | "generated";
@@ -713,7 +715,9 @@ export interface JsonWrapRequestTransform {
   /** Dot path to place selected fields under. Empty/omitted means top-level. */
   target?: string;
   fields: string[];
-  /** Wrap selected fields in a single-element array at target. Useful for APIs like Ghost Admin. */
+  /** Constant fields merged into the selected body before agent inputs. */
+  constants?: Record<string, unknown>;
+  /** Wrap selected fields in a single-element array, either at target or as the root body. */
   as_array?: boolean;
   include_fields?: Record<string, string>;
 }
