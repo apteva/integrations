@@ -4,6 +4,7 @@ import type {
   Connection,
   ConnectionCredentials,
   HeaderTransform,
+  ResponseError,
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
@@ -26,9 +27,15 @@ export interface ExecuteToolOptions {
   maxBinaryBytes?: number;
   /** Internal retry guard for short-lived credential exchanges. */
   credentialTokenRetried?: boolean;
+  /** Internal count for bounded retries declared by tool.rate_limit. */
+  rateLimitRetries?: number;
 }
 
 const DEFAULT_MAX_BINARY_BYTES = 25 * 1024 * 1024;
+const MAX_RATE_LIMIT_RETRIES = 3;
+const MAX_RATE_LIMIT_INTERVAL_MS = 60_000;
+const toolRateLimitQueues = new Map<string, Promise<void>>();
+const toolRateLimitLastStart = new Map<string, number>();
 
 export interface ExecuteToolResult {
   success: boolean;
@@ -56,6 +63,7 @@ export async function executeTool(
     timeout = Math.min(tool.timeout_ms ?? 30000, 600000),
     maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
     credentialTokenRetried = false,
+    rateLimitRetries = 0,
   } = opts;
 
   applyCredentialDefaults(app, credentials);
@@ -445,6 +453,7 @@ export async function executeTool(
 
   // 5. Execute the request
   try {
+    await waitForToolRateLimit(app, tool, credentials);
     applyIntegrationTransport(app, credentials, fetchOpts);
     const response = await fetch(finalUrl, fetchOpts);
     const responseHeaders: Record<string, string> = {};
@@ -455,7 +464,7 @@ export async function executeTool(
     let data: unknown;
     const ct = response.headers.get("content-type") || "";
     let isBinary = false;
-    if (ct.includes("application/json")) {
+    if (isJsonContentType(ct)) {
       // Parse JSON via text() so a malformed body doesn't collapse into
       // the network-error catch (which would lose response.status). If
       // the server sent us 500 with a broken error page labelled as
@@ -523,6 +532,32 @@ export async function executeTool(
       data = await response.text();
     }
 
+    const rateLimitMatch = matchesToolRateLimitRetry(tool, response.status, data);
+    if (rateLimitMatch) {
+      const maxRetries = Math.min(
+        Math.max(0, tool.rate_limit?.max_retries ?? 0),
+        MAX_RATE_LIMIT_RETRIES,
+      );
+      if (rateLimitRetries < maxRetries) {
+        return executeTool({
+          ...opts,
+          credentialTokenRetried,
+          rateLimitRetries: rateLimitRetries + 1,
+        });
+      }
+      // CJ and some other APIs report throttling as HTTP 200 with a
+      // provider-level error code. Never expose that envelope as success
+      // merely because the transport status was successful.
+      if (response.ok) {
+        return {
+          success: false,
+          status: response.status,
+          data,
+          headers: responseHeaders,
+        };
+      }
+    }
+
     // Response shaping is only valid for successful provider payloads.
     // Applying a success transform to an error object can erase the actual
     // error (for example Gmail's NOT_FOUND became an empty thread).
@@ -543,33 +578,48 @@ export async function executeTool(
       };
     }
 
+    // GraphQL and similar protocols can carry operation failures in a
+    // successful HTTP response. Detect those before response_path removes the
+    // error fields from the envelope.
+    if (tool.response_error && !isBinary) {
+      const inspected = inspectResponseError(tool.response_error, data);
+      if (inspected.contractDetail) {
+        return responseContractFailure(
+          response.status,
+          responseHeaders,
+          inspected.contractDetail,
+        );
+      }
+      if (inspected.errorData) {
+        return {
+          success: false,
+          status: response.status,
+          data: inspected.errorData,
+          headers: responseHeaders,
+        };
+      }
+    }
+
     // Apply response_path extraction if defined — but skip for binary
     // envelopes. extractPath would walk into { _binary, base64, ... }
     // looking for the template's path (e.g. "data") and silently return
     // undefined, destroying the payload.
-    if (tool.response_path && !isBinary) {
+    const responsePath = tool.response_path?.trim();
+    if (responsePath && !isBinary) {
       if (!isPlainObject(data)) {
-        return {
-          success: false,
-          status: response.status,
-          data: {
-            error: "response contract violation",
-            detail: `Expected a JSON object containing response_path ${tool.response_path}`,
-          },
-          headers: responseHeaders,
-        };
+        return responseContractFailure(
+          response.status,
+          responseHeaders,
+          `Expected a JSON object containing response_path ${responsePath}`,
+        );
       }
-      const extracted = extractPath(data, tool.response_path);
+      const extracted = extractPath(data, responsePath);
       if (extracted === undefined || extracted === null) {
-        return {
-          success: false,
-          status: response.status,
-          data: {
-            error: "response contract violation",
-            detail: `Missing response_path ${tool.response_path}`,
-          },
-          headers: responseHeaders,
-        };
+        return responseContractFailure(
+          response.status,
+          responseHeaders,
+          `Missing response_path ${responsePath}`,
+        );
       }
       data = extracted;
     }
@@ -1124,14 +1174,16 @@ function normalizeCredentials(
   credentials: ConnectionCredentials
 ): Record<string, string> {
   // Flatten the structured credentials into a plain map. The legacy
-  // structured fields (access_token, api_key, username, password) live at
-  // the top level; everything else is in `fields`.
+  // structured fields usually live at the top level, while callers may put
+  // arbitrary catalog credential fields in `fields`. Local server connection
+  // blobs also store catalog-defined fields such as `token` at the top level,
+  // so preserve every top-level string instead of silently dropping them.
   const out: Record<string, string> = {};
-  if (credentials.access_token) out.access_token = credentials.access_token;
-  if (credentials.bearer_token) out.bearer_token = credentials.bearer_token;
-  if (credentials.api_key) out.api_key = credentials.api_key;
-  if (credentials.username) out.username = credentials.username;
-  if (credentials.password) out.password = credentials.password;
+  for (const [key, value] of Object.entries(credentials)) {
+    if (key !== "fields" && typeof value === "string" && value) {
+      out[key] = value;
+    }
+  }
   if (credentials.fields) {
     for (const [k, v] of Object.entries(credentials.fields)) {
       if (v) out[k] = String(v);
@@ -1452,6 +1504,74 @@ function buildQueryString(params: Record<string, unknown>): string {
     }
   }
   return parts.join("&");
+}
+
+function toolRateLimitKey(
+  app: AppTemplate,
+  tool: AppToolTemplate,
+  credentials: ConnectionCredentials,
+): string {
+  const normalized = normalizeCredentials(credentials);
+  const identity =
+    normalized.api_key ||
+    normalized.access_token ||
+    normalized.token ||
+    normalized.username ||
+    "anonymous";
+  const credentialHash = createHash("sha256")
+    .update(identity)
+    .digest("hex")
+    .slice(0, 16);
+  return `${app.slug}:${tool.name}:${credentialHash}`;
+}
+
+async function waitForToolRateLimit(
+  app: AppTemplate,
+  tool: AppToolTemplate,
+  credentials: ConnectionCredentials,
+): Promise<void> {
+  const configured = Number(tool.rate_limit?.min_interval_ms || 0);
+  const interval = Math.min(
+    Math.max(0, Number.isFinite(configured) ? configured : 0),
+    MAX_RATE_LIMIT_INTERVAL_MS,
+  );
+  if (interval <= 0) return;
+
+  const key = toolRateLimitKey(app, tool, credentials);
+  const previous = toolRateLimitQueues.get(key) || Promise.resolve();
+  const queued = previous.catch(() => undefined).then(async () => {
+    const delay = Math.max(
+      0,
+      (toolRateLimitLastStart.get(key) || 0) + interval - Date.now(),
+    );
+    if (delay > 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+    }
+    toolRateLimitLastStart.set(key, Date.now());
+  });
+  toolRateLimitQueues.set(key, queued);
+  try {
+    await queued;
+  } finally {
+    if (toolRateLimitQueues.get(key) === queued) {
+      toolRateLimitQueues.delete(key);
+    }
+  }
+}
+
+function matchesToolRateLimitRetry(
+  tool: AppToolTemplate,
+  status: number,
+  data: unknown,
+): boolean {
+  const policy = tool.rate_limit;
+  if (!policy) return false;
+  if ((policy.retry_statuses || []).includes(status)) return true;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const code = (data as Record<string, unknown>).code;
+  return (policy.retry_error_codes || []).some(
+    (candidate) => String(candidate) === String(code),
+  );
 }
 
 function buildFormEncodedBody(params: Record<string, unknown>): string {
@@ -2124,6 +2244,103 @@ function isBinaryContentType(contentType: string): boolean {
   // produced false positives on headers that happened to mention a MIME
   // substring in a parameter value.
   return BINARY_MIME_PREFIXES.some((prefix) => ct.startsWith(prefix));
+}
+
+function isJsonContentType(contentType: string): boolean {
+  const mime = contentType.toLowerCase().split(";", 1)[0].trim();
+  return mime === "application/json" || mime.endsWith("+json");
+}
+
+function responseContractFailure(
+  status: number,
+  headers: Record<string, string>,
+  detail: string,
+): ExecuteToolResult {
+  return {
+    success: false,
+    status,
+    data: { error: "response contract violation", detail },
+    headers,
+  };
+}
+
+function inspectResponseError(
+  definition: ResponseError,
+  data: unknown,
+): { errorData?: Record<string, unknown>; contractDetail?: string } {
+  const responseErrorType = String(definition.type).trim().toLowerCase();
+  if (!isPlainObject(data)) {
+    return { contractDetail: `Expected a JSON object for response_error type ${responseErrorType}` };
+  }
+
+  if (definition.type === "json_status") {
+    const codePath = String(definition.code_path || "").trim();
+    const successCodes = definition.success_codes || [];
+    if (!codePath || successCodes.length === 0) {
+      return { contractDetail: "json_status response_error requires code_path and success_codes" };
+    }
+    const code = getPath(data, codePath);
+    if (code === undefined || code === null) {
+      return { contractDetail: `Expected response_error code path ${codePath}` };
+    }
+    const failedFlagPath = (definition.failure_flag_paths || []).find(
+      (path) => getPath(data, path) === false,
+    );
+    const successfulCode = successCodes.some(
+      (candidate) => String(candidate) === String(code),
+    );
+    if (successfulCode && !failedFlagPath) return {};
+
+    const messageValue = definition.message_path
+      ? getPath(data, definition.message_path)
+      : undefined;
+    return {
+      errorData: {
+        error: "upstream_api_error",
+        message:
+          typeof messageValue === "string" && messageValue.trim()
+            ? messageValue
+            : "Upstream API reported an unsuccessful response",
+        code,
+        ...(failedFlagPath ? { failed_flag: failedFlagPath } : {}),
+        provider_error: data,
+      },
+    };
+  }
+
+  if (responseErrorType !== "graphql") {
+    return { contractDetail: `Unsupported response_error type ${String(definition.type).trim()}` };
+  }
+
+  const paths = definition.paths?.length ? definition.paths : ["errors"];
+  const details: unknown[] = [];
+  for (const rawPath of paths) {
+    const path = rawPath.trim();
+    if (!path) continue;
+    const value = getPath(data, path);
+    if (value === undefined || value === null) continue;
+    if (!Array.isArray(value)) {
+      return { contractDetail: `Expected response_error path ${path} to contain an array` };
+    }
+    details.push(...value);
+  }
+  if (details.length === 0) return {};
+
+  const first = details[0];
+  let message = "GraphQL request failed";
+  if (isPlainObject(first) && typeof first.message === "string" && first.message.trim()) {
+    message = first.message;
+  } else if (typeof first === "string" && first.trim()) {
+    message = first;
+  }
+  return {
+    errorData: {
+      error: "upstream_graphql_error",
+      message,
+      details,
+      partial_data: data.data ?? {},
+    },
+  };
 }
 
 function extractPath(data: unknown, jsonPath: string): unknown {

@@ -594,6 +594,10 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
+  /** Optional per-credential request pacing and bounded retry policy for
+   * providers with strict QPS limits. Retries are limited to the declared
+   * HTTP statuses or provider-level numeric/string error codes. */
+  rate_limit?: ToolRateLimit;
   // Name of an input field containing a provider-returned absolute URL for
   // the next page. The executor only accepts URLs with the same scheme and
   // host as this tool's resolved base URL, then uses the URL verbatim. This
@@ -610,6 +614,9 @@ export interface AppToolTemplate {
   header_transforms?: HeaderTransform[];
   signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
+  /** Detect protocol-level failures carried inside a successful HTTP
+   * response before response_path extracts the success payload. */
+  response_error?: ResponseError;
   // Return the resolved request URL instead of issuing the HTTP call.
   // Useful for deterministic affiliate/link-wrapper URLs where the URL
   // itself is the artifact and fetching it would follow a merchant redirect.
@@ -676,6 +683,37 @@ export type RequestTransform =
   | Base64FieldRequestTransform
   | JsonWrapRequestTransform
   | JsonApiRequestTransform;
+
+export type ResponseError = GraphQLResponseError | JsonStatusResponseError;
+
+export interface GraphQLResponseError {
+  type: "graphql";
+  /** Dot paths to GraphQL errors/userErrors arrays. Defaults to ["errors"]. */
+  paths?: string[];
+}
+
+export interface JsonStatusResponseError {
+  type: "json_status";
+  /** Dot path containing the provider status code. */
+  code_path: string;
+  /** Code values considered successful. */
+  success_codes: Array<number | string>;
+  /** Optional boolean paths where an explicit false means failure. */
+  failure_flag_paths?: string[];
+  /** Dot path containing a human-readable provider error message. */
+  message_path?: string;
+}
+
+export interface ToolRateLimit {
+  /** Minimum delay between request starts for this app/tool/credential. */
+  min_interval_ms: number;
+  /** Number of retries after the initial request. Capped by executors. */
+  max_retries?: number;
+  /** HTTP statuses eligible for retry, for example 429. */
+  retry_statuses?: number[];
+  /** Values of the top-level provider response `code` eligible for retry. */
+  retry_error_codes?: Array<number | string>;
+}
 
 export type HeaderTransform = ByteRangeHeaderTransform;
 
@@ -791,6 +829,7 @@ export interface Connection {
 
 export interface ConnectionCredentials {
   api_key?: string;
+  token?: string;
   bearer_token?: string;
   username?: string;
   password?: string;
