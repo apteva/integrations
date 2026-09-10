@@ -573,7 +573,7 @@ export async function executeTool(
       return {
         success: false,
         status: response.status,
-        data: normalizeIntegrationHttpError(response.status, data),
+        data: normalizeIntegrationHttpError(response.status, omitResponseFields(data, tool.response_omit)),
         headers: responseHeaders,
       };
     }
@@ -591,6 +591,9 @@ export async function executeTool(
         );
       }
       if (inspected.errorData) {
+        // Provider errors can echo credentials too. Omit paths from the
+        // original envelope before returning its normalized wrapper.
+        omitResponseFields(data, tool.response_omit);
         return {
           success: false,
           status: response.status,
@@ -628,6 +631,8 @@ export async function executeTool(
       data = applyResponseTransform(tool.response_transform, data, input);
     }
 
+    if (!isBinary) data = omitResponseFields(data, tool.response_omit);
+
     return {
       success: response.ok,
       status: response.status,
@@ -644,6 +649,29 @@ export async function executeTool(
       headers: {},
     };
   }
+}
+
+function omitResponseFields(data: unknown, paths: string[] = []): unknown {
+  const walk = (node: unknown, parts: string[]): void => {
+    if (!parts.length || node === null || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, parts);
+      return;
+    }
+    const [head, ...rest] = parts;
+    const arrayStep = head.endsWith("[]");
+    const key = arrayStep ? head.slice(0, -2) : head;
+    if (!Object.prototype.hasOwnProperty.call(node, key)) return;
+    const record = node as Record<string, unknown>;
+    if (!rest.length && !arrayStep) delete record[key];
+    else if (arrayStep) {
+      if (Array.isArray(record[key])) {
+        for (const item of record[key]) walk(item, rest);
+      }
+    } else walk(record[key], rest);
+  };
+  for (const path of paths) walk(data, path.split("."));
+  return data;
 }
 
 function applyCredentialDefaults(

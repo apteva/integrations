@@ -74,6 +74,19 @@ export interface AppTemplate {
   runtime?: AppRuntimeConfig;
 }
 
+/** Compatibility rules belong to the integration; the server enforces them.
+ *  Patterns are anchored Go/JS-compatible regular expressions over model IDs.
+ *  Only admitted families are verified for the declared purpose (including
+ *  text output and tool calling for agent reasoning). Media input is allowed. */
+export interface RuntimeModelPolicy {
+  purpose: "agent";
+  required_methods: string[];
+  allowed_id_patterns: string[];
+  /** Ordered preferences among eligible, live models; newest numeric version
+   *  wins within a preference. Unmatched eligible models are the fallback. */
+  tier_preferences: Record<"large" | "medium" | "small", string[]>;
+}
+
 export interface AppRuntimeConfig {
   /** Which runtime pool this app feeds. Only "llm" entries land in
    *  config.json's providers[]; the others export env vars only. */
@@ -101,10 +114,9 @@ export interface AppRuntimeConfig {
   /** Optional runtime capabilities. "subscription_usage" means the
    *  provider exposes a quota endpoint the dashboard can poll. */
   capabilities?: string[];
-  /** No default model list here on purpose: model ids churn faster than
-   *  the catalog ships, so a hardcoded default goes stale and fails at
-   *  first inference. The server fetches the provider's live model list
-   *  and caches it in the connection's runtime_config instead. */
+  /** Optional purpose-specific view over the live model catalog. Omit to retain
+   *  the provider's existing behavior. Preferences never invent unavailable IDs. */
+  model_policy?: RuntimeModelPolicy;
 }
 
 export interface IntegrationURLProperty {
