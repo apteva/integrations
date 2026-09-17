@@ -1,3 +1,4 @@
+import { executeOpenBankingIO } from "./open-banking-io.js";
 import type {
   AppTemplate,
   AppToolTemplate,
@@ -8,9 +9,10 @@ import type {
   ResponseTransform,
   RequestTransform,
 } from "./types.js";
-import { createHash, createHmac, createSign, randomBytes } from "node:crypto";
+import { createHash, createHmac, createPrivateKey, createSign, randomBytes } from "node:crypto";
 import { signAwsRequest } from "./aws-sigv4.js";
 import { xmlToJson } from "./xml-to-json.js";
+import { signPaymentRequest } from "./payment-signers.js";
 import { Agent, ProxyAgent } from "undici";
 
 export interface ExecuteToolOptions {
@@ -67,6 +69,7 @@ export async function executeTool(
   } = opts;
 
   applyCredentialDefaults(app, credentials);
+  if (app.slug === "open-banking-io") return executeOpenBankingIO(tool.name, credentials, input, timeout);
   await ensureCredentialToken(app, credentials);
 
   // 1. Build the URL with path parameter + credential interpolation
@@ -278,7 +281,7 @@ export async function executeTool(
       headers["Content-Type"] = "application/json";
     }
     fetchOpts.headers = headers;
-  } else if (tool.method === "GET" || tool.method === "DELETE") {
+  } else if (tool.method === "GET" || tool.method === "DELETE" || tool.method === "OPTIONS") {
     Object.assign(allQueryParams, remainingParams);
   } else {
     // For POST with query_params auth (like Pushover), merge auth + input into body.
@@ -439,6 +442,12 @@ export async function executeTool(
     } else if (spec.name === "vonage_jwt") {
       signVonageRequest(headers, credentials);
       fetchOpts.headers = headers;
+    } else if (spec.name === "enable_banking_jwt") {
+      signEnableBankingRequest(headers, credentials);
+      fetchOpts.headers = headers;
+    } else if (spec.name === "truelayer_payments" || spec.name === "saltedge_pis") {
+      signPaymentRequest(spec.name, tool.method, finalUrl, String(fetchOpts.body || ""), headers, normalizeCredentials(credentials));
+      fetchOpts.headers = headers;
     }
   }
 
@@ -573,7 +582,7 @@ export async function executeTool(
       return {
         success: false,
         status: response.status,
-        data: normalizeIntegrationHttpError(response.status, data),
+        data: normalizeIntegrationHttpError(response.status, omitResponseFields(data, tool.response_omit)),
         headers: responseHeaders,
       };
     }
@@ -591,6 +600,9 @@ export async function executeTool(
         );
       }
       if (inspected.errorData) {
+        // Provider errors can echo credentials too. Omit paths from the
+        // original envelope before returning its normalized wrapper.
+        omitResponseFields(data, tool.response_omit);
         return {
           success: false,
           status: response.status,
@@ -628,6 +640,8 @@ export async function executeTool(
       data = applyResponseTransform(tool.response_transform, data, input);
     }
 
+    if (!isBinary) data = omitResponseFields(data, tool.response_omit);
+
     return {
       success: response.ok,
       status: response.status,
@@ -644,6 +658,29 @@ export async function executeTool(
       headers: {},
     };
   }
+}
+
+function omitResponseFields(data: unknown, paths: string[] = []): unknown {
+  const walk = (node: unknown, parts: string[]): void => {
+    if (!parts.length || node === null || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, parts);
+      return;
+    }
+    const [head, ...rest] = parts;
+    const arrayStep = head.endsWith("[]");
+    const key = arrayStep ? head.slice(0, -2) : head;
+    if (!Object.prototype.hasOwnProperty.call(node, key)) return;
+    const record = node as Record<string, unknown>;
+    if (!rest.length && !arrayStep) delete record[key];
+    else if (arrayStep) {
+      if (Array.isArray(record[key])) {
+        for (const item of record[key]) walk(item, rest);
+      }
+    } else walk(record[key], rest);
+  };
+  for (const path of paths) walk(data, path.split("."));
+  return data;
 }
 
 function applyCredentialDefaults(
@@ -1385,6 +1422,27 @@ function signAPNsRequest(
     .toString("base64url");
   headers.Authorization = `Bearer ${unsigned}.${signature}`;
   return url.toString();
+}
+
+function signEnableBankingRequest(
+  headers: Record<string, string>,
+  credentials: ConnectionCredentials
+): void {
+  const norm = normalizeCredentials(credentials);
+  const applicationId = norm.application_id?.trim();
+  if (!applicationId || !norm.private_key?.trim()) {
+    throw new Error("Enable Banking requires application_id and private_key");
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT", kid: applicationId };
+  const payload = { iss: "enablebanking.com", aud: "api.enablebanking.com", iat: now, exp: now + 900 };
+  const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
+  const key = createPrivateKey(normalizePastedPrivateKey(norm.private_key));
+  if (key.asymmetricKeyType !== "rsa") {
+    throw new Error("Enable Banking private_key must be an RSA private key");
+  }
+  const signature = createSign("RSA-SHA256").update(unsigned).end().sign(key).toString("base64url");
+  headers.Authorization = `Bearer ${unsigned}.${signature}`;
 }
 
 function signVonageRequest(

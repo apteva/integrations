@@ -71,3 +71,16 @@ describe("LLM provider integration catalogs", () => {
     });
   });
 });
+
+test("Gemini restricts agent reasoning separately from integration media tools", () => {
+  const app = getAppTemplate("gemini")!;
+  const policy = app.runtime!.model_policy!;
+  expect(policy.purpose).toBe("agent");
+  expect(policy.required_methods).toEqual(["generateContent"]);
+  const eligible = (id: string) => policy.allowed_id_patterns.some(pattern => new RegExp(pattern).test(id));
+  for (const id of ["gemini-2.5-pro", "gemini-3.7-flash", "gemini-2.5-flash-lite", "gemini-3.1-pro-preview"]) expect(eligible(id)).toBe(true);
+  for (const id of ["antigravity-preview-05-2026", "gemini-2.5-flash-image", "gemini-2.5-flash-preview-tts", "gemini-embedding-001", "gemini-3.1-flash-live-preview"]) expect(eligible(id)).toBe(false);
+  expect(Object.keys(policy.tier_preferences).sort()).toEqual(["large", "medium", "small"]);
+  for (const tool of ["generate_content", "generate_image", "edit_image", "start_video_generation", "create_embedding", "list_models"]) expect(app.tools.some(t => t.name === tool)).toBe(true);
+  for (const slug of ["minimax-api", "z-ai", "moonshot-ai"]) expect(getAppTemplate(slug)!.runtime?.model_policy).toBeUndefined();
+});

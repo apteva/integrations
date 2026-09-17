@@ -105,7 +105,7 @@ function generateMcpTool(
 
   // For POST/PUT/PATCH, generate a body template
   let bodyTemplate: string | undefined;
-  if (tool.method !== "GET" && tool.method !== "DELETE") {
+  if (tool.method !== "GET" && tool.method !== "DELETE" && tool.method !== "OPTIONS") {
     // The body template uses the tool's input_schema properties as a hint.
     // At runtime, the MCP handler will JSON.stringify the input minus path params.
     bodyTemplate = "{{json_body}}";
@@ -118,7 +118,7 @@ function generateMcpTool(
   // Build default_body from credential fields that map to tool input properties
   // e.g. Pushover's user_key credential → "user" field in send_notification
   let defaultBody: Record<string, string> | undefined;
-  if (app.auth.credential_fields && tool.method !== "GET") {
+  if (app.auth.credential_fields && tool.method !== "GET" && tool.method !== "OPTIONS") {
     const props = (tool.input_schema as any)?.properties || {};
     for (const cf of app.auth.credential_fields) {
       // Check if the credential field name maps to a tool input (with or without _key suffix)
