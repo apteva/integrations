@@ -59,6 +59,18 @@
       }
     },
     {
+      "name": "submission_archive",
+      "description": "Fetch an older SEC submission archive file listed in company_submissions.filings.files. These files extend company history beyond the recent-feed window.",
+      "method": "GET",
+      "base_url": "https://data.sec.gov",
+      "path": "/submissions/{file}",
+      "input_schema": {
+        "type": "object",
+        "properties": {"file": {"type": "string", "description": "Archive filename, e.g. CIK0000320193-submissions-001.json"}},
+        "required": ["file"]
+      }
+    },
+    {
       "name": "company_facts",
       "description": "All XBRL-tagged financial data for a company — every reported fundamental across every filing. Returns nested 'facts.us-gaap' (and 'facts.dei') with concepts like Revenues, NetIncomeLoss, Assets, Liabilities, OperatingIncomeLoss, etc., each holding a time series of reported values across filings. Massive payload (often >5MB for big issuers); use 'concept' instead when you only need one metric.",
       "method": "GET",
