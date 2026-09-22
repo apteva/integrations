@@ -205,6 +205,8 @@ export interface UIComponent {
   default_size?: "half" | "full";
   /** Project-wide or attached-agent contextual availability. */
   visibility?: "attached" | "project";
+  /** Dashboard Home scopes supported by this same component. Empty means project-only. */
+  dashboard_scopes?: Array<"project" | "global">;
   /** App-bus topics that should refresh this component. */
   refresh_topics?: string[];
   /** JSON-Schema-shaped props contract. Required key list +
