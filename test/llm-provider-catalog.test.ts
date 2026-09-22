@@ -84,3 +84,44 @@ test("Gemini restricts agent reasoning separately from integration media tools",
   for (const tool of ["generate_content", "generate_image", "edit_image", "start_video_generation", "create_embedding", "list_models"]) expect(app.tools.some(t => t.name === tool)).toBe(true);
   for (const slug of ["minimax-api", "z-ai", "moonshot-ai"]) expect(getAppTemplate(slug)!.runtime?.model_policy).toBeUndefined();
 });
+
+test("Fireworks admits common tool-capable agent models and excludes specialized models", () => {
+  const app = getAppTemplate("fireworks")!;
+  const policy = app.runtime!.model_policy!;
+  const eligible = (id: string) => policy.allowed_id_patterns.some(pattern => new RegExp(pattern).test(id));
+
+  expect(policy.purpose).toBe("agent");
+  expect(policy.required_methods).toEqual(["chat_completion"]);
+  for (const id of [
+    "accounts/fireworks/models/deepseek-v4-flash-0731",
+    "accounts/fireworks/models/deepseek-v4-pro-0813",
+    "accounts/fireworks/models/deepseek-v4p1-flash",
+    "accounts/fireworks/models/glm-5p3",
+    "accounts/fireworks/models/glm-5p3-flash",
+    "accounts/fireworks/routers/glm-5p3-fast",
+    "accounts/fireworks/models/gpt-oss-120b",
+    "accounts/fireworks/models/kimi-k2p7-code",
+    "accounts/fireworks/models/kimi-k3",
+    "accounts/fireworks/routers/kimi-k3-fast",
+    "accounts/fireworks/models/minimax-m3",
+    "accounts/fireworks/models/nemotron-3-ultra-nvfp4",
+    "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
+    "accounts/fireworks/models/qwen3p7-plus",
+    "accounts/fireworks/models/qwen3p8-2p4t-a95b",
+    "accounts/fireworks/models/qwen3p8-max",
+  ]) expect(eligible(id)).toBe(true);
+  for (const id of [
+    "accounts/fireworks/models/deepseek-v4-flash-vision-exp",
+    "accounts/fireworks/models/kimi-k3-fast",
+    "accounts/fireworks/models/kimi-k3-preview",
+    "accounts/fireworks/models/qwen3-embedding-8b",
+    "accounts/fireworks/models/qwen3-reranker-8b",
+    "accounts/fireworks/models/inkling",
+    "accounts/fireworks/models/muse-glimmer-30b",
+    "accounts/other/models/kimi-k3",
+  ]) expect(eligible(id)).toBe(false);
+  expect(policy.tier_preferences.large.slice(0, 2)).toEqual([
+    "^accounts/fireworks/models/kimi-k3$",
+    "^accounts/fireworks/models/glm-5p[0-9]+$",
+  ]);
+});
