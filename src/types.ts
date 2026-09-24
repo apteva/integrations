@@ -640,6 +640,8 @@ export interface AppToolTemplate {
   // longer than 30s (image generation, video generation, long-audio
   // transcription, etc).
   timeout_ms?: number;
+  /** Maximum caller-selected _apteva.timeout_ms; never above 600000. */
+  max_timeout_ms?: number;
   // Dot-separated paths in the JSON response to strip before the
   // agent sees the payload. Use `[]` to step into every element of
   // an array (e.g. "results.channels[].alternatives[].words"). Runs

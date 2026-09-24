@@ -17,6 +17,7 @@ describe("DIDWW integration catalog", () => {
       "create_did_reservation",
       "create_order",
       "update_did",
+      "set_did_voice_trunk",
       "create_inbound_trunk",
       "create_outbound_trunk",
       "regenerate_outbound_trunk_credentials",
@@ -27,6 +28,36 @@ describe("DIDWW integration catalog", () => {
     ]) {
       expect(names.has(name)).toBe(true);
     }
+  });
+
+  test("can clear a DID voice trunk with JSON:API data null", async () => {
+    const app = getAppTemplate("didww")!;
+    const tool = app.tools.find((candidate) => candidate.name === "set_did_voice_trunk")!;
+    let body = "";
+    globalThis.fetch = (async (_url, options) => {
+      body = String(options?.body || "");
+      return new Response(JSON.stringify({ data: { id: "did-1", type: "dids" } }), {
+        status: 200,
+        headers: { "Content-Type": "application/vnd.api+json" },
+      });
+    }) as typeof fetch;
+    const document = {
+      data: {
+        type: "dids",
+        id: "did-1",
+        relationships: {
+          voice_in_trunk: { data: null },
+          voice_in_trunk_group: { data: null },
+        },
+      },
+    };
+    await executeTool({
+      app,
+      tool,
+      credentials: { fields: { api_key: "didww-token" } },
+      input: { id: "did-1", body: document },
+    });
+    expect(JSON.parse(body)).toEqual(document);
   });
 
   test("builds DIDWW JSON:API relationships and headers", async () => {

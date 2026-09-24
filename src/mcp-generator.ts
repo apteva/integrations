@@ -100,7 +100,7 @@ function generateMcpTool(
   }
 
   // Build the full URL template (path params remain as {param} for runtime resolution)
-  const baseURL = tool.base_url || app.base_url;
+  const baseURL = resolveCredentialTemplate(tool.base_url || app.base_url, connection.credentials);
   const url = `${baseURL.replace(/\/$/, "")}${tool.path}${authQuery}`;
 
   // For POST/PUT/PATCH, generate a body template

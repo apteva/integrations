@@ -58,19 +58,62 @@ export async function executeTool(
     app,
     tool,
     credentials,
-    input,
-    // Caller's explicit timeout wins; otherwise fall back to the tool's
-    // declared timeout_ms (for slow upstreams like image / video / long
-    // audio); finally the 30s default. Capped at 10 minutes.
-    timeout = Math.min(tool.timeout_ms ?? 30000, 600000),
+    input: suppliedInput,
+    timeout: explicitTimeout,
     maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
     credentialTokenRetried = false,
     rateLimitRetries = 0,
   } = opts;
 
+  // _apteva is execution metadata, never a provider request parameter.
+  const platformOptions = suppliedInput._apteva;
+  if (platformOptions !== undefined && (
+    !platformOptions || typeof platformOptions !== "object" || Array.isArray(platformOptions) ||
+    Object.keys(platformOptions).length !== 1 || !("timeout_ms" in platformOptions)
+  )) throw new Error("_apteva must contain only timeout_ms");
+  const input = platformOptions === undefined ? suppliedInput : { ...suppliedInput };
+  if (platformOptions !== undefined) delete input._apteva;
+  const maximum = tool.max_timeout_ms && tool.max_timeout_ms > 0 ? Math.min(tool.max_timeout_ms, 600000) : 600000;
+  const platformTimeout = (platformOptions as { timeout_ms: number } | undefined)?.timeout_ms;
+  if (platformOptions !== undefined && (typeof platformTimeout !== "number" || !Number.isInteger(platformTimeout) || platformTimeout < 1 || platformTimeout > maximum)) {
+    throw new Error(`_apteva.timeout_ms must be an integer between 1 and ${maximum}`);
+  }
+  const requestedTimeout = explicitTimeout ?? platformTimeout;
+  if (requestedTimeout !== undefined && (!Number.isInteger(requestedTimeout) || requestedTimeout < 1 || requestedTimeout > maximum)) {
+    throw new Error(`_apteva.timeout_ms must be an integer between 1 and ${maximum}`);
+  }
+  const timeout = Math.min(requestedTimeout ?? tool.timeout_ms ?? 30000, maximum);
+
   applyCredentialDefaults(app, credentials);
   if (app.slug === "open-banking-io") return executeOpenBankingIO(tool.name, credentials, input, timeout);
   await ensureCredentialToken(app, credentials);
+  if (app.slug === "openstreetmap-overpass") {
+    const fields = normalizeCredentials(credentials);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.contact_email || "")) {
+      throw new Error("An operator contact email is required for Overpass requests");
+    }
+    let endpoint: URL;
+    try {
+      endpoint = new URL(fields.overpass_base_url || "");
+    } catch {
+      throw new Error("A valid Overpass HTTPS base URL is required");
+    }
+    if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) {
+      throw new Error("A valid Overpass HTTPS base URL is required");
+    }
+  }
+  if (app.slug === "openstreetmap-nominatim") {
+    const configured = normalizeCredentials(credentials).nominatim_base_url || "";
+    let endpoint: URL;
+    try {
+      endpoint = new URL(configured);
+    } catch {
+      throw new Error("A self-hosted or licensed Nominatim HTTPS base URL is required");
+    }
+    if (endpoint.protocol !== "https:" || endpoint.hostname.toLowerCase() === "nominatim.openstreetmap.org" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) {
+      throw new Error("Use a self-hosted or licensed Nominatim HTTPS endpoint; the public endpoint cannot be used by this integration");
+    }
+  }
 
   // 1. Build the URL with path parameter + credential interpolation
   const url = buildUrl(tool.base_url || app.base_url, tool.path, input, credentials);
