@@ -117,6 +117,13 @@ export interface AppRuntimeConfig {
   /** Optional purpose-specific view over the live model catalog. Omit to retain
    *  the provider's existing behavior. Preferences never invent unavailable IDs. */
   model_policy?: RuntimeModelPolicy;
+  /** Voice-session choices, separate from generateContent text models. */
+  realtime?: {
+    provider_key: string;
+    default_model: string;
+    models: Array<{ id: string; name: string; available: boolean }>;
+    voices: string[];
+  };
 }
 
 export interface IntegrationURLProperty {
@@ -201,6 +208,8 @@ export interface UIComponent {
    *  slot before showing it to the agent. */
   slots?: string[];
   /** Semantic dashboard widget sizes offered by the host. */
+  /** Suggested agent-page presets; presentation only, never authorization. */
+  recommended_views?: Array<"personal" | "business" | "developer">;
   supported_sizes?: Array<"half" | "full">;
   default_size?: "half" | "full";
   /** Project-wide or attached-agent contextual availability. */
@@ -516,6 +525,7 @@ export interface OAuthConfig {
   client_id_param_name?: string;
   scope_separator?: string;
   token_auth_basic_only?: boolean;
+  client_secret_required?: boolean;
   setup_url?: string;        // URL to provider's developer console to create an OAuth app
   setup_steps?: string[];    // Brief setup instructions shown in the UI
   // Extra static query parameters merged into the authorize URL after

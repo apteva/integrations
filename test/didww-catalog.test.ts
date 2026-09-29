@@ -93,4 +93,42 @@ describe("DIDWW integration catalog", () => {
       },
     });
   });
+
+  test("builds registration identity, address, and verification relationships", async () => {
+    const app = getAppTemplate("didww")!;
+    const identity = app.tools.find((candidate) => candidate.name === "create_identity")!;
+    const address = app.tools.find((candidate) => candidate.name === "create_address")!;
+    const verification = app.tools.find((candidate) => candidate.name === "create_address_verification")!;
+    const bodies: unknown[] = [];
+    globalThis.fetch = (async (_url, options) => {
+      bodies.push(JSON.parse(String(options?.body || "{}")));
+      return new Response(JSON.stringify({ data: { id: "resource-1", type: "resource" } }), {
+        status: 201,
+        headers: { "Content-Type": "application/vnd.api+json" },
+      });
+    }) as typeof fetch;
+    const credentials = { fields: { api_key: "didww-token" } };
+    await executeTool({ app, tool: identity, credentials, input: { identity_type: "Business", country_id: "country-fr", company_name: "Flexylead", contact_email: "ops@example.test" } });
+    await executeTool({ app, tool: address, credentials, input: { city_name: "Paris", postal_code: "75001", address: "1 Rue de Paris", country_id: "country-fr", identity_id: "identity-1" } });
+    await executeTool({ app, tool: verification, credentials, input: { address_id: "address-1", did_ids: ["did-1"], service_description: "voice" } });
+    expect(bodies).toEqual([
+      { data: { type: "identities", attributes: { company_name: "Flexylead", contact_email: "ops@example.test", identity_type: "Business" }, relationships: { country: { data: { type: "countries", id: "country-fr" } } } } },
+      { data: { type: "addresses", attributes: { address: "1 Rue de Paris", city_name: "Paris", postal_code: "75001" }, relationships: { country: { data: { type: "countries", id: "country-fr" } }, identity: { data: { type: "identities", id: "identity-1" } } } } },
+      { data: { type: "address_verifications", attributes: { service_description: "voice" }, relationships: { address: { data: { type: "addresses", id: "address-1" } }, dids: { data: [{ type: "dids", id: "did-1" }] } } } },
+    ]);
+  });
+});
+
+// Confirmed against DIDWW API 2026-04-16; /requirements returns HTTP 400.
+test("DIDWW requirement aliases use current address-requirement endpoints", async () => {
+ const app = getAppTemplate("didww")!;
+ const urls: string[] = [];
+ globalThis.fetch = (async (url) => { urls.push(String(url)); return new Response(JSON.stringify({data: []}), {headers: {"Content-Type": "application/vnd.api+json"}}); }) as typeof fetch;
+ for (const [name,input] of [["list_requirements",{country_id:"fr",include:"business_permanent_document"}],["get_requirement",{id:"requirement-fr"}]] as const) {
+  await executeTool({app, tool:app.tools.find(t=>t.name===name)!, credentials:{fields:{api_key:"test-token"}},input});
+ }
+ expect(new URL(urls[0]).pathname).toBe("/v3/address_requirements");
+ expect(new URL(urls[0]).searchParams.get("filter[country.id]")).toBe("fr");
+ expect(new URL(urls[0]).searchParams.get("include")).toBe("business_permanent_document");
+ expect(new URL(urls[1]).pathname).toBe("/v3/address_requirements/requirement-fr");
 });
