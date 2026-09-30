@@ -88,6 +88,7 @@ export interface RuntimeModelPolicy {
 }
 
 export interface AppRuntimeConfig {
+  service_tiers?: string[];
   /** Which runtime pool this app feeds. Only "llm" entries land in
    *  config.json's providers[]; the others export env vars only. */
   role: "llm" | "embeddings" | "tts";
@@ -638,6 +639,8 @@ export interface AppToolTemplate {
   header_transforms?: HeaderTransform[];
   signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
+  /** Preserve successful download bytes, including text/JSON, as a binary envelope. */
+  response_type?: "binary";
   /** Detect protocol-level failures carried inside a successful HTTP
    * response before response_path extracts the success payload. */
   response_error?: ResponseError;
@@ -809,7 +812,18 @@ export type ResponseTransform =
   | EmailMessageResponseTransform
   | EmailThreadResponseTransform
   | Base64FieldDecodeResponseTransform
+  | Base64BinaryResponseTransform
   | FieldMapResponseTransform;
+
+export interface Base64BinaryResponseTransform {
+  type: "base64_to_binary";
+  /** Dot path containing encoded file bytes in a JSON response. */
+  source: string;
+  encoding?: "base64" | "base64url";
+  mime_type?: string;
+  /** Optional local input for the file MIME type; never sent upstream. */
+  mime_type_param?: string;
+}
 
 export interface EmailMessageResponseTransform {
   type: "email_message";
@@ -920,6 +934,10 @@ export interface GeneratedMcpTool {
     default_body?: Record<string, string>; // Credential-derived defaults merged into request body
     request_transform?: RequestTransform;
     response_transform?: ResponseTransform;
+    response_type?: "binary";
+    body_binary_param?: string;
+    query_params?: string[];
+    query_param_aliases?: Record<string, string>;
   };
 }
 

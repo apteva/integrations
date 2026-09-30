@@ -23,9 +23,8 @@ export interface ExecuteToolOptions {
   timeout?: number;
   // Maximum size, in bytes, accepted for a binary response. Larger
   // payloads are rejected with success=false instead of being buffered
-  // into memory. Defaults to 25 MB. Only applies to the binary branch;
-  // JSON and text responses are not capped here (fetch itself bounds them
-  // via the server and the timeout).
+  // into memory. Defaults to 25 MB. Also caps decoded base64_to_binary
+  // responses. Ordinary JSON/text metadata responses are not capped here.
   maxBinaryBytes?: number;
   /** Internal retry guard for short-lived credential exchanges. */
   credentialTokenRetried?: boolean;
@@ -183,6 +182,11 @@ export async function executeTool(
     binaryParam && isBinaryEnvelope(input[binaryParam])
       ? (input[binaryParam] as Record<string, unknown>)
       : null;
+  const requiredInputs = tool.input_schema.required as string[] | undefined;
+  if (binaryParam && requiredInputs?.includes(binaryParam) && !binaryEnvelope &&
+      !(tool.body_root_param === binaryParam && typeof input[binaryParam] === "string")) {
+    throw new Error(`body_binary_param "${binaryParam}" must be a binary file envelope`);
+  }
 
   // Root-body param: when set, this field's value IS the whole JSON body
   // (e.g. a bare array). Pulled aside before the query/body split so it
@@ -246,7 +250,7 @@ export async function executeTool(
     const base64 = String(binaryEnvelope.base64 || "");
     const mime =
       String(binaryEnvelope.mimeType || "") || "application/octet-stream";
-    fetchOpts.body = Buffer.from(base64, "base64");
+    fetchOpts.body = new Uint8Array(decodeBinaryBase64(base64, "base64"));
     // Let the envelope's Content-Type override any template header.
     // Strip casing variants first so we don't leave a stale one behind.
     delete headers["Content-Type"];
@@ -374,8 +378,8 @@ export async function executeTool(
       const bodyForSigning =
         typeof fetchOpts.body === "string"
           ? fetchOpts.body
-          : fetchOpts.body instanceof Buffer
-            ? fetchOpts.body
+          : fetchOpts.body instanceof Uint8Array
+            ? Buffer.from(fetchOpts.body)
             : undefined;
       const sigHeaders = signAwsRequest({
         method: tool.method,
@@ -439,8 +443,8 @@ export async function executeTool(
       const bodyForSigning =
         typeof fetchOpts.body === "string"
           ? fetchOpts.body
-          : fetchOpts.body instanceof Buffer
-            ? fetchOpts.body
+          : fetchOpts.body instanceof Uint8Array
+            ? Buffer.from(fetchOpts.body)
             : undefined;
       const sigHeaders = signAwsRequest({
         method: tool.method,
@@ -516,7 +520,8 @@ export async function executeTool(
     let data: unknown;
     const ct = response.headers.get("content-type") || "";
     let isBinary = false;
-    if (isJsonContentType(ct)) {
+    const forceBinary = response.ok && tool.response_type === "binary";
+    if (!forceBinary && isJsonContentType(ct)) {
       // Parse JSON via text() so a malformed body doesn't collapse into
       // the network-error catch (which would lose response.status). If
       // the server sent us 500 with a broken error page labelled as
@@ -536,7 +541,7 @@ export async function executeTool(
           headers: responseHeaders,
         };
       }
-    } else if (isBinaryContentType(ct)) {
+    } else if (forceBinary || isBinaryContentType(ct)) {
       // Pre-reject oversize payloads via Content-Length when available so
       // we don't buffer gigabytes into memory just to discover the cap.
       const declared = Number(response.headers.get("content-length") || "0");
@@ -568,7 +573,7 @@ export async function executeTool(
       data = {
         _binary: true,
         base64: Buffer.from(buffer).toString("base64"),
-        mimeType: ct.split(";")[0].trim(),
+        mimeType: ct.split(";")[0].trim() || "application/octet-stream",
         size: buffer.byteLength,
       };
       isBinary = true;
@@ -680,7 +685,8 @@ export async function executeTool(
     }
 
     if (tool.response_transform && data && !isBinary) {
-      data = applyResponseTransform(tool.response_transform, data, input);
+      data = applyResponseTransform(tool.response_transform, data, input, maxBinaryBytes);
+      isBinary = isBinaryEnvelope(data);
     }
 
     if (!isBinary) data = omitResponseFields(data, tool.response_omit);
@@ -1721,13 +1727,30 @@ function appendFormValue(
 function applyResponseTransform(
   transform: ResponseTransform,
   data: unknown,
-  input: Record<string, unknown> = {}
+  input: Record<string, unknown> = {},
+  maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES
 ): unknown {
   switch (transform.type) {
     case "email_message":
       return normalizeEmailMessage(data, transform, input);
     case "email_thread":
       return normalizeEmailThread(data, transform);
+    case "base64_to_binary": {
+      const value = getPath(data, transform.source);
+      if (typeof value !== "string") throw new Error("Binary response is missing encoded file data");
+      if (value.length > Math.ceil(maxBinaryBytes / 3) * 4) {
+        throw new Error("Binary response exceeds the file size limit");
+      }
+      const bytes = decodeBinaryBase64(value, transform.encoding || "base64");
+      if (bytes.length > maxBinaryBytes) throw new Error("Binary response exceeds the file size limit");
+      const mimeType = transform.mime_type_param ? input[transform.mime_type_param] : undefined;
+      return {
+        _binary: true,
+        base64: bytes.toString("base64"),
+        mimeType: typeof mimeType === "string" && mimeType ? mimeType : transform.mime_type || "application/octet-stream",
+        size: bytes.length,
+      };
+    }
     case "base64_field_decode": {
       const value = getPath(data, transform.source);
       const decoded =
@@ -1836,7 +1859,22 @@ function responseTransformLocalParams(transform?: ResponseTransform): Set<string
     if (transform.body_mode_param) params.add(transform.body_mode_param);
     if (transform.max_chars_param) params.add(transform.max_chars_param);
   }
+  if (transform?.type === "base64_to_binary" && transform.mime_type_param) {
+    params.add(transform.mime_type_param);
+  }
   return params;
+}
+
+function decodeBinaryBase64(value: string, encoding: "base64" | "base64url"): Buffer {
+  const alphabet = encoding === "base64url" ? /^[A-Za-z0-9_-]*={0,2}$/ : /^[A-Za-z0-9+/]*={0,2}$/;
+  if (!alphabet.test(value) || (value.includes("=") && value.length % 4 !== 0)) {
+    throw new Error("Invalid encoded binary data");
+  }
+  const bytes = Buffer.from(value, encoding);
+  if (bytes.toString(encoding).replace(/=+$/, "") !== value.replace(/=+$/, "")) {
+    throw new Error("Invalid encoded binary data");
+  }
+  return bytes;
 }
 
 function selectEmailBodies(

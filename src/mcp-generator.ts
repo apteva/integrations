@@ -143,6 +143,10 @@ function generateMcpTool(
       ...(defaultBody ? { default_body: defaultBody } : {}),
       ...(tool.request_transform ? { request_transform: tool.request_transform } : {}),
       ...(tool.response_transform ? { response_transform: tool.response_transform } : {}),
+      ...(tool.response_type ? { response_type: tool.response_type } : {}),
+      ...(tool.body_binary_param ? { body_binary_param: tool.body_binary_param } : {}),
+      ...(tool.query_params ? { query_params: tool.query_params } : {}),
+      ...(tool.query_param_aliases ? { query_param_aliases: tool.query_param_aliases } : {}),
     },
   };
 }
