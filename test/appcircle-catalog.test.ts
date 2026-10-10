@@ -24,9 +24,9 @@ function tool(name: string): AppToolTemplate {
 describe("Appcircle integration catalog", () => {
   test("covers build, signing, distribution, publishing, reports, and webhooks", () => {
     const app = appcircle();
-    expect(app.tools).toHaveLength(101);
+    expect(app.tools).toHaveLength(103);
     expect(new Set(app.tools.map((candidate) => candidate.name)).size).toBe(
-      101,
+      103,
     );
     expect(app.health_check).toEqual({
       tool: "list_build_profiles",
@@ -190,5 +190,35 @@ describe("Appcircle integration catalog", () => {
 
     expect(exchangeCount).toBe(2);
     expect(apiCount).toBe(2);
+  });
+});
+
+describe("Appcircle Deploy request bodies", () => {
+  test("keeps IDs in the URL and preserves root environment/configuration bodies", async () => {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      calls.push({ url: String(url), init: init || {} });
+      return new Response(JSON.stringify(String(url).includes("api-key/token")
+        ? { access_token: "wire-token", expires_in: 14400 } : { taskId: "task" }),
+        { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const credentials = { fields: { api_key_name: "wire", api_key_secret: "wire-secret" } };
+    const environment = { APTEVA_BUILD_ID: "42", LITERAL: "$HOME" };
+    const configuration = { configurationId: "configuration", environmentVariables: ["existing", "managed"], platformSetting: { xcodeVersion: "26" } };
+    try {
+      await executeTool({ app: appcircle(), tool: tool("start_build_with_environment"), credentials,
+        input: { commitId: "commit", workflowId: "workflow", configurationId: "configuration", environment } });
+      await executeTool({ app: appcircle(), tool: tool("update_build_configuration"), credentials,
+        input: { profileId: "profile", configuration } });
+      await executeTool({ app: appcircle(), tool: tool("get_last_commit"), credentials,
+        input: { profileId: "profile", branchId: "branch" } });
+    } finally { globalThis.fetch = originalFetch; }
+    expect(calls[1].url).toBe("https://api.appcircle.io/build/v3/commits/commit/build/by-workflow/with-environment?workflowId=workflow&configurationId=configuration");
+    expect(JSON.parse(String(calls[1].init.body))).toEqual(environment);
+    expect(calls[2].init.method).toBe("PUT");
+    expect(calls[2].url).toBe("https://api.appcircle.io/build/v2/profiles/profile/configurations");
+    expect(JSON.parse(String(calls[2].init.body))).toEqual(configuration);
+    expect(calls[3].url).toBe("https://api.appcircle.io/build/v2/commits/last-commit?profileId=profile&branchId=branch");
   });
 });
