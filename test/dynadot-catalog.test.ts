@@ -10,7 +10,7 @@ async function withDynadot(
   run: (execute: (name: string, input: Record<string, unknown>) => ReturnType<typeof executeTool>, requests: Captured[]) => Promise<void>,
 ) {
   const requests: Captured[] = [];
-  const server = Bun.serve({
+  const server = Bun.serve({ hostname: "127.0.0.1",
     port: 0,
     async fetch(req) {
       requests.push({ url: new URL(req.url), method: req.method, headers: req.headers, body: await req.text() });

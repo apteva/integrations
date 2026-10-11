@@ -12,7 +12,7 @@ function tool(name: string) {
 type Captured = { url: URL; method: string; headers: Headers; body: string; form?: FormData };
 async function withProvider(run: (execute: (name: string, input?: Record<string, unknown>) => ReturnType<typeof executeTool>, requests: Captured[]) => Promise<void>, response: unknown = { data: { id: "resource", status: "pending" } }, status = 200) {
   const requests: Captured[] = [];
-  const server = Bun.serve({ port: 0, async fetch(req) {
+  const server = Bun.serve({ hostname: "127.0.0.1", port: 0, async fetch(req) {
     const multipart = req.headers.get("content-type")?.startsWith("multipart/form-data");
     requests.push({ url: new URL(req.url), method: req.method, headers: req.headers, body: await req.clone().text(), form: multipart ? await req.formData() : undefined });
     return Response.json(response, { status });

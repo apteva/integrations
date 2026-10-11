@@ -15,7 +15,7 @@ const app = (slug: string) => {
 };
 async function request(slug: string, name: string, input: Record<string, unknown>, response: unknown = { success: true }) {
   const captured: { url: URL; headers: Headers; method: string; body: string }[] = [];
-  const server = Bun.serve({ port: 0, async fetch(req) {
+  const server = Bun.serve({ hostname: "127.0.0.1", port: 0, async fetch(req) {
     captured.push({ url: new URL(req.url), headers: req.headers, method: req.method, body: await req.text() });
     return Response.json(response);
   }});

@@ -12,7 +12,7 @@ test('Porkbun registration requires a confirmed cost and stable request ID',()=>
 
 test('Porkbun dry run and purchase use exact JSON types and a header-only idempotency key',async()=>{
  const captured:{url:string;headers:Headers;body:any}[]=[];
- const server=Bun.serve({port:0,fetch:async req=>{captured.push({url:req.url,headers:req.headers,body:await req.json()});return Response.json({status:'SUCCESS'})}});
+ const server=Bun.serve({ hostname: "127.0.0.1",port:0,fetch:async req=>{captured.push({url:req.url,headers:req.headers,body:await req.json()});return Response.json({status:'SUCCESS'})}});
  try {
  for(const dryRun of [true,false]) {
  const result=await executeTool({app:{...porkbun,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:porkbun.tools.find(t=>t.name==='register_domain') as AppToolTemplate,credentials:{api_key:'test-key',secret_api_key:'test-secret'},input:{domain:'example.com',cost:1106,agreeToTerms:'yes',whoisPrivacy:true,dryRun,idempotency_key:dryRun?'preview-test':'purchase-test'}});
