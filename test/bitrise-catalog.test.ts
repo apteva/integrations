@@ -20,7 +20,7 @@ describe("Bitrise integration catalog", () => {
     const app = bitrise();
     expect(app.tools).toHaveLength(97);
     expect(new Set(app.tools.map((candidate) => candidate.name)).size).toBe(97);
-    expect(app.health_check).toEqual({ tool: "get_current_user", input: {} });
+    expect(app.health_check).toEqual({ tool: "list_apps", input: { limit: 1 } });
     expect(app.auth.headers).toMatchObject({ Authorization: "{{token}}" });
 
     expect(tool("trigger_build")).toMatchObject({
@@ -48,6 +48,48 @@ describe("Bitrise integration catalog", () => {
     expect(tool("add_testers_to_group").input_schema.properties).toBeDefined();
   });
 
+  test("validates a workspace token without requiring a user profile or an accessible app", async () => {
+    const app = bitrise();
+    const healthCheck = app.health_check!;
+    const requests: { url: string; authorization: string | null }[] = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      requests.push({
+        url: String(url),
+        authorization: new Headers(init?.headers).get("Authorization"),
+      });
+      if (new URL(String(url)).pathname.endsWith("/me")) {
+        return new Response(JSON.stringify({ message: "Not Found" }), {
+          status: 404,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ data: [], paging: {} }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    try {
+      const credentials = { fields: { token: "workspace-token" } };
+      const profile = await executeTool({
+        app, tool: tool("get_current_user"), credentials, input: {},
+      });
+      expect(profile.success).toBe(false);
+      const result = await executeTool({
+        app, tool: tool(healthCheck.tool!), credentials, input: healthCheck.input || {},
+      });
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({ data: [], paging: {} });
+      expect(requests).toEqual([
+        { url: "https://api.bitrise.io/v0.1/me", authorization: "workspace-token" },
+        { url: "https://api.bitrise.io/v0.1/apps?limit=1", authorization: "workspace-token" },
+      ]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   test("keeps every path parameter explicit and required", () => {
     for (const candidate of bitrise().tools) {
       const parameters = [...candidate.path.matchAll(/\{([^}]+)\}/g)].map(
@@ -57,6 +99,25 @@ describe("Bitrise integration catalog", () => {
         expect(candidate.input_schema.properties?.[parameter]).toBeDefined();
         expect(candidate.input_schema.required).toContain(parameter);
       }
+    }
+  });
+
+  test.each([401, 403])("rejects a failed credential probe with HTTP %s", async (status) => {
+    const healthCheck = bitrise().health_check!;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response(
+      JSON.stringify({ message: "Access denied" }),
+      { status, headers: { "content-type": "application/json" } },
+    );
+    try {
+      const result = await executeTool({
+        app: bitrise(), tool: tool(healthCheck.tool!),
+        credentials: { fields: { token: "invalid-token" } },
+        input: healthCheck.input || {},
+      });
+      expect(result.success).toBe(false);
+    } finally {
+      globalThis.fetch = originalFetch;
     }
   });
 
