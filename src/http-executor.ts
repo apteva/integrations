@@ -689,6 +689,14 @@ export async function executeTool(
       isBinary = isBinaryEnvelope(data);
     }
 
+    if (!isBinary && tool.response_header_fields) {
+      const mapped: Record<string, unknown> = {};
+      for (const [header, field] of Object.entries(tool.response_header_fields)) {
+        const value = responseHeaders[header.toLowerCase()];
+        if (value !== undefined) mapped[field] = value;
+      }
+      data = { ...(isPlainObject(data) ? data : {}), ...mapped };
+    }
     if (!isBinary) data = omitResponseFields(data, tool.response_omit);
 
     return {

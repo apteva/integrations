@@ -702,6 +702,8 @@ export interface AppToolTemplate {
   // response_omit. This lets tools return agent-friendly output for provider
   // payloads such as nested email/MIME trees or encoded fields.
   response_transform?: ResponseTransform;
+  /** Explicit upstream header names mapped into JSON result fields, including empty 202 bodies. */
+  response_header_fields?: Record<string, string>;
   /** Inputs that an external provider fetches itself. The server rewrites
    * eligible signed Storage URLs to a verified, redirect-free relay URL. */
   external_fetch_inputs?: ExternalFetchInput[];
@@ -934,6 +936,7 @@ export interface GeneratedMcpTool {
     default_body?: Record<string, string>; // Credential-derived defaults merged into request body
     request_transform?: RequestTransform;
     response_transform?: ResponseTransform;
+    response_header_fields?: Record<string, string>;
     response_type?: "binary";
     body_binary_param?: string;
     query_params?: string[];
