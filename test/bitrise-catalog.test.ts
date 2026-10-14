@@ -121,6 +121,62 @@ describe("Bitrise integration catalog", () => {
     }
   });
 
+  test("validates workspace tokens through apps even when the user profile returns 404", async () => {
+    const requests: string[] = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      requests.push(String(url));
+      expect(new Headers(init?.headers).get("Authorization")).toBe("bitwat_test-workspace-token");
+      const endpoint = new URL(String(url));
+      if (endpoint.pathname.endsWith("/me")) {
+        return Response.json({ message: "Not Found" }, { status: 404 });
+      }
+      expect(endpoint.pathname).toBe("/v0.1/apps");
+      expect(endpoint.searchParams.get("limit")).toBe("1");
+      return Response.json({ data: [{ slug: "app-123" }], paging: { total_item_count: 1 } });
+    };
+    try {
+      const app = bitrise();
+      const credentials = { fields: { token: "bitwat_test-workspace-token" } };
+      const profile = await executeTool({ app, tool: tool("get_current_user"), credentials, input: {} });
+      expect(profile).toMatchObject({ success: false, status: 404 });
+      const health = app.health_check!;
+      const probe = await executeTool({ app, tool: tool(health.tool!), credentials, input: health.input || {} });
+      expect(probe).toMatchObject({ success: true, status: 200, data: { data: [{ slug: "app-123" }] } });
+      expect(requests).toEqual(["https://api.bitrise.io/v0.1/me", "https://api.bitrise.io/v0.1/apps?limit=1"]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("accepts an authenticated token with no accessible apps", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => Response.json({ data: [], paging: { total_item_count: 0 } });
+    try {
+      const app = bitrise();
+      const health = app.health_check!;
+      const result = await executeTool({ app, tool: tool(health.tool!), credentials: { fields: { token: "personal-token" } }, input: health.input || {} });
+      expect(result).toMatchObject({ success: true, status: 200, data: { data: [] } });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("continues rejecting invalid or unauthorized tokens", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+      const app = bitrise();
+      const health = app.health_check!;
+      for (const status of [401, 403]) {
+        globalThis.fetch = async () => Response.json({ message: "Unauthorized" }, { status });
+        const result = await executeTool({ app, tool: tool(health.tool!), credentials: { fields: { token: "invalid-token" } }, input: health.input || {} });
+        expect(result).toMatchObject({ success: false, status });
+      }
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   test("sends nested typed build parameters to the documented build route", async () => {
     let captured: { url: string; init: RequestInit } | undefined;
     const originalFetch = globalThis.fetch;
