@@ -8,7 +8,7 @@ const registration = spaceship.tools.find(t => t.name === 'register_domain') as 
 const contact = '1ZdMXpapqp9sle5dl8BlppTJXAzf5';
 test('Spaceship registration preserves empty-202 operation header and sends documented body', async () => {
  let captured: {url:string;body:unknown;headers:Headers}|undefined;
- const server = Bun.serve({port:0,fetch:async req => {captured={url:req.url,body:await req.json(),headers:req.headers};return new Response(null,{status:202,headers:{'Spaceship-Async-OperationId':'operation123','Set-Cookie':'private=secret'}})}});
+ const server = Bun.serve({hostname:"127.0.0.1",port:0,fetch:async req => {captured={url:req.url,body:await req.json(),headers:req.headers};return new Response(null,{status:202,headers:{'Spaceship-Async-OperationId':'operation123','Set-Cookie':'private=secret'}})}});
  try {
   const options={autoRenew:false,years:2,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}};
   const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'test-key',api_secret:'test-secret'},input:{domain:'example.com',...options}});
@@ -22,7 +22,7 @@ test('Spaceship never auto-retries a billable registration and exposes required 
  expect(registration.response_header_fields).toEqual({'spaceship-async-operationid':'operation_id'});
 });
 test('Missing operation header does not fabricate an accepted operation',async()=>{
- const server=Bun.serve({port:0,fetch:()=>new Response(null,{status:202})});
+ const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch:()=>new Response(null,{status:202})});
  try{const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'x',api_secret:'y'},input:{domain:'example.com',autoRenew:true,years:1,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}}});expect(result.data).toEqual({});}finally{server.stop(true)}
 });
 
@@ -33,6 +33,6 @@ test('Generated tools retain async header mapping',()=>{
 });
 
 test('A throttled purchase is not retried automatically',async()=>{
- let requests=0;const server=Bun.serve({port:0,fetch:()=>{requests++;return Response.json({error:'rate limit'},{status:429})}});
+ let requests=0;const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch:()=>{requests++;return Response.json({error:'rate limit'},{status:429})}});
  try {const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'x',api_secret:'y'},input:{domain:'example.com',autoRenew:true,years:1,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}}});expect(result.success).toBe(false);expect(requests).toBe(1);}finally{server.stop(true)}
 });
