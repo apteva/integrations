@@ -122,7 +122,7 @@ export interface AppRuntimeConfig {
   realtime?: {
     provider_key: string;
     default_model: string;
-    models: Array<{ id: string; name: string; available: boolean }>;
+    models: Array<{ id: string; name: string; available: boolean; voices?: string[]; default_voice?: string }>;
     voices: string[];
   };
 }
