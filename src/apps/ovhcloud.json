@@ -4223,6 +4223,72 @@
           "userId"
         ]
       }
+    },
+    {
+      "name": "vps_catalog_download",
+      "description": "Download the full vps product catalog as a binary envelope containing UTF-8 JSON. Use for catalogs exceeding the normal JSON response limit; consumers must enforce a decoded-size bound.",
+      "method": "GET",
+      "path": "/order/catalog/public/vps",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ovhSubsidiary": {
+            "type": "string",
+            "description": "Billing subsidiary returned by get_account on the selected EU, CA or US API endpoint. Supported values depend on that endpoint."
+          }
+        },
+        "required": [
+          "ovhSubsidiary"
+        ]
+      },
+      "query_params": [
+        "ovhSubsidiary"
+      ],
+      "response_type": "binary"
+    },
+    {
+      "name": "dedicated_catalog_download",
+      "description": "Download the full dedicated product catalog as a binary envelope containing UTF-8 JSON. Use for catalogs exceeding the normal JSON response limit; consumers must enforce a decoded-size bound.",
+      "method": "GET",
+      "path": "/order/catalog/public/baremetalServers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ovhSubsidiary": {
+            "type": "string",
+            "description": "Billing subsidiary returned by get_account on the selected EU, CA or US API endpoint. Supported values depend on that endpoint."
+          }
+        },
+        "required": [
+          "ovhSubsidiary"
+        ]
+      },
+      "query_params": [
+        "ovhSubsidiary"
+      ],
+      "response_type": "binary"
+    },
+    {
+      "name": "eco_catalog_download",
+      "description": "Download the full eco product catalog as a binary envelope containing UTF-8 JSON. Use for catalogs exceeding the normal JSON response limit; consumers must enforce a decoded-size bound.",
+      "method": "GET",
+      "path": "/order/catalog/public/eco",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ovhSubsidiary": {
+            "type": "string",
+            "description": "Billing subsidiary returned by get_account on the selected EU, CA or US API endpoint. Supported values depend on that endpoint."
+          }
+        },
+        "required": [
+          "ovhSubsidiary"
+        ]
+      },
+      "query_params": [
+        "ovhSubsidiary"
+      ],
+      "response_type": "binary"
     }
   ]
 }
