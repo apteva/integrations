@@ -48,3 +48,15 @@ describe('OVH compute product contracts',()=>{
   }finally{globalThis.fetch=original;}
  });
 });
+
+test('large OVH catalogs use explicit binary delivery without changing provider paths',async()=>{
+ const original=globalThis.fetch;const raw=JSON.stringify({plans:[],metadata:'x'.repeat(10_000_100)});
+ let url='';
+ globalThis.fetch=(async(input:any)=>{url=String(input);return new Response(raw,{headers:{'content-type':'application/json','content-length':String(raw.length)}});}) as typeof fetch;
+ try{
+  for(const family of ['vps','dedicated','eco'])expect(tool(family+'_catalog_download').response_type).toBe('binary');
+  const result=await executeTool({app,tool:tool('dedicated_catalog_download'),credentials:{fields:{access_token:'fixture-secret',api_endpoint:'https://eu.api.ovh.com/1.0'}},input:{ovhSubsidiary:'ES'}});
+  expect(url).toBe('https://eu.api.ovh.com/1.0/order/catalog/public/baremetalServers?ovhSubsidiary=ES');
+  expect(result.success).toBe(true);expect((result.data as any)._binary).toBe(true);expect(Buffer.from((result.data as any).base64,'base64').toString()).toBe(raw);
+ }finally{globalThis.fetch=original;}
+});
