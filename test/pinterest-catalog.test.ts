@@ -182,8 +182,7 @@ describe("Pinterest organic catalog", () => {
     expect(JSON.parse(String(requests[0]?.init.body))).toEqual({ description: "Updated" });
     expect(requests[1]?.url).toContain("/pins/pin-123/analytics?");
     expect(requests[1]?.url).toContain("start_date=2026-08-01");
-    expect(requests[1]?.url).toContain("metric_types=IMPRESSION");
-    expect(requests[1]?.url).toContain("metric_types=SAVE");
+    expect(new URL(requests[1]!.url).searchParams.getAll("metric_types")).toEqual(["IMPRESSION,SAVE"]);
     expect(requests[1]?.init.body).toBeUndefined();
   });
 });

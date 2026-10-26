@@ -148,6 +148,7 @@ function generateMcpTool(
       ...(tool.body_binary_param ? { body_binary_param: tool.body_binary_param } : {}),
       ...(tool.query_params ? { query_params: tool.query_params } : {}),
       ...(tool.query_param_aliases ? { query_param_aliases: tool.query_param_aliases } : {}),
+      ...(tool.query_param_serialization ? { query_param_serialization: tool.query_param_serialization } : {}),
     },
   };
 }
