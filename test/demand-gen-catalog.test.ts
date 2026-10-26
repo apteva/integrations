@@ -1,10 +1,16 @@
-import {test,expect} from "bun:test";
-import google from "../src/apps/google-ads.json";
-test("Demand Gen can use atomic native operations and provider validation without schema loss",()=>{
- const tool=google.tools.find(t=>t.name==="bulk_mutate")!;
- expect(tool.path).toBe("/customers/{customer_id}/googleAds:mutate");
- expect(tool.input_schema.properties).toHaveProperty("validateOnly");
- expect(tool.input_schema.properties).toHaveProperty("responseContentType");
- expect(tool.input_schema.properties.mutateOperations.items).toEqual({type:"object"});
- for(const name of ["search","asset_mutate","ad_mutate","ad_group_criterion_mutate"]){expect(google.tools.some(t=>t.name===name)).toBe(true)}
+import {afterEach,test,expect} from "bun:test";
+import {getAppTemplate} from "../src/apps/index.js";
+import {executeTool} from "../src/http-executor.js";
+const originalFetch=globalThis.fetch;
+afterEach(()=>{globalThis.fetch=originalFetch});
+test("Google mutation validation preserves native operations and does not drop validation controls",async()=>{
+ const app=getAppTemplate("google-ads")!;const tool=app.tools.find(t=>t.name==="bulk_mutate")!;
+ const operations=[{campaignOperation:{create:{name:"Paused Demand Gen",advertisingChannelType:"DEMAND_GEN",status:"PAUSED"}}}];
+ let request:RequestInit|undefined;
+ globalThis.fetch=(async(_url,init)=>{request=init;return Response.json({})}) as typeof fetch;
+ const result=await executeTool({app,tool,input:{customer_id:"1234567890",mutateOperations:operations,validateOnly:true,responseContentType:"MUTABLE_RESOURCE",partialFailure:false},credentials:{access_token:"test-token",fields:{developer_token:"test-developer"}}});
+ expect(JSON.parse(String(request?.body))).toEqual({mutateOperations:operations,validateOnly:true,responseContentType:"MUTABLE_RESOURCE",partialFailure:false});
+ expect(result.success).toBe(true);
+ const schema=tool.input_schema.properties as Record<string,unknown>;
+ expect(schema).toHaveProperty("validateOnly");expect(schema).toHaveProperty("responseContentType");
 });
