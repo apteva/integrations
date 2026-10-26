@@ -619,6 +619,8 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
+  /** Per input query field: comma-separated values or the default repeated keys. */
+  query_param_serialization?: Record<string, "csv" | "repeat">;
   /** Optional per-credential request pacing and bounded retry policy for
    * providers with strict QPS limits. Retries are limited to the declared
    * HTTP statuses or provider-level numeric/string error codes. */
@@ -941,6 +943,8 @@ export interface GeneratedMcpTool {
     body_binary_param?: string;
     query_params?: string[];
     query_param_aliases?: Record<string, string>;
+    /** Per input query field: comma-separated values or the default repeated keys. */
+    query_param_serialization?: Record<string, "csv" | "repeat">;
   };
 }
 

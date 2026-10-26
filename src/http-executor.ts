@@ -357,7 +357,12 @@ export async function executeTool(
   // Append query params to URL. For GET/DELETE this includes everything;
   // for POST/PUT/PATCH it includes only auth + tool-declared query params
   // (the body bucket is sent as a JSON body separately above).
-  const qs = buildQueryString(allQueryParams);
+  const serialization: Record<string, "csv" | "repeat"> = {};
+  for (const [name, mode] of Object.entries(tool.query_param_serialization || {})) {
+    if (mode !== "csv" && mode !== "repeat") throw new Error(`Unsupported query serialization for ${name}`);
+    serialization[queryParamAliases[name] || name] = mode;
+  }
+  const qs = buildQueryString(allQueryParams, serialization);
   if (qs) finalUrl += (finalUrl.includes("?") ? "&" : "?") + qs;
 
   // AWS SigV4 signing — must happen AFTER the body and final URL are
@@ -1598,11 +1603,17 @@ function normalizePastedPrivateKey(raw: string): string {
   return normalized;
 }
 
-function buildQueryString(params: Record<string, unknown>): string {
+function buildQueryString(params: Record<string, unknown>, serialization: Record<string, "csv" | "repeat"> = {}): string {
   const parts: string[] = [];
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) continue;
     if (Array.isArray(value)) {
+      if (serialization[key] === "csv") {
+        const values = value.filter(item => item !== undefined && item !== null);
+        if (values.some(item => typeof item === "object")) throw new Error(`CSV query field ${key} requires scalar values`);
+        if (values.length) parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(values.map(String).join(","))}`);
+        continue;
+      }
       for (const item of value) {
         parts.push(
           `${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`
