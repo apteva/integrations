@@ -297,7 +297,13 @@ export type AppKind = "rest" | "remote_mcp";
 export interface RemoteMcpConfig {
   /** Wire format the vendor's MCP server speaks. */
   transport: "http" | "sse";
-  /** Fully-qualified URL of the vendor's MCP endpoint. */
+  /**
+   * Fully-qualified URL of the vendor's MCP endpoint. May contain
+   * {{credential}} placeholders (e.g. `{{site_url}}/wp-json/...`) for
+   * servers whose address differs per connection; the server resolves
+   * them when the connection is created and requires the result to be
+   * https on a public host.
+   */
   url: string;
   /**
    * Header name + template used to authenticate every MCP call to the
