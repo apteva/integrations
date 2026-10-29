@@ -40,6 +40,14 @@ describe("Facebook Ads integration catalog", () => {
       ["insights_get", "GET", "/{objectId}/insights"],
       ["pixel_create", "POST", "/{adAccountId}/adspixels"],
       ["pixel_send_event", "POST", "/{pixelId}/events"],
+      ["ad_account_get", "GET", "/{adAccountId}"],
+      ["business_pixel_list", "GET", "/{businessId}/owned_pixels"],
+      ["business_pixel_create", "POST", "/{businessId}/adspixels"],
+      ["pixel_share_with_ad_account", "POST", "/{pixelId}/shared_accounts"],
+      ["pixel_shared_accounts_list", "GET", "/{pixelId}/shared_accounts"],
+      ["pixel_get", "GET", "/{pixelId}"],
+      ["pixel_stats", "GET", "/{pixelId}/stats"],
+      ["pixel_diagnostics", "GET", "/{pixelId}/da_checks"],
       ["leadform_create", "POST", "/{pageId}/leadgen_forms"],
       ["leadform_list", "GET", "/{pageId}/leadgen_forms"],
       ["leads_get", "GET", "/{objectId}/leads"],
@@ -191,5 +199,63 @@ describe("Facebook Ads integration catalog", () => {
     expect(audienceFields).toContain("approximate_count_lower_bound");
     expect(audienceFields).toContain("approximate_count_upper_bound");
     expect(audienceFields).not.toContain("approximate_count,");
+  });
+
+  test("shares a business-owned Pixel with an ad account in the POST body", async () => {
+    let captured: { url: string; init: RequestInit } | undefined;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init: init || {} };
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    try {
+      await executeTool({
+        app: facebookAds(),
+        tool: facebookAdsTool("pixel_share_with_ad_account"),
+        credentials: { access_token: "meta-token" },
+        input: { pixelId: "777", account_id: "1401961790918065", business: "555" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.url).toBe("https://graph.facebook.com/v25.0/777/shared_accounts");
+    expect(captured?.init.method).toBe("POST");
+    expect(JSON.parse(String(captured?.init.body))).toEqual({
+      account_id: "1401961790918065",
+      business: "555",
+    });
+  });
+
+  test("reads Pixel event receipt by host as query parameters", async () => {
+    let captured: { url: string; init: RequestInit } | undefined;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init: init || {} };
+      return new Response(JSON.stringify({ data: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+
+    try {
+      await executeTool({
+        app: facebookAds(),
+        tool: facebookAdsTool("pixel_stats"),
+        credentials: { access_token: "meta-token" },
+        input: { pixelId: "777", aggregation: "host", start_time: "1761696000" },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(captured?.url).toBe(
+      "https://graph.facebook.com/v25.0/777/stats?aggregation=host&start_time=1761696000",
+    );
+    expect(captured?.init.method).toBe("GET");
   });
 });
