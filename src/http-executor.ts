@@ -1315,6 +1315,7 @@ function normalizeCredentials(
 function basicAuthPair(c: Record<string, string>): { user: string; pass: string } | null {
   const pairs: Array<[string, string]> = [
     ["username", "password"],
+    ["username", "application_password"], // WordPress application passwords
     ["login", "password"],
     ["account_sid", "auth_token"],
     ["api_key", "api_secret"],
