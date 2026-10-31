@@ -1,0 +1,107 @@
+{
+  "slug": "jev",
+  "name": "Jev",
+  "description": "TypeSafe's Jev decision model on api.typesafe.ai. Instead of chat, send a piece of text (the state) plus named questions — yes/no (noul), pick-one (choice) or graded (score) — and get calibrated, typed answers with probabilities. Built for classification, routing, triage and scoring. Bearer-token auth.",
+  "logo": "https://www.google.com/s2/favicons?domain=typesafe.ai&sz=128",
+  "categories": [
+    "ai",
+    "classification",
+    "decisions",
+    "scoring"
+  ],
+  "base_url": "https://api.typesafe.ai/v1",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "credential_fields": [
+      {
+        "name": "token",
+        "label": "API Key",
+        "description": "Your TypeSafe API key — create one at https://console.typesafe.ai/keys"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "ask",
+      "description": "Ask Jev one or more questions about a piece of content via POST /systemone. Put the content in `state` and the questions in `questions`, keyed by names you choose; answers come back under the same keys in `answers`. Question types: noul = yes/no, answer `noul` is a 0–1 probability that the statement is true; choice = pick one of the `criteria` keys, answer has `choice`, `confidence` and `probabilities`; score = `criteria` is an ordered list of levels (index 0 upward, max 10), answer `score` is the probability-weighted level and may be fractional. Batch several questions in one call: billing is per input token only. Default context is 64k tokens per request and 32k per question.",
+      "method": "POST",
+      "path": "/systemone",
+      "timeout_ms": 120000,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Model name or alias. Use jev-latest unless pinning a version (e.g. jev-1.14.0). Call list_models for the aliases.",
+            "default": "jev-latest"
+          },
+          "state": {
+            "description": "The content every question refers to: a string, a JSON object, or an array of text values. Text only.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              },
+              {
+                "type": "array"
+              }
+            ]
+          },
+          "questions": {
+            "type": "object",
+            "description": "At least one question, keyed by a name you choose. Example: {\"is_urgent\": {\"type\": \"noul\", \"instructions\": \"The message conveys urgency\"}, \"department\": {\"type\": \"choice\", \"criteria\": {\"billing\": \"Payment issues\", \"technical\": \"Bugs or integration problems\"}}, \"frustration\": {\"type\": \"score\", \"criteria\": [\"Calm\", \"Frustrated but civil\", \"Very angry\"]}}",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "noul",
+                    "choice",
+                    "score"
+                  ],
+                  "description": "noul = yes/no probability; choice = pick one option; score = graded level."
+                },
+                "instructions": {
+                  "description": "What to judge. For noul, the statement whose truth is estimated. String, object or array."
+                },
+                "criteria": {
+                  "description": "choice: REQUIRED object mapping each option name to its description (1–255 options). score: REQUIRED array of level descriptions, lowest first (1–10 levels). noul: optional {\"true\": ..., \"false\": ...} descriptions."
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          }
+        },
+        "required": [
+          "model",
+          "state",
+          "questions"
+        ]
+      }
+    },
+    {
+      "name": "list_models",
+      "description": "List the Jev model aliases available via GET /models (name, description, release_date).",
+      "method": "GET",
+      "path": "/models",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ],
+  "health_check": {
+    "tool": "list_models"
+  }
+}
