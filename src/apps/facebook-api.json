@@ -186,6 +186,36 @@
       }
     },
     {
+      "name": "facebook_set_video_thumbnail",
+      "description": "Upload a custom thumbnail to a processed Facebook Page video and optionally make it preferred. Requires a Page access token.",
+      "method": "POST",
+      "path": "/{videoId}/thumbnails",
+      "multipart_form": {
+        "field_names": ["is_preferred", "access_token"],
+        "file_fields": { "source": "source" }
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "videoId": { "type": "string", "description": "Facebook video object ID." },
+          "is_preferred": { "type": "boolean", "description": "Use this image as the preferred thumbnail." },
+          "source": {
+            "type": "object",
+            "description": "JPEG or PNG image bytes as a binary envelope.",
+            "properties": {
+              "base64": { "type": "string" },
+              "mimeType": { "type": "string", "enum": ["image/jpeg", "image/png"] }
+            },
+            "required": ["base64", "mimeType"]
+          },
+          "source_filename": { "type": "string", "description": "Thumbnail filename with its image extension." },
+          "access_token": { "type": "string", "description": "Page-level access token from list_pages." }
+        },
+        "required": ["videoId", "source", "access_token"]
+      },
+      "mock_response": { "success": true }
+    },
+    {
       "name": "get_page_posts",
       "description": "List posts from a Facebook page. Calls GET /{pageId}/posts on the Graph API. Page-level access_token is required (user-level tokens are rejected for /posts on Pages). Returns posts with message content, images (full_picture URL), permalink_url, and engagement metrics (reactions/comments/shares.summary.total_count when included in fields).",
       "method": "GET",
@@ -587,6 +617,15 @@
               "STORIES"
             ],
             "default": "IMAGE"
+          },
+          "cover_url": {
+            "type": "string",
+            "description": "Publicly reachable image URL used as the Reel cover."
+          },
+          "thumb_offset": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Milliseconds into the Reel video to use as its cover when no cover_url is given."
           },
           "sync": {
             "type": "boolean",
