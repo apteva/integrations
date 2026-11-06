@@ -186,22 +186,20 @@
       }
     },
     {
-      "name": "post_video_with_thumbnail",
-      "description": "Publish a Facebook Page video from a public URL with a custom thumbnail image uploaded as a multipart file. Requires a Page access token.",
+      "name": "facebook_set_video_thumbnail",
+      "description": "Upload a custom thumbnail to a processed Facebook Page video and optionally make it preferred. Requires a Page access token.",
       "method": "POST",
-      "path": "/{pageId}/videos",
+      "path": "/{videoId}/thumbnails",
       "multipart_form": {
-        "field_names": ["file_url", "title", "description", "access_token"],
-        "file_fields": { "thumb": "thumb" }
+        "field_names": ["is_preferred", "access_token"],
+        "file_fields": { "source": "source" }
       },
       "input_schema": {
         "type": "object",
         "properties": {
-          "pageId": { "type": "string", "description": "Facebook Page ID." },
-          "file_url": { "type": "string", "description": "Publicly accessible video URL." },
-          "title": { "type": "string", "description": "Video title." },
-          "description": { "type": "string", "description": "Video description." },
-          "thumb": {
+          "videoId": { "type": "string", "description": "Facebook video object ID." },
+          "is_preferred": { "type": "boolean", "description": "Use this image as the preferred thumbnail." },
+          "source": {
             "type": "object",
             "description": "JPEG or PNG image bytes as a binary envelope.",
             "properties": {
@@ -210,12 +208,12 @@
             },
             "required": ["base64", "mimeType"]
           },
-          "thumb_filename": { "type": "string", "description": "Thumbnail filename with its image extension." },
+          "source_filename": { "type": "string", "description": "Thumbnail filename with its image extension." },
           "access_token": { "type": "string", "description": "Page-level access token from list_pages." }
         },
-        "required": ["pageId", "file_url", "thumb", "access_token"]
+        "required": ["videoId", "source", "access_token"]
       },
-      "mock_response": { "id": "122100000000000020" }
+      "mock_response": { "success": true }
     },
     {
       "name": "get_page_posts",

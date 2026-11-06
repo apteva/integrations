@@ -44,16 +44,18 @@ test("Facebook-connected Instagram sends Reel cover fields to Graph", async () =
   ]);
 });
 
-test("Facebook video upload sends the cover as a multipart image file", async () => {
+test("Facebook uploads a preferred thumbnail to the existing video", async () => {
   const app = getAppTemplate("facebook-api");
-  const tool = app?.tools.find(({ name }) => name === "post_video_with_thumbnail");
+  const tool = app?.tools.find(({ name }) => name === "facebook_set_video_thumbnail");
   if (!app || !tool) throw new Error("Missing Facebook video thumbnail tool");
 
   let form: FormData | undefined;
+  let url: string | undefined;
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (_, init) => {
+  globalThis.fetch = async (request, init) => {
+    url = String(request);
     form = init?.body as FormData;
-    return Response.json({ id: "page-video" });
+    return Response.json({ success: true });
   };
 
   try {
@@ -62,22 +64,21 @@ test("Facebook video upload sends the cover as a multipart image file", async ()
       tool,
       credentials: { access_token: "user-token" },
       input: {
-        pageId: "page-id",
-        file_url: "https://cdn.example.com/video.mp4",
+        videoId: "page-video",
+        is_preferred: true,
         access_token: "page-token",
-        description: "Test video",
-        thumb: { base64: "/9j/", mimeType: "image/jpeg" },
-        thumb_filename: "cover.jpg",
+        source: { base64: "/9j/", mimeType: "image/jpeg" },
+        source_filename: "cover.jpg",
       },
     });
   } finally {
     globalThis.fetch = originalFetch;
   }
 
-  expect(form?.get("file_url")).toBe("https://cdn.example.com/video.mp4");
+  expect(url).toBe("https://graph.facebook.com/v25.0/page-video/thumbnails");
   expect(form?.get("access_token")).toBe("page-token");
-  expect(form?.get("description")).toBe("Test video");
-  const thumb = form?.get("thumb");
+  expect(form?.get("is_preferred")).toBe("true");
+  const thumb = form?.get("source");
   expect(thumb).toBeInstanceOf(File);
   if (!(thumb instanceof File)) throw new Error("Expected thumbnail file");
   expect(thumb.name).toBe("cover.jpg");
