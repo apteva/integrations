@@ -598,6 +598,8 @@ export interface AppToolTemplate {
   /** Optional override when one integration mixes hosts. Defaults to AppTemplate.base_url. */
   base_url?: string;
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
+  /** Call this tool on a stateless MCP endpoint. Auth body params are injected into its arguments. */
+  mcp_tool?: string;
   /** Optional per-tool request headers. Overrides app-level auth headers. */
   headers?: Record<string, string>;
   /** App-level auth headers to suppress for this route. Used for presigned
