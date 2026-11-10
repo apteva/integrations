@@ -318,6 +318,18 @@ export async function executeTool(
       headers["Content-Type"] = "application/json";
     }
     fetchOpts.headers = headers;
+  } else if (tool.mcp_tool) {
+    const properties = (tool.input_schema.properties ?? {}) as Record<string, unknown>;
+    const args = Object.fromEntries(Object.entries(remainingParams).filter(([key]) =>
+      Object.hasOwn(properties, key) && !Object.hasOwn(app.auth.body_params ?? {}, key)
+    ));
+    headers.Accept = "application/json, text/event-stream";
+    headers["Content-Type"] = "application/json";
+    fetchOpts.redirect = "error";
+    fetchOpts.body = JSON.stringify({
+      jsonrpc: "2.0", id: 1, method: "tools/call",
+      params: { name: tool.mcp_tool, arguments: { ...args, ...authBodyParams } },
+    });
   } else if (transformedBody !== undefined) {
     const body =
       isPlainObject(transformedBody) && Object.keys(authBodyParams).length > 0
@@ -524,6 +536,9 @@ export async function executeTool(
 
     let data: unknown;
     const ct = response.headers.get("content-type") || "";
+    if (tool.mcp_tool) {
+      return decodeCatalogMcpResult(response.status, responseHeaders, await response.text(), Object.values(authBodyParams));
+    }
     let isBinary = false;
     const forceBinary = response.ok && tool.response_type === "binary";
     if (!forceBinary && isJsonContentType(ct)) {
@@ -2354,6 +2369,55 @@ function setPath(target: Record<string, unknown>, path: string, value: unknown):
     current = current[part] as Record<string, unknown>;
   }
   current[parts[parts.length - 1]] = value;
+}
+
+function decodeCatalogMcpResult(
+  status: number,
+  headers: Record<string, string>,
+  body: string,
+  secrets: string[],
+): ExecuteToolResult {
+  const failure = (status: number, message: string): ExecuteToolResult => ({
+    success: false,
+    status,
+    headers,
+    data: { error: secrets.reduce((text, secret) => text.replaceAll(secret, "[redacted]"), message) },
+  });
+  if (status < 200 || status >= 300) return failure(status, `MCP endpoint returned HTTP ${status}`);
+
+  const isEventStream = headers["content-type"]?.toLowerCase().includes("text/event-stream");
+  const payload = isEventStream
+    ? body.split("\n").filter(line => line.startsWith("data:")).at(-1)?.slice(5).trim()
+    : body;
+  let rpc: unknown;
+  try {
+    rpc = JSON.parse(payload ?? "");
+  } catch {
+    return failure(502, "Invalid MCP response");
+  }
+  if (!isPlainObject(rpc) || rpc.jsonrpc !== "2.0" || rpc.id !== 1) {
+    return failure(502, "Invalid MCP response");
+  }
+  if (isPlainObject(rpc.error)) {
+    return failure(rpc.error.code === -32001 ? 401 : 502, String(rpc.error.message || "MCP request failed"));
+  }
+  const result = rpc.result;
+  if (!isPlainObject(result)) return failure(502, "Missing MCP tool result");
+  const content = Array.isArray(result.content) ? result.content[0] : undefined;
+  const text = typeof content?.text === "string" ? content.text : "";
+  if (result.isError === true) return failure(422, text || "MCP tool failed");
+  let data = result.structuredContent;
+  if (data === undefined || data === null) {
+    data = {};
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
+  }
+  return { success: true, status, headers, data };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
