@@ -36,3 +36,13 @@ test('A throttled purchase is not retried automatically',async()=>{
  let requests=0;const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch:()=>{requests++;return Response.json({error:'rate limit'},{status:429})}});
  try {const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'x',api_secret:'y'},input:{domain:'example.com',autoRenew:true,years:1,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}}});expect(result.success).toBe(false);expect(requests).toBe(1);}finally{server.stop(true)}
 });
+
+test('An empty operation header does not fabricate an accepted operation',async()=>{
+ const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch:()=>new Response(null,{status:202,headers:{'Spaceship-Async-OperationId':''}})});
+ try{const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'x',api_secret:'y'},input:{domain:'example.com',autoRenew:true,years:1,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}}});expect(result.data).toEqual({});}finally{server.stop(true)}
+});
+
+test('A JSON 202 body keeps its fields alongside the operation handle',async()=>{
+ const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch:()=>Response.json({accepted:true},{status:202,headers:{'Spaceship-Async-OperationId':'operation456','Set-Cookie':'private=secret'}})});
+ try{const result=await executeTool({app:{...spaceship,base_url:`http://127.0.0.1:${server.port}`} as AppTemplate,tool:registration,credentials:{api_key:'x',api_secret:'y'},input:{domain:'example.com',autoRenew:true,years:1,privacyProtection:{level:'high',userConsent:true},contacts:{registrant:contact}}});expect(result.data).toEqual({accepted:true,operation_id:'operation456'});}finally{server.stop(true)}
+});
