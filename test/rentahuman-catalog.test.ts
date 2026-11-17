@@ -24,11 +24,11 @@ afterEach(() => {
 describe("RentAHuman integration catalog", () => {
   test("covers the documented API-key REST surface without duplicate routes", () => {
     const integration = app();
-    expect(integration.tools).toHaveLength(63);
-    expect(new Set(integration.tools.map((candidate) => candidate.name)).size).toBe(63);
+    expect(integration.tools).toHaveLength(68);
+    expect(new Set(integration.tools.map((candidate) => candidate.name)).size).toBe(68);
     expect(
       new Set(integration.tools.map((candidate) => `${candidate.method} ${candidate.path}`)).size,
-    ).toBe(63);
+    ).toBe(68);
 
     expect(integration.auth).toMatchObject({
       types: ["api_key"],
@@ -97,6 +97,7 @@ describe("RentAHuman integration catalog", () => {
 
   test("does not expose deprecated or non-API-key-only operations", () => {
     const routes = app().tools.map((candidate) => `${candidate.method} ${candidate.path}`);
+    expect(routes).not.toContain("POST /conversations");
     expect(routes).not.toContain("POST /agents/register");
     expect(routes).not.toContain("POST /agents/pairing-code");
     expect(routes).not.toContain("POST /keys/register-identity");

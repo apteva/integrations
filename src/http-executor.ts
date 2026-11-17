@@ -23,9 +23,8 @@ export interface ExecuteToolOptions {
   timeout?: number;
   // Maximum size, in bytes, accepted for a binary response. Larger
   // payloads are rejected with success=false instead of being buffered
-  // into memory. Defaults to 25 MB. Only applies to the binary branch;
-  // JSON and text responses are not capped here (fetch itself bounds them
-  // via the server and the timeout).
+  // into memory. Defaults to 25 MB. Also caps decoded base64_to_binary
+  // responses. Ordinary JSON/text metadata responses are not capped here.
   maxBinaryBytes?: number;
   /** Internal retry guard for short-lived credential exchanges. */
   credentialTokenRetried?: boolean;
@@ -58,19 +57,62 @@ export async function executeTool(
     app,
     tool,
     credentials,
-    input,
-    // Caller's explicit timeout wins; otherwise fall back to the tool's
-    // declared timeout_ms (for slow upstreams like image / video / long
-    // audio); finally the 30s default. Capped at 10 minutes.
-    timeout = Math.min(tool.timeout_ms ?? 30000, 600000),
+    input: suppliedInput,
+    timeout: explicitTimeout,
     maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES,
     credentialTokenRetried = false,
     rateLimitRetries = 0,
   } = opts;
 
+  // _apteva is execution metadata, never a provider request parameter.
+  const platformOptions = suppliedInput._apteva;
+  if (platformOptions !== undefined && (
+    !platformOptions || typeof platformOptions !== "object" || Array.isArray(platformOptions) ||
+    Object.keys(platformOptions).length !== 1 || !("timeout_ms" in platformOptions)
+  )) throw new Error("_apteva must contain only timeout_ms");
+  const input = platformOptions === undefined ? suppliedInput : { ...suppliedInput };
+  if (platformOptions !== undefined) delete input._apteva;
+  const maximum = tool.max_timeout_ms && tool.max_timeout_ms > 0 ? Math.min(tool.max_timeout_ms, 600000) : 600000;
+  const platformTimeout = (platformOptions as { timeout_ms: number } | undefined)?.timeout_ms;
+  if (platformOptions !== undefined && (typeof platformTimeout !== "number" || !Number.isInteger(platformTimeout) || platformTimeout < 1 || platformTimeout > maximum)) {
+    throw new Error(`_apteva.timeout_ms must be an integer between 1 and ${maximum}`);
+  }
+  const requestedTimeout = explicitTimeout ?? platformTimeout;
+  if (requestedTimeout !== undefined && (!Number.isInteger(requestedTimeout) || requestedTimeout < 1 || requestedTimeout > maximum)) {
+    throw new Error(`_apteva.timeout_ms must be an integer between 1 and ${maximum}`);
+  }
+  const timeout = Math.min(requestedTimeout ?? tool.timeout_ms ?? 30000, maximum);
+
   applyCredentialDefaults(app, credentials);
   if (app.slug === "open-banking-io") return executeOpenBankingIO(tool.name, credentials, input, timeout);
   await ensureCredentialToken(app, credentials);
+  if (app.slug === "openstreetmap-overpass") {
+    const fields = normalizeCredentials(credentials);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.contact_email || "")) {
+      throw new Error("An operator contact email is required for Overpass requests");
+    }
+    let endpoint: URL;
+    try {
+      endpoint = new URL(fields.overpass_base_url || "");
+    } catch {
+      throw new Error("A valid Overpass HTTPS base URL is required");
+    }
+    if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) {
+      throw new Error("A valid Overpass HTTPS base URL is required");
+    }
+  }
+  if (app.slug === "openstreetmap-nominatim") {
+    const configured = normalizeCredentials(credentials).nominatim_base_url || "";
+    let endpoint: URL;
+    try {
+      endpoint = new URL(configured);
+    } catch {
+      throw new Error("A self-hosted or licensed Nominatim HTTPS base URL is required");
+    }
+    if (endpoint.protocol !== "https:" || endpoint.hostname.toLowerCase() === "nominatim.openstreetmap.org" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) {
+      throw new Error("Use a self-hosted or licensed Nominatim HTTPS endpoint; the public endpoint cannot be used by this integration");
+    }
+  }
 
   // 1. Build the URL with path parameter + credential interpolation
   const url = buildUrl(tool.base_url || app.base_url, tool.path, input, credentials);
@@ -140,6 +182,10 @@ export async function executeTool(
     binaryParam && isBinaryEnvelope(input[binaryParam])
       ? (input[binaryParam] as Record<string, unknown>)
       : null;
+  const requiredInputs = tool.input_schema.required as string[] | undefined;
+  if (binaryParam && requiredInputs?.includes(binaryParam) && !binaryEnvelope) {
+    throw new Error(`body_binary_param "${binaryParam}" must be a binary file envelope`);
+  }
 
   // Root-body param: when set, this field's value IS the whole JSON body
   // (e.g. a bare array). Pulled aside before the query/body split so it
@@ -203,7 +249,7 @@ export async function executeTool(
     const base64 = String(binaryEnvelope.base64 || "");
     const mime =
       String(binaryEnvelope.mimeType || "") || "application/octet-stream";
-    fetchOpts.body = Buffer.from(base64, "base64");
+    fetchOpts.body = new Uint8Array(decodeBinaryBase64(base64, "base64"));
     // Let the envelope's Content-Type override any template header.
     // Strip casing variants first so we don't leave a stale one behind.
     delete headers["Content-Type"];
@@ -271,6 +317,18 @@ export async function executeTool(
       headers["Content-Type"] = "application/json";
     }
     fetchOpts.headers = headers;
+  } else if (tool.mcp_tool) {
+    const properties = (tool.input_schema.properties ?? {}) as Record<string, unknown>;
+    const args = Object.fromEntries(Object.entries(remainingParams).filter(([key]) =>
+      Object.hasOwn(properties, key) && !Object.hasOwn(app.auth.body_params ?? {}, key)
+    ));
+    headers.Accept = "application/json, text/event-stream";
+    headers["Content-Type"] = "application/json";
+    fetchOpts.redirect = "error";
+    fetchOpts.body = JSON.stringify({
+      jsonrpc: "2.0", id: 1, method: "tools/call",
+      params: { name: tool.mcp_tool, arguments: { ...args, ...authBodyParams } },
+    });
   } else if (transformedBody !== undefined) {
     const body =
       isPlainObject(transformedBody) && Object.keys(authBodyParams).length > 0
@@ -472,8 +530,12 @@ export async function executeTool(
 
     let data: unknown;
     const ct = response.headers.get("content-type") || "";
+    if (tool.mcp_tool) {
+      return decodeCatalogMcpResult(response.status, responseHeaders, await response.text(), Object.values(authBodyParams));
+    }
     let isBinary = false;
-    if (isJsonContentType(ct)) {
+    const forceBinary = response.ok && tool.response_type === "binary";
+    if (!forceBinary && isJsonContentType(ct)) {
       // Parse JSON via text() so a malformed body doesn't collapse into
       // the network-error catch (which would lose response.status). If
       // the server sent us 500 with a broken error page labelled as
@@ -493,7 +555,7 @@ export async function executeTool(
           headers: responseHeaders,
         };
       }
-    } else if (isBinaryContentType(ct)) {
+    } else if (forceBinary || isBinaryContentType(ct)) {
       // Pre-reject oversize payloads via Content-Length when available so
       // we don't buffer gigabytes into memory just to discover the cap.
       const declared = Number(response.headers.get("content-length") || "0");
@@ -525,7 +587,7 @@ export async function executeTool(
       data = {
         _binary: true,
         base64: Buffer.from(buffer).toString("base64"),
-        mimeType: ct.split(";")[0].trim(),
+        mimeType: ct.split(";")[0].trim() || "application/octet-stream",
         size: buffer.byteLength,
       };
       isBinary = true;
@@ -637,7 +699,17 @@ export async function executeTool(
     }
 
     if (tool.response_transform && data && !isBinary) {
-      data = applyResponseTransform(tool.response_transform, data, input);
+      data = applyResponseTransform(tool.response_transform, data, input, maxBinaryBytes);
+      isBinary = isBinaryEnvelope(data);
+    }
+
+    if (!isBinary && tool.response_header_fields) {
+      const mapped: Record<string, unknown> = isPlainObject(data) ? data : {};
+      for (const [header, field] of Object.entries(tool.response_header_fields)) {
+        const value = response.headers.get(header);
+        if (value) mapped[field] = value;
+      }
+      data = mapped;
     }
 
     if (!isBinary) data = omitResponseFields(data, tool.response_omit);
@@ -1678,13 +1750,30 @@ function appendFormValue(
 function applyResponseTransform(
   transform: ResponseTransform,
   data: unknown,
-  input: Record<string, unknown> = {}
+  input: Record<string, unknown> = {},
+  maxBinaryBytes = DEFAULT_MAX_BINARY_BYTES
 ): unknown {
   switch (transform.type) {
     case "email_message":
       return normalizeEmailMessage(data, transform, input);
     case "email_thread":
       return normalizeEmailThread(data, transform);
+    case "base64_to_binary": {
+      const value = getPath(data, transform.source);
+      if (typeof value !== "string") throw new Error("Binary response is missing encoded file data");
+      if (value.length > Math.ceil(maxBinaryBytes / 3) * 4) {
+        throw new Error("Binary response exceeds the file size limit");
+      }
+      const bytes = decodeBinaryBase64(value, transform.encoding || "base64");
+      if (bytes.length > maxBinaryBytes) throw new Error("Binary response exceeds the file size limit");
+      const mimeType = transform.mime_type_param ? input[transform.mime_type_param] : undefined;
+      return {
+        _binary: true,
+        base64: bytes.toString("base64"),
+        mimeType: typeof mimeType === "string" && mimeType ? mimeType : transform.mime_type || "application/octet-stream",
+        size: bytes.length,
+      };
+    }
     case "base64_field_decode": {
       const value = getPath(data, transform.source);
       const decoded =
@@ -1793,7 +1882,22 @@ function responseTransformLocalParams(transform?: ResponseTransform): Set<string
     if (transform.body_mode_param) params.add(transform.body_mode_param);
     if (transform.max_chars_param) params.add(transform.max_chars_param);
   }
+  if (transform?.type === "base64_to_binary" && transform.mime_type_param) {
+    params.add(transform.mime_type_param);
+  }
   return params;
+}
+
+function decodeBinaryBase64(value: string, encoding: "base64" | "base64url"): Buffer {
+  const alphabet = encoding === "base64url" ? /^[A-Za-z0-9_-]*={0,2}$/ : /^[A-Za-z0-9+/]*={0,2}$/;
+  if (!alphabet.test(value) || (value.includes("=") && value.length % 4 !== 0)) {
+    throw new Error("Invalid encoded binary data");
+  }
+  const bytes = Buffer.from(value, encoding);
+  if (bytes.toString(encoding).replace(/=+$/, "") !== value.replace(/=+$/, "")) {
+    throw new Error("Invalid encoded binary data");
+  }
+  return bytes;
 }
 
 function selectEmailBodies(
@@ -2253,6 +2357,55 @@ function setPath(target: Record<string, unknown>, path: string, value: unknown):
     current = current[part] as Record<string, unknown>;
   }
   current[parts[parts.length - 1]] = value;
+}
+
+function decodeCatalogMcpResult(
+  status: number,
+  headers: Record<string, string>,
+  body: string,
+  secrets: string[],
+): ExecuteToolResult {
+  const failure = (status: number, message: string): ExecuteToolResult => ({
+    success: false,
+    status,
+    headers,
+    data: { error: secrets.reduce((text, secret) => text.replaceAll(secret, "[redacted]"), message) },
+  });
+  if (status < 200 || status >= 300) return failure(status, `MCP endpoint returned HTTP ${status}`);
+
+  const isEventStream = headers["content-type"]?.toLowerCase().includes("text/event-stream");
+  const payload = isEventStream
+    ? body.split("\n").filter(line => line.startsWith("data:")).at(-1)?.slice(5).trim()
+    : body;
+  let rpc: unknown;
+  try {
+    rpc = JSON.parse(payload ?? "");
+  } catch {
+    return failure(502, "Invalid MCP response");
+  }
+  if (!isPlainObject(rpc) || rpc.jsonrpc !== "2.0" || rpc.id !== 1) {
+    return failure(502, "Invalid MCP response");
+  }
+  if (isPlainObject(rpc.error)) {
+    return failure(rpc.error.code === -32001 ? 401 : 502, String(rpc.error.message || "MCP request failed"));
+  }
+  const result = rpc.result;
+  if (!isPlainObject(result)) return failure(502, "Missing MCP tool result");
+  const content = Array.isArray(result.content) ? result.content[0] : undefined;
+  const text = typeof content?.text === "string" ? content.text : "";
+  if (result.isError === true) return failure(422, text || "MCP tool failed");
+  let data = result.structuredContent;
+  if (data === undefined || data === null) {
+    data = {};
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
+  }
+  return { success: true, status, headers, data };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

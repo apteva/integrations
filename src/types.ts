@@ -88,6 +88,7 @@ export interface RuntimeModelPolicy {
 }
 
 export interface AppRuntimeConfig {
+  service_tiers?: string[];
   /** Which runtime pool this app feeds. Only "llm" entries land in
    *  config.json's providers[]; the others export env vars only. */
   role: "llm" | "embeddings" | "tts";
@@ -117,6 +118,13 @@ export interface AppRuntimeConfig {
   /** Optional purpose-specific view over the live model catalog. Omit to retain
    *  the provider's existing behavior. Preferences never invent unavailable IDs. */
   model_policy?: RuntimeModelPolicy;
+  /** Voice-session choices, separate from generateContent text models. */
+  realtime?: {
+    provider_key: string;
+    default_model: string;
+    models: Array<{ id: string; name: string; available: boolean; voices?: string[]; default_voice?: string }>;
+    voices: string[];
+  };
 }
 
 export interface IntegrationURLProperty {
@@ -201,10 +209,14 @@ export interface UIComponent {
    *  slot before showing it to the agent. */
   slots?: string[];
   /** Semantic dashboard widget sizes offered by the host. */
+  /** Suggested agent-page presets; presentation only, never authorization. */
+  recommended_views?: Array<"personal" | "business" | "developer">;
   supported_sizes?: Array<"half" | "full">;
   default_size?: "half" | "full";
   /** Project-wide or attached-agent contextual availability. */
   visibility?: "attached" | "project";
+  /** Dashboard Home scopes supported by this same component. Empty means project-only. */
+  dashboard_scopes?: Array<"project" | "global">;
   /** App-bus topics that should refresh this component. */
   refresh_topics?: string[];
   /** JSON-Schema-shaped props contract. Required key list +
@@ -514,6 +526,7 @@ export interface OAuthConfig {
   client_id_param_name?: string;
   scope_separator?: string;
   token_auth_basic_only?: boolean;
+  client_secret_required?: boolean;
   setup_url?: string;        // URL to provider's developer console to create an OAuth app
   setup_steps?: string[];    // Brief setup instructions shown in the UI
   // Extra static query parameters merged into the authorize URL after
@@ -579,6 +592,8 @@ export interface AppToolTemplate {
   /** Optional override when one integration mixes hosts. Defaults to AppTemplate.base_url. */
   base_url?: string;
   path: string; // e.g. "/repos/{owner}/{repo}/issues"
+  /** Call this tool on a stateless MCP endpoint. Auth body params are injected into its arguments. */
+  mcp_tool?: string;
   /** Optional per-tool request headers. Overrides app-level auth headers. */
   headers?: Record<string, string>;
   /** App-level auth headers to suppress for this route. Used for presigned
@@ -626,6 +641,10 @@ export interface AppToolTemplate {
   header_transforms?: HeaderTransform[];
   signing?: { signers?: SignerSpec[] };
   response_path?: string; // JSONPath to extract from response
+  /** Map only declared upstream response headers into the JSON result. */
+  response_header_fields?: Record<string, string>;
+  /** Preserve successful download bytes, including text/JSON, as a binary envelope. */
+  response_type?: "binary";
   /** Detect protocol-level failures carried inside a successful HTTP
    * response before response_path extracts the success payload. */
   response_error?: ResponseError;
@@ -638,6 +657,8 @@ export interface AppToolTemplate {
   // longer than 30s (image generation, video generation, long-audio
   // transcription, etc).
   timeout_ms?: number;
+  /** Maximum caller-selected _apteva.timeout_ms; never above 600000. */
+  max_timeout_ms?: number;
   // Dot-separated paths in the JSON response to strip before the
   // agent sees the payload. Use `[]` to step into every element of
   // an array (e.g. "results.channels[].alternatives[].words"). Runs
@@ -795,7 +816,18 @@ export type ResponseTransform =
   | EmailMessageResponseTransform
   | EmailThreadResponseTransform
   | Base64FieldDecodeResponseTransform
+  | Base64BinaryResponseTransform
   | FieldMapResponseTransform;
+
+export interface Base64BinaryResponseTransform {
+  type: "base64_to_binary";
+  /** Dot path containing encoded file bytes in a JSON response. */
+  source: string;
+  encoding?: "base64" | "base64url";
+  mime_type?: string;
+  /** Optional local input for the file MIME type; never sent upstream. */
+  mime_type_param?: string;
+}
 
 export interface EmailMessageResponseTransform {
   type: "email_message";
@@ -906,6 +938,10 @@ export interface GeneratedMcpTool {
     default_body?: Record<string, string>; // Credential-derived defaults merged into request body
     request_transform?: RequestTransform;
     response_transform?: ResponseTransform;
+    response_type?: "binary";
+    body_binary_param?: string;
+    query_params?: string[];
+    query_param_aliases?: Record<string, string>;
   };
 }
 
