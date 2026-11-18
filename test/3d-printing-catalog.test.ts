@@ -53,7 +53,23 @@ describe("3D-printing service catalogs", () => {
   });
 
   test("covers a real upload-to-order lifecycle for each operational provider", () => {
-    expect(tool("craftcloud", "upload_model")).toMatchObject({ method: "POST", path: "/v5/model" });
+    // The public v5 API has no model upload; upload goes to the optional partner API.
+    expect(tool("craftcloud", "upload_model")).toMatchObject({
+      method: "POST",
+      base_url: "{{credential.partner_api_url}}",
+      path: "/model",
+    });
+    expect(tool("craftcloud", "get_model")).toMatchObject({
+      method: "GET",
+      base_url: "{{credential.partner_api_url}}",
+      path: "/model/{modelId}",
+    });
+    const partnerFields = app("craftcloud").auth.credential_fields ?? [];
+    expect(partnerFields.map(({ name }) => name)).toEqual(["partner_api_url", "partner_api_key"]);
+    expect(partnerFields.every((field) => field.required === false)).toBe(true);
+    for (const removed of ["evolve_model", "create_configuration", "get_configuration", "validate_address"]) {
+      expect(app("craftcloud").tools.some(({ name }) => name === removed)).toBe(false);
+    }
     expect(tool("craftcloud", "create_price_request").input_schema.required).toEqual([
       "currency",
       "countryCode",
