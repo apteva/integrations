@@ -6,26 +6,39 @@
   "categories": ["3d-printing", "shapeways", "marketplace", "materials", "orders"],
   "base_url": "https://api.shapeways.com",
   "auth": {
-    "types": ["bearer", "oauth2"],
+    "types": ["api_key"],
+    "token_exchange": {
+      "url": "https://api.shapeways.com/oauth2/token",
+      "method": "POST",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_params": {
+        "grant_type": "client_credentials",
+        "client_id": "{{credential.client_id}}",
+        "client_secret": "{{credential.client_secret}}"
+      },
+      "access_token_path": "access_token",
+      "expires_in_path": "expires_in",
+      "expiry_skew_seconds": 60
+    },
     "headers": {
-      "Authorization": "Bearer {{token}}",
+      "Authorization": "Bearer {{access_token}}",
       "Content-Type": "application/json"
     },
     "credential_fields": [
       {
-        "name": "token",
-        "label": "Access Token",
+        "name": "client_id",
+        "label": "OAuth Client ID",
+        "description": "Client ID of the API app in your Shapeways account. Requests act as that account (client-credentials grant); tokens are fetched and renewed automatically.",
+        "required": true
+      },
+      {
+        "name": "client_secret",
+        "label": "OAuth Client Secret",
         "type": "password",
-        "description": "Shapeways OAuth2 access token. Tokens normally expire after one hour; prefer Authorize so refresh tokens are managed automatically."
+        "description": "Client secret of the same Shapeways API app.",
+        "required": true
       }
-    ],
-    "oauth2": {
-      "authorize_url": "https://api.shapeways.com/oauth2/authorize",
-      "token_url": "https://api.shapeways.com/oauth2/token",
-      "scopes": [],
-      "client_id_required": true,
-      "pkce": false
-    }
+    ]
   },
   "health_check": { "tool": "list_models" },
   "tools": [
