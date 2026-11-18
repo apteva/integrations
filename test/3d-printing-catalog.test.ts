@@ -70,6 +70,16 @@ describe("3D-printing service catalogs", () => {
     for (const removed of ["evolve_model", "create_configuration", "get_configuration", "validate_address"]) {
       expect(app("craftcloud").tools.some(({ name }) => name === removed)).toBe(false);
     }
+    // Shapeways drops the OAuth state on redirect, so it authenticates with the
+    // client-credentials grant instead of the browser authorize flow.
+    const shapewaysAuth = app("shapeways").auth as any;
+    expect(shapewaysAuth.oauth2).toBeUndefined();
+    expect(shapewaysAuth.token_exchange).toMatchObject({
+      url: "https://api.shapeways.com/oauth2/token",
+      body_params: { grant_type: "client_credentials" },
+      access_token_path: "access_token",
+    });
+    expect(shapewaysAuth.headers.Authorization).toBe("Bearer {{access_token}}");
     expect(tool("craftcloud", "create_price_request").input_schema.required).toEqual([
       "currency",
       "countryCode",
