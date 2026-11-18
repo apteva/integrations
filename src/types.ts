@@ -511,7 +511,9 @@ export interface CredentialField {
   exposure?: "secret" | "public";
 }
 
-export type AuthType = "api_key" | "bearer" | "basic" | "oauth1" | "oauth2" | "oauth_device_code" | "aws_sigv4" | "custom";
+/** "local_cli": the provider runs through a CLI signed in on the server
+ *  machine (e.g. the Claude CLI); the connection stores no credentials. */
+export type AuthType = "api_key" | "bearer" | "basic" | "oauth1" | "oauth2" | "oauth_device_code" | "local_cli" | "aws_sigv4" | "custom";
 
 export interface OAuth1Config {
   request_token_url: string;
