@@ -72,6 +72,131 @@ export interface AppTemplate {
    *  role — 62 catalog apps carry the "ai" tag but only a handful are
    *  runtimes. */
   runtime?: AppRuntimeConfig;
+  /** Optional stateful provider simulation for test runtimes. Only fake
+   *  connections created by a runtime with `simulate: true` use it; real
+   *  connections never do. See AppMockConfig. */
+  mock?: AppMockConfig;
+}
+
+// ============ Provider simulation (test runtimes) ============
+
+/** A catalog-driven, stateful simulation of a provider. The server runs it
+ *  for fake connections in test runtimes: tool calls read and change the
+ *  simulation state, and emitted events are signed like the provider's own
+ *  webhooks and delivered in-process to the runtime's apps. A tool without an
+ *  entry in `tools` fails with `mock_unsupported_tool` instead of returning
+ *  a generic stub, so a test cannot pass by accident.
+ *
+ *  Expressions (`require`, `when`, `{{ }}`): dotted paths (`input.to`,
+ *  `call.state`), bracket keys (`input['filter[phone_number]']`), single-quoted
+ *  strings, numbers, true/false/null, `!`, `==`, `!=`, `&&`, `||` (returns the
+ *  first truthy operand) and the functions len, lower, now, uuid, numeric_id
+ *  and token('prefix'). A template string that is exactly `{{expr}}` keeps the
+ *  value's type and is omitted from its object when the value is null;
+ *  otherwise `{{ }}` interpolates text. An object with `$use: "<template>"`
+ *  starts from that named template and overlays its other keys. */
+export interface AppMockConfig {
+  version: 1;
+  /** How delivered webhooks are signed. The server generates a key pair per
+   *  simulated connection and stores the public key in `public_key_field`. */
+  signing?: AppMockSigning;
+  delivery?: AppMockDelivery;
+  /** Webhook body template. Variables: event, event_id, occurred_at
+   *  (runtime logical time), payload and attempt. */
+  envelope?: unknown;
+  /** Named provider-shaped errors. Their body may use `{{detail}}`. */
+  errors?: Record<string, AppMockError>;
+  /** Named object templates used with `$use`. */
+  templates?: Record<string, Record<string, unknown>>;
+  /** State collections. Each record is keyed by `key` (default "id"). */
+  collections: Record<string, AppMockCollection>;
+  /** Simulated tools, keyed by tool name. Each must exist in `tools[]`. */
+  tools: Record<string, AppMockOperation>;
+  /** Provider-side events a test can cause, such as an incoming call. */
+  triggers?: Record<string, AppMockTrigger>;
+}
+
+export interface AppMockSigning {
+  algorithm: "ed25519";
+  /** Credential field that receives the base64 public key. */
+  public_key_field: string;
+  signature_header: string;
+  timestamp_header: string;
+  /** Signed message; `{timestamp}` is Unix seconds, `{body}` the raw body. */
+  message: string;
+}
+
+export interface AppMockDelivery {
+  /** Attempts per event, including the first (default 3, max 5). */
+  max_attempts?: number;
+  /** Response statuses that are retried (transport errors always are). */
+  retry_statuses?: number[];
+}
+
+export interface AppMockError {
+  status: number;
+  body: unknown;
+}
+
+export interface AppMockCollection {
+  /** Field that identifies a record (default "id"). */
+  key?: string;
+  /** Generator for a missing key: numeric, uuid, or a token prefix. */
+  id?: "numeric" | "uuid" | { token: string };
+  /** Fields every new record starts with. */
+  defaults?: Record<string, unknown>;
+  /** Whether a runtime binding may seed records into this collection. */
+  seedable?: boolean;
+}
+
+export interface AppMockOperation {
+  steps: AppMockStep[];
+}
+
+export interface AppMockTrigger extends AppMockOperation {
+  description: string;
+  input_schema: Record<string, unknown>;
+}
+
+/** One step. Exactly one of the operation keys is set; `when` skips it. */
+export interface AppMockStep {
+  when?: string;
+  /** Assign local variables. */
+  let?: Record<string, unknown>;
+  /** Fail with `error` unless the expression is truthy. */
+  require?: string;
+  /** Read one record by key into `as`. */
+  lookup?: string;
+  /** First record matching `where` into `as`. */
+  find?: string;
+  /** All records matching `where` into `as`. A null `where` value is ignored. */
+  list?: string;
+  create?: string;
+  update?: string;
+  delete?: string;
+  /** Queue an event for delivery once the operation succeeds. */
+  emit?: string;
+  /** Return the cached response for a repeated key (provider command ids). */
+  dedupe?: string;
+  respond?: unknown;
+  key?: string;
+  where?: Record<string, unknown>;
+  record?: Record<string, unknown>;
+  set?: Record<string, unknown>;
+  /** Expression for an object merged into the record (after `record`/before `set`). */
+  merge?: string;
+  omit?: string[];
+  unset?: string[];
+  as?: string;
+  /** Webhook URL for `emit`. */
+  to?: string;
+  payload?: Record<string, unknown>;
+  /** Events with the same lane are delivered one at a time, in order. */
+  lane?: string;
+  status?: number;
+  /** Error name from `errors`, used by require and by a missing record. */
+  error?: string;
+  detail?: string;
 }
 
 /** Compatibility rules belong to the integration; the server enforces them.
