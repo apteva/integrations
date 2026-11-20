@@ -124,3 +124,31 @@ test("Billable HeyGen mutations return provider failure without an automatic ret
     expect(requests).toHaveLength(1);
   }, { error: { message: "Request in progress" } }, 409);
 });
+
+test("Avatar 6 engine, 2K resolution and Model API tools are exposed", async () => {
+  const createVideo = tool("create_video");
+  const props = createVideo.input_schema.properties as Record<string, any>;
+  const engines = JSON.stringify(props.engine);
+  expect(engines).toContain("heygen-avatar-6");
+  expect(engines).toContain("heygen-avatar-6-turbo");
+  expect(engines).toContain("motion_expressiveness");
+  expect(JSON.stringify(props.resolution)).toContain('"2k"');
+  expect(createVideo.description).toContain("create_avatar_6_video");
+
+  await withProvider(async (execute, requests) => {
+    const body = {
+      model: "heygen-avatar-6-turbo",
+      reference_images: [{ type: "url", url: "https://example.com/face.jpg" }],
+      audio: { type: "url", url: "https://example.com/speech.mp3" },
+      motion_expressiveness: "less",
+    };
+    await execute("create_avatar_6_video", { ...body, idempotency_key: "a6:1" });
+    expect([requests[0].method, requests[0].url.pathname]).toEqual(["POST", "/v3/models/avatars"]);
+    expect(JSON.parse(requests[0].body)).toEqual(body);
+    expect(requests[0].headers.get("Idempotency-Key")).toBe("a6:1");
+
+    await execute("get_model_video", { video_id: "vid_1" });
+    expect([requests[1].method, requests[1].url.pathname, requests[1].body]).toEqual(["GET", "/v3/models/videos/vid_1", ""]);
+  }, { data: { video_id: "vid_1", status: "pending" } }, 202);
+  expect(tool("create_avatar_6_video").input_schema.required).toEqual(["model", "audio"]);
+});
