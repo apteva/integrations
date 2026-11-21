@@ -17,6 +17,7 @@ const OPERATIONS = [
   "update",
   "delete",
   "emit",
+  "handoff",
   "dedupe",
   "stream",
   "respond",
@@ -72,8 +73,8 @@ function mockProblems(app: AppTemplate): string[] {
     const opens = text.split("{{").length - 1;
     const closes = text.split("}}").length - 1;
     if (opens !== closes) problems.push(`unbalanced template: ${text}`);
-    for (const match of text.matchAll(/fixture_url\(\s*'([^']*)'\s*\)/g)) {
-      if (!FIXTURES.has(match[1])) problems.push(`fixture_url('${match[1]}'): unknown fixture`);
+    for (const match of text.matchAll(/(fixture_url|fixture_base64)\(\s*'([^']*)'\s*\)/g)) {
+      if (!FIXTURES.has(match[2])) problems.push(`${match[1]}('${match[2]}'): unknown fixture`);
     }
   }
   if (mock.media) {
@@ -134,6 +135,15 @@ function mockProblems(app: AppTemplate): string[] {
         }
       } else if (step.audio !== undefined) {
         problems.push(`${at}: audio is only valid with stream`);
+      }
+      if (op === "handoff") {
+        if (typeof step.handoff !== "string" || step.handoff.trim() === "") problems.push(`${at}: handoff must name a kind`);
+        if ((step.collection === undefined) !== (step.id === undefined)) problems.push(`${at}: handoff collection and id go together`);
+        if (step.collection !== undefined && !step.collection.includes("{{") && !collections.has(step.collection)) {
+          problems.push(`${at}: unknown collection ${step.collection}`);
+        }
+      } else if (step.collection !== undefined || step.id !== undefined) {
+        problems.push(`${at}: collection and id are only valid with handoff`);
       }
       if (step.error !== undefined && !errors.has(step.error)) {
         problems.push(`${at}: unknown error ${step.error}`);
@@ -323,7 +333,72 @@ describe("Telnyx mock", () => {
       "gather_input",
       "incoming_call",
       "playback_finished",
+      "sip_caller_hangup",
+      "sip_caller_speaks",
+      "sip_dtmf",
     ]);
+  });
+
+  test("simulates the direct SIP (FQDN) setup and rollback Telephony uses", () => {
+    for (const tool of ["create_fqdn_connection", "create_fqdn", "delete_fqdn", "delete_fqdn_connection", "update_phone_number"]) {
+      expect(mock.tools[tool]).toBeDefined();
+    }
+    expect(mock.collections.fqdn_connections).toMatchObject({ id: "numeric", seedable: true, defaults: { record_type: "fqdn_connection", transport_protocol: "UDP" } });
+    expect(mock.collections.fqdns).toMatchObject({ id: "numeric", seedable: true, defaults: { record_type: "fqdn" } });
+    // create_fqdn refuses a connection that is not an FQDN connection.
+    expect(mock.tools.create_fqdn.steps[0]).toMatchObject({ lookup: "fqdn_connections", key: "{{input.connection_id}}", error: "invalid_parameter" });
+    // A number points at a Call Control application or an FQDN connection.
+    const update = mock.tools.update_phone_number.steps;
+    expect(update.map((step) => step.lookup).filter(Boolean)).toEqual(["phone_numbers", "call_control_applications", "fqdn_connections"]);
+    expect(update.find((step) => step.require?.includes("target_fqdn_connection"))?.error).toBe("invalid_parameter");
+  });
+
+  test("hands direct SIP calls to the owning app instead of sending Call Control webhooks", () => {
+    expect(mock.collections.sip_calls).toMatchObject({ id: { token: "sip_" }, reportable: true });
+    const steps = mock.triggers!.incoming_call.steps;
+    const branch = steps.findIndex((step) => step.lookup === "fqdn_connections");
+    const sipRespond = steps.findIndex((step) => step.respond !== undefined && step.when === "fqdn_connection");
+    expect(branch).toBeGreaterThan(0);
+    expect(sipRespond).toBeGreaterThan(branch);
+    for (const step of steps.slice(branch + 1, sipRespond + 1)) {
+      expect(step.when).toContain("fqdn_connection");
+      expect(step.emit).toBeUndefined();
+    }
+    expect(steps.slice(0, sipRespond).some((step) => step.emit !== undefined)).toBe(false);
+    expect(steps.findIndex((step) => step.emit === "call.initiated")).toBeGreaterThan(sipRespond);
+    const handoff = steps.find((step) => step.handoff !== undefined)!;
+    expect(handoff).toMatchObject({ handoff: "sip_inbound_call", collection: "sip_calls", id: "{{sip.id}}", lane: "{{sip.id}}" });
+    for (const field of ["from", "to", "target", "codecs", "dtmf_type", "encrypted_media", "caller_audio"]) {
+      expect(handoff.payload![field]).toBeDefined();
+    }
+    const record = steps.find((step) => step.create === "sip_calls")!.record!;
+    expect(record.target).toEqual({ host: "{{fqdn.fqdn}}", port: "{{fqdn.port}}", transport: "{{lower(fqdn_connection.transport_protocol)}}" });
+    // The record keeps the fixture name, never the inlined audio.
+    expect(record.caller_audio).toBe("{{audio}}");
+    expect(steps[sipRespond].respond).toMatchObject({ sip_call_id: "{{sip.id}}" });
+  });
+
+  test("inlines caller audio into SIP hand-offs", () => {
+    expect(mock.templates!.sip_caller_audio).toEqual({
+      name: "{{audio}}",
+      url: "{{fixture_url(audio)}}",
+      wav_base64: "{{fixture_base64(audio)}}",
+    });
+  });
+
+  test("SIP caller actions are hand-offs on the call's lane", () => {
+    for (const [trigger, kind] of [
+      ["sip_caller_hangup", "sip_hangup"],
+      ["sip_dtmf", "sip_dtmf"],
+      ["sip_caller_speaks", "sip_play"],
+    ] as const) {
+      const steps = mock.triggers![trigger].steps;
+      expect(steps[0]).toMatchObject({ lookup: "sip_calls", key: "{{input.sip_call_id}}", error: "invalid_parameter" });
+      expect(steps[1].require).toBe("sip.report.state != 'ended' && sip.report.state != 'failed'");
+      expect(steps.find((step) => step.handoff !== undefined)).toMatchObject({ handoff: kind, collection: "sip_calls", id: "{{sip.id}}", lane: "{{sip.id}}" });
+      expect(steps.some((step) => step.emit !== undefined)).toBe(false);
+    }
+    expect(mock.triggers!.sip_caller_speaks.steps.find((step) => step.handoff)?.payload).toEqual({ caller_audio: "{{caller_audio}}" });
   });
 
   test("declares the streaming and detection events Telephony maps", () => {

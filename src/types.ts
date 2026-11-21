@@ -91,8 +91,10 @@ export interface AppTemplate {
  *  `call.state`), bracket keys (`input['filter[phone_number]']`), single-quoted
  *  strings, numbers, true/false/null, `!`, `==`, `!=`, `&&`, `||` (returns the
  *  first truthy operand) and the functions len, lower, now, uuid, numeric_id,
- *  token('prefix') and fixture_url('name'), the public URL of a fixture file
- *  the server serves (see MOCK_FIXTURES). A template string that is exactly `{{expr}}` keeps the
+ *  token('prefix'), fixture_url('name'), the public URL of a fixture file
+ *  the server serves (see MOCK_FIXTURES), and fixture_base64('name'), that
+ *  file's bytes base64-encoded (at most 512 KiB of file), for apps that
+ *  must not fetch a URL. A template string that is exactly `{{expr}}` keeps the
  *  value's type and is omitted from its object when the value is null;
  *  otherwise `{{ }}` interpolates text. An object with `$use: "<template>"`
  *  starts from that named template and overlays its other keys. */
@@ -122,7 +124,8 @@ export interface AppMockConfig {
 
 /** Fixture files every server serves for simulations. Caller audio fixtures
  *  can play into a media stream (`audio`, `stream: play`); the recordings are
- *  for recording download URLs (`fixture_url`). All are 8 kHz 16-bit WAV. */
+ *  for recording download URLs (`fixture_url`). All are 8 kHz 16-bit WAV;
+ *  any can be inlined with `fixture_base64`. */
 export const MOCK_FIXTURES = {
   callerAudio: ["caller-speech-8k.wav"],
   recordings: ["call-recording-mono.wav", "call-recording-stereo.wav"],
@@ -191,6 +194,13 @@ export interface AppMockCollection {
   defaults?: Record<string, unknown>;
   /** Whether a runtime binding may seed records into this collection. */
   seedable?: boolean;
+  /** Whether the app that owns the simulated connection may report into
+   *  this collection's records: POST /api/integration-simulation/report
+   *  (sdk.IntegrationSimulationReporter) shallow-merges fields into an
+   *  existing record's `report` object (at most 32 KiB of JSON per record).
+   *  Tests read it through the integration state; steps read it as
+   *  `record.report.*`. */
+  reportable?: boolean;
 }
 
 export interface AppMockOperation {
@@ -220,6 +230,22 @@ export interface AppMockStep {
   delete?: string;
   /** Queue an event for delivery once the operation succeeds. */
   emit?: string;
+  /** Hand provider work the platform does not speak itself (SIP, for
+   *  example) to the app that owns the simulated connection, once the
+   *  operation succeeds. The value is the kind. The server POSTs an
+   *  sdk.IntegrationSimulationEvent {integration, connection_id, kind,
+   *  collection, id, payload} to the app's /_apteva/runtime/integration-simulation
+   *  route with the app's token, in lane order, retrying transport errors and
+   *  5xx answers up to delivery.max_attempts (4xx is final). It appears in the
+   *  integration state's deliveries as event `handoff:<kind>`. When it fails
+   *  for good, the record at `collection`/`id` gets report.state
+   *  "handoff_failed" and report.error. The app reports progress into that
+   *  record (see AppMockCollection.reportable). */
+  handoff?: string;
+  /** Collection and key of the record a `handoff` concerns (together, and
+   *  the record must exist). The lane defaults to `id`. */
+  collection?: string;
+  id?: string;
   /** Return the cached response for a repeated key (provider command ids). */
   dedupe?: string;
   /** Media stream action on the record at `key` of media.collection, applied
@@ -243,8 +269,10 @@ export interface AppMockStep {
   as?: string;
   /** Webhook URL for `emit`; WebSocket URL for `stream: start`. */
   to?: string;
+  /** Body of an `emit` event or of a `handoff`. */
   payload?: Record<string, unknown>;
-  /** Events with the same lane are delivered one at a time, in order. */
+  /** Events and hand-offs with the same lane are delivered one at a time,
+   *  in order. */
   lane?: string;
   status?: number;
   /** Error name from `errors`, used by require and by a missing record. */
