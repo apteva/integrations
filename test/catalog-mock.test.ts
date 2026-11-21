@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { getAppTemplate, loadAppTemplates } from "../src/apps/index.js";
+import { MOCK_FIXTURES, MOCK_SILENCE } from "../src/types.js";
 import type { AppMockOperation, AppMockStep, AppTemplate } from "../src/types.js";
 
 // Structural checks for every catalog `mock` section. The server compiles the
@@ -17,8 +18,12 @@ const OPERATIONS = [
   "delete",
   "emit",
   "dedupe",
+  "stream",
   "respond",
 ] as const;
+
+const CALLER_AUDIO = new Set<string>([...MOCK_FIXTURES.callerAudio, MOCK_SILENCE]);
+const FIXTURES = new Set<string>([...MOCK_FIXTURES.callerAudio, ...MOCK_FIXTURES.recordings]);
 
 const COLLECTION_OPERATIONS = new Set(["lookup", "find", "list", "create", "update", "delete"]);
 
@@ -67,6 +72,23 @@ function mockProblems(app: AppTemplate): string[] {
     const opens = text.split("{{").length - 1;
     const closes = text.split("}}").length - 1;
     if (opens !== closes) problems.push(`unbalanced template: ${text}`);
+    for (const match of text.matchAll(/fixture_url\(\s*'([^']*)'\s*\)/g)) {
+      if (!FIXTURES.has(match[1])) problems.push(`fixture_url('${match[1]}'): unknown fixture`);
+    }
+  }
+  if (mock.media) {
+    const media = mock.media;
+    if (media.protocol !== "telnyx") problems.push(`media.protocol ${media.protocol} is not supported`);
+    if (!collections.has(media.collection)) problems.push(`media.collection ${media.collection} is unknown`);
+    if (!MOCK_FIXTURES.callerAudio.includes(media.audio as never)) problems.push(`media.audio ${media.audio} is not a caller audio fixture`);
+    const mediaEvents = Object.values(media.events ?? {}).filter(Boolean) as string[];
+    for (const event of mediaEvents) {
+      if (!events.has(event)) problems.push(`media event ${event} is not in webhooks.events`);
+    }
+    if (mediaEvents.length > 0) {
+      emits = true;
+      if (!media.to) problems.push(`media events need to`);
+    }
   }
 
   const checkOperation = (where: string, operation: AppMockOperation) => {
@@ -100,6 +122,18 @@ function mockProblems(app: AppTemplate): string[] {
         emits = true;
         if (!events.has(step.emit!)) problems.push(`${at}: event ${step.emit} is not in webhooks.events`);
         if (!step.to) problems.push(`${at}: emit needs to`);
+      }
+      if (op === "stream") {
+        if (!mock.media) problems.push(`${at}: stream needs a media section`);
+        if (!["start", "play", "stop"].includes(step.stream!)) problems.push(`${at}: stream must be start, play or stop`);
+        if (!step.key) problems.push(`${at}: stream needs key`);
+        if (step.stream === "start" && !step.to) problems.push(`${at}: stream start needs to`);
+        if (step.audio !== undefined && step.stream !== "play") problems.push(`${at}: audio is only valid with stream play`);
+        if (step.audio !== undefined && !step.audio.includes("{{") && !CALLER_AUDIO.has(step.audio)) {
+          problems.push(`${at}: audio ${step.audio} is not a caller audio fixture`);
+        }
+      } else if (step.audio !== undefined) {
+        problems.push(`${at}: audio is only valid with stream`);
       }
       if (step.error !== undefined && !errors.has(step.error)) {
         problems.push(`${at}: unknown error ${step.error}`);
@@ -174,10 +208,57 @@ describe("Telnyx mock", () => {
     }
   });
 
-  test("leaves media and outbound calling unsimulated", () => {
-    for (const tool of ["start_streaming", "dial_call", "transfer_call", "send_sms"]) {
+  test("simulates outbound calls, recording, bridging and media streams", () => {
+    for (const tool of [
+      "dial_call",
+      "get_call_status",
+      "bridge_call",
+      "start_streaming",
+      "stop_streaming",
+      "start_call_recording",
+      "pause_call_recording",
+      "resume_call_recording",
+      "stop_call_recording",
+      "get_recording",
+      "list_recordings",
+      "delete_recording",
+    ]) {
+      expect(mock.tools[tool]).toBeDefined();
+    }
+  });
+
+  test("leaves transfers, queues and messaging unsimulated", () => {
+    for (const tool of ["transfer_call", "enqueue_call", "send_sms"]) {
       expect(mock.tools[tool]).toBeUndefined();
     }
+  });
+
+  test("acts as the Telnyx media peer for streams", () => {
+    expect(mock.media).toMatchObject({
+      protocol: "telnyx",
+      collection: "streams",
+      audio: "caller-speech-8k.wav",
+      events: { started: "call.streaming.started", stopped: "call.streaming.stopped", failed: "call.streaming.failed" },
+      lane: "{{stream.call_control_id}}",
+    });
+    // The stream URL carries Telephony's per-call secret; it stays out of
+    // records and events.
+    expect(JSON.stringify(mock.collections.streams)).not.toContain("stream_url");
+    expect(JSON.stringify(mock.templates!.stream_event)).not.toContain("stream_url");
+    for (const tool of ["dial_call", "answer_call", "start_streaming"]) {
+      const start = mock.tools[tool].steps.find((step) => step.stream === "start");
+      expect(start?.to).toBe("{{input.stream_url}}");
+    }
+  });
+
+  test("recordings saved carry what Telephony needs to download them", () => {
+    const saved = mock.templates!.recording_saved;
+    for (const field of ["call_control_id", "recording_id", "format", "channels", "recording_started_at", "recording_ended_at", "recording_urls"]) {
+      expect(saved[field]).toBeDefined();
+    }
+    const stop = JSON.stringify(mock.tools.stop_call_recording);
+    expect(stop).toContain("call-recording-stereo.wav");
+    expect(stop).toContain("call-recording-mono.wav");
   });
 
   test("signs webhooks the way Telnyx does", () => {
@@ -207,20 +288,86 @@ describe("Telnyx mock", () => {
   });
 
   test("call commands dedupe on command_id", () => {
-    for (const tool of ["answer_call", "reject_call", "hangup_call", "speak_text", "gather_using_speak", "play_audio", "stop_audio"]) {
+    for (const tool of [
+      "answer_call",
+      "reject_call",
+      "hangup_call",
+      "speak_text",
+      "gather_using_speak",
+      "play_audio",
+      "stop_audio",
+      "dial_call",
+      "bridge_call",
+      "start_streaming",
+      "stop_streaming",
+      "start_call_recording",
+      "pause_call_recording",
+      "resume_call_recording",
+      "stop_call_recording",
+    ]) {
       const first = mock.tools[tool].steps[0];
       expect(first.dedupe).toContain("{{input.command_id}}");
       expect(first.when).toBe("input.command_id");
     }
   });
 
-  test("tests can drive the caller side", () => {
+  test("tests can drive the caller and callee side", () => {
     expect(Object.keys(mock.triggers ?? {}).sort()).toEqual([
+      "callee_answer",
+      "callee_fail",
+      "callee_hangup",
+      "callee_no_answer",
       "caller_hangup",
+      "caller_speaks",
       "dtmf",
       "gather_input",
       "incoming_call",
       "playback_finished",
     ]);
+  });
+
+  test("declares the streaming and detection events Telephony maps", () => {
+    const events = app.webhooks!.events.map((event) => event.name);
+    for (const event of [
+      "call.streaming.started",
+      "call.streaming.stopped",
+      "call.streaming.failed",
+      "call.recording.saved",
+      "call.machine.detection.ended",
+      "call.machine.premium.detection.ended",
+    ]) {
+      expect(events).toContain(event);
+    }
+  });
+});
+
+describe("Deepgram mock", () => {
+  const app = getAppTemplate("deepgram")!;
+  const mock = app.mock!;
+
+  test("simulates listen, the tool Media and Functions transcribe with", () => {
+    expect(Object.keys(mock.tools)).toEqual(["listen"]);
+  });
+
+  test("fails like Deepgram when the project is out of credits", () => {
+    const payment = mock.tools.listen.steps.find((step) => step.status === 402);
+    expect(payment?.respond).toMatchObject({
+      err_code: "ASR_PAYMENT_REQUIRED",
+      err_msg: "Project does not have enough credits for this request and does not have an overage agreement.",
+    });
+    const statuses = mock.tools.listen.steps.map((step) => step.status).filter(Boolean);
+    expect(statuses).toEqual([402, 500, 504, 400]);
+  });
+
+  test("answers in the shape Media and Functions read", () => {
+    const ok = JSON.stringify(mock.tools.listen.steps.at(-1)!.respond);
+    for (const field of ["metadata", "duration", "request_id", "channels", "alternatives", "transcript", "words", "paragraphs", "utterances", "detected_language"]) {
+      expect(ok).toContain(`"${field}"`);
+    }
+  });
+
+  test("tests can queue answers and set a lasting default", () => {
+    expect(Object.keys(mock.triggers ?? {}).sort()).toEqual(["queue_response", "set_default_response"]);
+    expect(mock.collections.responses.seedable).toBe(true);
   });
 });

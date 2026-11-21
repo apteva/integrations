@@ -90,8 +90,9 @@ export interface AppTemplate {
  *  Expressions (`require`, `when`, `{{ }}`): dotted paths (`input.to`,
  *  `call.state`), bracket keys (`input['filter[phone_number]']`), single-quoted
  *  strings, numbers, true/false/null, `!`, `==`, `!=`, `&&`, `||` (returns the
- *  first truthy operand) and the functions len, lower, now, uuid, numeric_id
- *  and token('prefix'). A template string that is exactly `{{expr}}` keeps the
+ *  first truthy operand) and the functions len, lower, now, uuid, numeric_id,
+ *  token('prefix') and fixture_url('name'), the public URL of a fixture file
+ *  the server serves (see MOCK_FIXTURES). A template string that is exactly `{{expr}}` keeps the
  *  value's type and is omitted from its object when the value is null;
  *  otherwise `{{ }}` interpolates text. An object with `$use: "<template>"`
  *  starts from that named template and overlays its other keys. */
@@ -114,6 +115,49 @@ export interface AppMockConfig {
   tools: Record<string, AppMockOperation>;
   /** Provider-side events a test can cause, such as an incoming call. */
   triggers?: Record<string, AppMockTrigger>;
+  /** Media streams: `stream` steps make the server act as the provider's
+   *  media peer for records of `collection`. */
+  media?: AppMockMedia;
+}
+
+/** Fixture files every server serves for simulations. Caller audio fixtures
+ *  can play into a media stream (`audio`, `stream: play`); the recordings are
+ *  for recording download URLs (`fixture_url`). All are 8 kHz 16-bit WAV. */
+export const MOCK_FIXTURES = {
+  callerAudio: ["caller-speech-8k.wav"],
+  recordings: ["call-recording-mono.wav", "call-recording-stereo.wav"],
+} as const;
+
+/** Caller audio that sends silence frames only. */
+export const MOCK_SILENCE = "silence";
+
+/** A simulated media stream. On `stream: start` the server opens the
+ *  WebSocket URL the app gave the provider (only the runtime's own apps are
+ *  reachable), speaks the provider's media protocol, plays caller audio and
+ *  measures what the app sends back. It writes `state` (connecting,
+ *  streaming, stopped, closed, failed, interrupted), timestamps, `error`,
+ *  `close_code`, `closed_by` and the counters `sent` and `received` into
+ *  the stream's record, and emits the lifecycle events below.
+ *
+ *  Record fields it reads: codec (PCMU, PCMA or L16; "default" is PCMU),
+ *  sample_rate (8000 for G.711; L16 defaults to 16000), bidirectional_codec,
+ *  bidirectional_sample_rate (default: the forward codec and rate), track,
+ *  caller_audio (fixture or "silence"; default `audio`), autoplay (default
+ *  true; false waits for a `stream: play` step), call_control_id and
+ *  client_state. */
+export interface AppMockMedia {
+  /** Media protocol. "telnyx" is Telnyx Media Streaming over WebSocket. */
+  protocol: "telnyx";
+  /** Collection holding one record per stream, keyed by the stream key. */
+  collection: string;
+  /** Default caller audio fixture. */
+  audio: string;
+  /** Webhook events for the stream lifecycle. */
+  events?: { started?: string; stopped?: string; failed?: string };
+  /** Event target, lane and payload; variable `stream` is the record. */
+  to?: string;
+  lane?: string;
+  payload?: Record<string, unknown>;
 }
 
 export interface AppMockSigning {
@@ -178,6 +222,15 @@ export interface AppMockStep {
   emit?: string;
   /** Return the cached response for a repeated key (provider command ids). */
   dedupe?: string;
+  /** Media stream action on the record at `key` of media.collection, applied
+   *  once the operation succeeds: start (connect to `to`), play (queue caller
+   *  `audio`, default the stream's caller audio) or stop. */
+  stream?: "start" | "play" | "stop";
+  /** Caller audio fixture for `stream: play`. */
+  audio?: string;
+  /** Return this response. Only the last step must be an unconditional
+   *  respond; an earlier one with `when` ends the operation early. Either way
+   *  the operation's state changes and events are committed. */
   respond?: unknown;
   key?: string;
   where?: Record<string, unknown>;
@@ -188,7 +241,7 @@ export interface AppMockStep {
   omit?: string[];
   unset?: string[];
   as?: string;
-  /** Webhook URL for `emit`. */
+  /** Webhook URL for `emit`; WebSocket URL for `stream: start`. */
   to?: string;
   payload?: Record<string, unknown>;
   /** Events with the same lane are delivered one at a time, in order. */
