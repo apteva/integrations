@@ -792,6 +792,10 @@ export interface AppToolTemplate {
   timeout_ms?: number;
   /** Maximum caller-selected _apteva.timeout_ms; never above 600000. */
   max_timeout_ms?: number;
+  /** A read that needs no credentials on an integration whose other
+   *  tools do. Apps may run it by slug without a connection. Integrations
+   *  whose auth types include "none" are public as a whole. */
+  public?: boolean;
   // Dot-separated paths in the JSON response to strip before the
   // agent sees the payload. Use `[]` to step into every element of
   // an array (e.g. "results.channels[].alternatives[].words"). Runs
