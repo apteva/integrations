@@ -1,0 +1,3066 @@
+{
+  "slug": "gandi",
+  "name": "Gandi",
+  "description": "Gandi domain registrar (API v5): check availability and prices, register, renew, restore and transfer domains (including .pl), manage contacts, name servers, glue records, DNSSEC keys, transfer locks and web redirections, and host DNS on LiveDNS (records, snapshots, DNSSEC). Purchases are charged to the Gandi prepaid account; dry runs validate first.",
+  "logo": "https://www.google.com/s2/favicons?domain=gandi.net&sz=128",
+  "categories": [
+    "domains",
+    "dns",
+    "registrar",
+    "europe"
+  ],
+  "base_url": "{{credential.api_endpoint}}",
+  "auth": {
+    "types": [
+      "bearer"
+    ],
+    "headers": {
+      "Authorization": "Bearer {{access_token}}",
+      "Accept": "application/json"
+    },
+    "credential_fields": [
+      {
+        "name": "access_token",
+        "label": "Personal Access Token",
+        "required": true,
+        "type": "password",
+        "description": "Gandi Personal Access Token from Account settings > Authentication options in the Gandi Admin app. Choose the organization and grant the domain and LiveDNS permissions you need (plus billing for purchases). PATs expire; renew them before expiry. Sandbox tokens come from the Gandi Sandbox Admin."
+      },
+      {
+        "name": "sharing_id",
+        "label": "Organization ID (sharing_id)",
+        "required": false,
+        "exposure": "public",
+        "description": "Optional organization ID to bill purchases to or filter by. Pass it as sharing_id on the tools that accept it."
+      },
+      {
+        "name": "api_endpoint",
+        "label": "Gandi API endpoint",
+        "type": "select",
+        "options": [
+          "https://api.gandi.net",
+          "https://api.sandbox.gandi.net"
+        ],
+        "default": "https://api.gandi.net",
+        "required": false,
+        "exposure": "public",
+        "description": "Use the sandbox endpoint with a sandbox token to test purchases without being charged."
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "check_availability",
+      "description": "Check whether a domain is available and get its price (registration, transfer, renewal via processes). Use before register_domain; e.g. name=example.pl.",
+      "method": "GET",
+      "path": "/v5/domain/check",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "domain name to query"
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO country code for which taxes are to be applied"
+          },
+          "currency": {
+            "type": "string",
+            "description": "request price for a specific ISO currency code"
+          },
+          "duration_unit": {
+            "type": "string",
+            "description": "define the unit for max_duration"
+          },
+          "extension": {
+            "type": "string",
+            "description": "query a specific extension for product options"
+          },
+          "grid": {
+            "type": "string",
+            "description": "request price for a specific rate"
+          },
+          "lang": {
+            "type": "string",
+            "description": "language code"
+          },
+          "max_duration": {
+            "type": "integer",
+            "description": "set a limit on the duration range for returned prices"
+          },
+          "period": {
+            "type": "string",
+            "description": "specific registration period to query"
+          },
+          "processes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "create"
+            ],
+            "description": "list of at least 1 process for which pricing is to be made"
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Organization for which the pricing is to be made. See the reference."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "list_tlds",
+      "description": "List the TLD extensions Gandi sells.",
+      "method": "GET",
+      "path": "/v5/domain/tlds",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "ccTLD",
+              "gTLD"
+            ],
+            "description": "Category of the TLD"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "get_tld",
+      "description": "Details for one TLD (e.g. pl): periods, requirements and supported features.",
+      "method": "GET",
+      "path": "/v5/domain/tlds/{name}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the TLD, or a FQDN."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "list_domains",
+      "description": "List the domains in this account (filter with fqdn, e.g. example.*).",
+      "method": "GET",
+      "path": "/v5/domain/domains",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Filters the list by domain name, with optional patterns."
+          },
+          "nameserver": {
+            "type": "string",
+            "enum": [
+              "abc",
+              "livedns",
+              "other"
+            ],
+            "description": "Used to filter the type of nameservers"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "resellee_id": {
+            "type": "string",
+            "description": "Filter the list by resellee_id, from the Organization API"
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          },
+          "sort_by": {
+            "type": "string",
+            "default": "fqdn",
+            "description": "Used to specify how you want the results sorted."
+          },
+          "tld": {
+            "type": "string",
+            "description": "Used to filter by just the extension."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "get_domain",
+      "description": "Domain details: status, dates, name servers, autorenew, contacts summary.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "register_domain",
+      "description": "Register a new domain. This is a paid purchase charged to the account's prepaid balance. Check price and availability with check_availability first, confirm the price with the user, then validate with dry_run=1 before placing the real order. The owner contact is required; some TLDs (including .pl) need extra_parameters (see get_tld). Track progress with get_creation_status.",
+      "method": "POST",
+      "path": "/v5/domain/domains",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "admin": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "bill": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "claims": {
+            "type": "string",
+            "description": "The value of the notice_id returned by the claims route. Warning Make sure your customer did read the notice information about the trademark owner"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "EUR",
+              "USD",
+              "GBP",
+              "TWD",
+              "CNY"
+            ]
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "enforce_premium": {
+            "type": "boolean",
+            "description": "Must be set to true if the domain is a premium domain."
+          },
+          "extra_parameters": {
+            "type": "object",
+            "description": "Extra parameters needed for some extensions. See this list for possible values."
+          },
+          "lang": {
+            "type": "string",
+            "description": "ISO-639-2 language code of the domain, required for some IDN domains."
+          },
+          "mailbox_optin": {
+            "type": "boolean",
+            "default": true,
+            "description": "This parameter enables you to add two mailboxes offered for the first year when purchasing or transferring in a domain."
+          },
+          "nameservers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of nameservers. Gandi's LiveDNS nameservers are used if omitted."
+          },
+          "nameservers_ips": {
+            "type": "object",
+            "description": "For glue records only – dictionnary associating a nameserver to a list of IP addresses."
+          },
+          "price": {
+            "type": "number"
+          },
+          "resellee_id": {
+            "type": "string"
+          },
+          "smd": {
+            "type": "string",
+            "description": "Contents of a Signed Mark Data file (used for newgtld sunrises, tld_period must be sunrise)"
+          },
+          "tech": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "template_id": {
+            "type": "string",
+            "description": "Template applied when the process is done. It must be a template ID as you can retrieve it using the Template API."
+          },
+          "tld_period": {
+            "type": "string",
+            "enum": [
+              "sunrise",
+              "landrush",
+              "eap1",
+              "eap2",
+              "eap3",
+              "eap4",
+              "eap5",
+              "eap6",
+              "eap7",
+              "eap8",
+              "eap9",
+              "golive"
+            ],
+            "description": "Learn more about new GTLD and Early Access Periods."
+          },
+          "dry_run": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Send 1 to only validate the request (Gandi Dry-Run header): nothing is purchased or changed. Omit or 0 to perform it."
+          }
+        },
+        "required": [
+          "fqdn",
+          "owner"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ],
+      "header_params": {
+        "dry_run": "Dry-Run"
+      }
+    },
+    {
+      "name": "get_creation_status",
+      "description": "Status of a pending domain registration.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/createstatus",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "get_renewal_info",
+      "description": "Renewal prices and allowed durations for a domain.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/renew",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "renew_domain",
+      "description": "Renew a domain for the given number of years. Paid; charged to the prepaid balance. Confirm the price from get_renewal_info first and validate with dry_run=1.",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/renew",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          },
+          "duration": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 9,
+            "description": "The duration (in years) of the renewal."
+          },
+          "dry_run": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Send 1 to only validate the request (Gandi Dry-Run header): nothing is purchased or changed. Omit or 0 to perform it."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ],
+      "header_params": {
+        "dry_run": "Dry-Run"
+      }
+    },
+    {
+      "name": "set_autorenew",
+      "description": "Turn automatic renewal on or off for a domain.",
+      "method": "PATCH",
+      "path": "/v5/domain/domains/{domain}/autorenew",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "duration": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 9
+          },
+          "org_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain",
+          "enabled"
+        ]
+      }
+    },
+    {
+      "name": "get_restore_info",
+      "description": "Whether an expired domain can be restored, and at what price.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/restore",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "restore_domain",
+      "description": "Restore an expired domain in its redemption period. Paid (no dry run available); confirm the price from get_restore_info with the user first.",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/restore",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ]
+    },
+    {
+      "name": "get_contacts",
+      "description": "Domain contact list",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "update_contacts",
+      "description": "Update the admin, billing or technical contacts of a domain.",
+      "method": "PATCH",
+      "path": "/v5/domain/domains/{domain}/contacts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "admin": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "icann_contract_accept": {
+                "type": "boolean",
+                "default": false,
+                "description": "To unlock the Email address field and make changes, set this field to true to authorize the registrar, Gandi, to be the \"Designated Agent\" under ICANN rules."
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "bill": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "icann_contract_accept": {
+                "type": "boolean",
+                "default": false,
+                "description": "To unlock the Email address field and make changes, set this field to true to authorize the registrar, Gandi, to be the \"Designated Agent\" under ICANN rules."
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "tech": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "icann_contract_accept": {
+                "type": "boolean",
+                "default": false,
+                "description": "To unlock the Email address field and make changes, set this field to true to authorize the registrar, Gandi, to be the \"Designated Agent\" under ICANN rules."
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "get_nameservers",
+      "description": "Domain Nameserver Information",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/nameservers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "update_nameservers",
+      "description": "Replace the domain's name servers (for example to use an external DNS provider instead of LiveDNS).",
+      "method": "PUT",
+      "path": "/v5/domain/domains/{domain}/nameservers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "nameservers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of FQDNs."
+          }
+        },
+        "required": [
+          "domain",
+          "nameservers"
+        ]
+      }
+    },
+    {
+      "name": "set_transfer_lock",
+      "description": "Lock or unlock the domain for outgoing transfers.",
+      "method": "PATCH",
+      "path": "/v5/domain/domains/{domain}/status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "clientTransferProhibited": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domain",
+          "clientTransferProhibited"
+        ]
+      }
+    },
+    {
+      "name": "reset_authinfo",
+      "description": "Reset the domain's transfer authorization (auth/EPP) code; the new code is returned in get_domain.",
+      "method": "PUT",
+      "path": "/v5/domain/domains/{domain}/authinfo",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "list_glue_records",
+      "description": "Glue record list",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/hosts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "create_glue_record",
+      "description": "Create a new glue record",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/hosts",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "ips": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of IP addresses."
+          },
+          "name": {
+            "type": "string",
+            "description": "Host name of the glue record."
+          }
+        },
+        "required": [
+          "domain",
+          "ips",
+          "name"
+        ]
+      },
+      "query_params": [
+        "page",
+        "per_page"
+      ]
+    },
+    {
+      "name": "get_glue_record",
+      "description": "Glue record information",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/hosts/{name}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "name": {
+            "type": "string",
+            "description": "Host name."
+          }
+        },
+        "required": [
+          "domain",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "update_glue_record",
+      "description": "Update a glue record",
+      "method": "PUT",
+      "path": "/v5/domain/domains/{domain}/hosts/{name}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "name": {
+            "type": "string",
+            "description": "Host name."
+          },
+          "ips": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of IP addresses."
+          }
+        },
+        "required": [
+          "domain",
+          "name",
+          "ips"
+        ]
+      }
+    },
+    {
+      "name": "delete_glue_record",
+      "description": "Delete a glue record",
+      "method": "DELETE",
+      "path": "/v5/domain/domains/{domain}/hosts/{name}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "name": {
+            "type": "string",
+            "description": "Host name."
+          }
+        },
+        "required": [
+          "domain",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "list_dnskeys",
+      "description": "List DNSSEC keys published at the registry for the domain.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/dnskeys",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "create_dnskey",
+      "description": "Publish a DNSSEC key at the registry (when DNS is hosted outside LiveDNS).",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/dnskeys",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "algorithm": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "Algorithm"
+          },
+          "public_key": {
+            "type": "string",
+            "description": "Public Key"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "zsk",
+              "ksk"
+            ],
+            "description": "Key Type"
+          }
+        },
+        "required": [
+          "domain",
+          "algorithm",
+          "public_key",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "delete_dnskey",
+      "description": "Delete a DNSSEC Key",
+      "method": "DELETE",
+      "path": "/v5/domain/domains/{domain}/dnskeys/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "id": {
+            "type": "string",
+            "description": "Key ID"
+          }
+        },
+        "required": [
+          "domain",
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "get_livedns_status",
+      "description": "Whether the domain uses Gandi LiveDNS, and its LiveDNS name servers.",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/livedns",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "enable_livedns",
+      "description": "Switch the domain to Gandi LiveDNS name servers.",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/livedns",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "get_dnssec_status",
+      "description": "Return informations about DNSSEC status for a domain",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/livedns/dnssec",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "enable_dnssec",
+      "description": "Activate DNSSEC for a domain served by LiveDNS.",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/livedns/dnssec",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ]
+    },
+    {
+      "name": "disable_dnssec",
+      "description": "Disable DNSSEC for a domain",
+      "method": "DELETE",
+      "path": "/v5/domain/domains/{domain}/livedns/dnssec",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ]
+    },
+    {
+      "name": "list_web_redirections",
+      "description": "List web redirections",
+      "method": "GET",
+      "path": "/v5/domain/domains/{domain}/webredirs",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "create_web_redirection",
+      "description": "Create a new web redirection",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/webredirs",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "host": {
+            "type": "string",
+            "description": "Source hostname (including the domain name)"
+          },
+          "override": {
+            "type": "boolean",
+            "description": "When you create a redirection on a domain a DNS record is created if it does not exist. When the record already exists and this parameter is set to true it will overwrite the record. Otherwise it will trigger an error."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https",
+              "httpsonly"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "cloak",
+              "http301",
+              "http302"
+            ],
+            "description": "Type of redirection"
+          },
+          "url": {
+            "type": "string",
+            "description": "Target URL"
+          }
+        },
+        "required": [
+          "domain",
+          "host",
+          "override",
+          "protocol",
+          "type",
+          "url"
+        ]
+      },
+      "query_params": [
+        "page",
+        "per_page"
+      ]
+    },
+    {
+      "name": "update_web_redirection",
+      "description": "Update a redirection",
+      "method": "PATCH",
+      "path": "/v5/domain/domains/{domain}/webredirs/{host}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "host": {
+            "type": "string",
+            "description": "Host name"
+          },
+          "override": {
+            "type": "boolean",
+            "description": "If true, a DNS record will be created. When the value is false and no matching DNS record exists, it will trigger an error."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https",
+              "httpsonly"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "cloak",
+              "http301",
+              "http302"
+            ],
+            "description": "Type of redirection"
+          },
+          "url": {
+            "type": "string",
+            "description": "Target URL"
+          }
+        },
+        "required": [
+          "domain",
+          "host"
+        ]
+      }
+    },
+    {
+      "name": "delete_web_redirection",
+      "description": "Delete a redirection",
+      "method": "DELETE",
+      "path": "/v5/domain/domains/{domain}/webredirs/{host}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "host": {
+            "type": "string",
+            "description": "Host name"
+          }
+        },
+        "required": [
+          "domain",
+          "host"
+        ]
+      }
+    },
+    {
+      "name": "check_transfer_availability",
+      "description": "Check whether a domain can be transferred to Gandi, given its auth code, and at what price.",
+      "method": "POST",
+      "path": "/v5/domain/transferin/{domain}/available",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "authinfo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "transfer_domain_in",
+      "description": "Start a transfer of a domain to Gandi. Paid; check the price with check_transfer_availability first and validate with dry_run=1. Requires the auth code from the current registrar.",
+      "method": "POST",
+      "path": "/v5/domain/transferin",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "admin": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "authinfo": {
+            "type": "string"
+          },
+          "bill": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "change_owner": {
+            "type": "boolean"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "EUR",
+              "USD",
+              "GBP",
+              "TWD",
+              "CNY"
+            ]
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "enforce_premium": {
+            "type": "boolean",
+            "description": "Must be set to true if the domain is a premium domain."
+          },
+          "extra_parameters": {
+            "type": "object",
+            "description": "Extra parameters needed for some extensions. See this list for possible values."
+          },
+          "mailbox_optin": {
+            "type": "boolean",
+            "default": true,
+            "description": "This parameter enables you to add two mailboxes offered for the first year when purchasing or transferring in a domain."
+          },
+          "nameservers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of new nameservers. Keep the current nameservers if omitted."
+          },
+          "nameservers_ips": {
+            "type": "object",
+            "description": "For glue records only – dictionnary associating a nameserver to a list of IP addresses."
+          },
+          "price": {
+            "type": "number"
+          },
+          "resellee_id": {
+            "type": "string"
+          },
+          "tech": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "description": "A country code. See the country code list for possible values."
+              },
+              "email": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string",
+                "description": "Contact's family name (usualy the lastname)"
+              },
+              "given": {
+                "type": "string",
+                "description": "Contact's given name (usualy the firstname)"
+              },
+              "streetaddr": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "individual",
+                  "company",
+                  "association",
+                  "publicbody"
+                ]
+              },
+              "brand_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "data_obfuscated": {
+                "type": "boolean",
+                "default": true,
+                "description": "Learn more about WHOIS privacy at Gandi here."
+              },
+              "extra_parameters": {
+                "type": "object",
+                "description": "Extra parameters needed for some extensions. See this list for possible values."
+              },
+              "fax": {
+                "type": "string"
+              },
+              "jo_announce_number": {
+                "type": "string"
+              },
+              "jo_announce_page": {
+                "type": "string"
+              },
+              "jo_declaration_date": {
+                "type": "string"
+              },
+              "jo_publication_date": {
+                "type": "string"
+              },
+              "lang": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es",
+                  "fr",
+                  "ja",
+                  "zh-hans",
+                  "zh-hant"
+                ]
+              },
+              "mail_obfuscated": {
+                "type": "boolean"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "orgname": {
+                "type": "string",
+                "description": "The legal name of the company, association, or public body if the contact type is not 0."
+              },
+              "phone": {
+                "type": "string"
+              },
+              "siren": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "description": "Learn more about state codes here"
+              },
+              "validation": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "done",
+                  "failed",
+                  "deleted",
+                  "none"
+                ]
+              },
+              "zip": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "email",
+              "family",
+              "given",
+              "streetaddr",
+              "type"
+            ]
+          },
+          "template_id": {
+            "type": "string",
+            "description": "Template applied when the process is done. It must be a template ID as you can retrieve it using the Template API."
+          },
+          "dry_run": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Send 1 to only validate the request (Gandi Dry-Run header): nothing is purchased or changed. Omit or 0 to perform it."
+          }
+        },
+        "required": [
+          "fqdn",
+          "owner"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ],
+      "header_params": {
+        "dry_run": "Dry-Run"
+      }
+    },
+    {
+      "name": "get_transfer_status",
+      "description": "Get transfer status",
+      "method": "GET",
+      "path": "/v5/domain/transferin/{domain}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "update_transfer_authinfo",
+      "description": "Update the auth code of a pending incoming transfer.",
+      "method": "PUT",
+      "path": "/v5/domain/transferin/{domain}/authinfo",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          },
+          "authinfo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain",
+          "authinfo"
+        ]
+      },
+      "query_params": [
+        "sharing_id"
+      ]
+    },
+    {
+      "name": "respond_transfer_out",
+      "description": "Accept or decline a pending transfer of this domain to another registrar.",
+      "method": "POST",
+      "path": "/v5/domain/domains/{domain}/transferout",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "accept": {
+            "type": "boolean"
+          },
+          "authinfo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain",
+          "accept",
+          "authinfo"
+        ]
+      }
+    },
+    {
+      "name": "livedns_list_domains",
+      "description": "List domains whose DNS is hosted on LiveDNS.",
+      "method": "GET",
+      "path": "/v5/livedns/domains",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "sharing_id": {
+            "type": "string",
+            "description": "Sharing ID. Organization ID used as a filter or as a billing identifier. See the reference."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "livedns_get_domain",
+      "description": "Show domain's properties",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "fqdn"
+        ]
+      }
+    },
+    {
+      "name": "list_record_types",
+      "description": "List the DNS record types LiveDNS supports.",
+      "method": "GET",
+      "path": "/v5/livedns/dns/rrtypes",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "list_records",
+      "description": "List the DNS records (RRsets) of a LiveDNS zone, optionally filtered by rrset_type.",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}/records",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "rrset_type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CAA",
+              "CDS",
+              "CNAME",
+              "DNAME",
+              "DS",
+              "HTTPS",
+              "KEY",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "OPENPGPKEY",
+              "PTR",
+              "RP",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TLSA",
+              "TXT",
+              "WKS"
+            ],
+            "description": "Filter records by type"
+          },
+          "sort_by": {
+            "type": "string",
+            "default": "rrset_name"
+          }
+        },
+        "required": [
+          "fqdn"
+        ]
+      }
+    },
+    {
+      "name": "get_record",
+      "description": "Get one RRset by name (use @ for the apex) and type.",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}/records/{rrset_name}/{rrset_type}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "rrset_name": {
+            "type": "string",
+            "description": "Name of the record."
+          },
+          "rrset_type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CAA",
+              "CDS",
+              "CNAME",
+              "DNAME",
+              "DS",
+              "HTTPS",
+              "KEY",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "OPENPGPKEY",
+              "PTR",
+              "RP",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TLSA",
+              "TXT",
+              "WKS"
+            ],
+            "description": "Type of the record"
+          }
+        },
+        "required": [
+          "fqdn",
+          "rrset_name",
+          "rrset_type"
+        ]
+      }
+    },
+    {
+      "name": "create_record",
+      "description": "Create a DNS record (RRset). rrset_name is the label relative to the zone (@ for the apex); rrset_values holds one or more values. Live immediately.",
+      "method": "POST",
+      "path": "/v5/livedns/domains/{fqdn}/records",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "rrset_name": {
+            "type": "string",
+            "description": "Name of the record"
+          },
+          "rrset_type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CAA",
+              "CDS",
+              "CNAME",
+              "DNAME",
+              "DS",
+              "HTTPS",
+              "KEY",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "OPENPGPKEY",
+              "PTR",
+              "RP",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TLSA",
+              "TXT",
+              "WKS"
+            ]
+          },
+          "rrset_values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of values for this record"
+          },
+          "rrset_ttl": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 2592000,
+            "description": "The time in seconds that DNS resolvers should cache this record"
+          }
+        },
+        "required": [
+          "fqdn",
+          "rrset_name",
+          "rrset_type",
+          "rrset_values"
+        ]
+      }
+    },
+    {
+      "name": "replace_record",
+      "description": "Overwrite (or create) the RRset with this name and type. Live immediately.",
+      "method": "PUT",
+      "path": "/v5/livedns/domains/{fqdn}/records/{rrset_name}/{rrset_type}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "rrset_name": {
+            "type": "string",
+            "description": "Name of the record."
+          },
+          "rrset_type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CAA",
+              "CDS",
+              "CNAME",
+              "DNAME",
+              "DS",
+              "HTTPS",
+              "KEY",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "OPENPGPKEY",
+              "PTR",
+              "RP",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TLSA",
+              "TXT",
+              "WKS"
+            ],
+            "description": "Type of the record"
+          },
+          "rrset_values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of values for this record"
+          },
+          "rrset_ttl": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 2592000,
+            "description": "The time in seconds that DNS resolvers should cache this record"
+          }
+        },
+        "required": [
+          "fqdn",
+          "rrset_name",
+          "rrset_type",
+          "rrset_values"
+        ]
+      }
+    },
+    {
+      "name": "delete_record",
+      "description": "Delete the RRset with this name and type. Live immediately.",
+      "method": "DELETE",
+      "path": "/v5/livedns/domains/{fqdn}/records/{rrset_name}/{rrset_type}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "rrset_name": {
+            "type": "string",
+            "description": "Name of the record."
+          },
+          "rrset_type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "ALIAS",
+              "CAA",
+              "CDS",
+              "CNAME",
+              "DNAME",
+              "DS",
+              "HTTPS",
+              "KEY",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "OPENPGPKEY",
+              "PTR",
+              "RP",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TLSA",
+              "TXT",
+              "WKS"
+            ],
+            "description": "Type of the record"
+          }
+        },
+        "required": [
+          "fqdn",
+          "rrset_name",
+          "rrset_type"
+        ]
+      }
+    },
+    {
+      "name": "livedns_nameservers",
+      "description": "Retrieve this domain's nameservers",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}/nameservers",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          }
+        },
+        "required": [
+          "fqdn"
+        ]
+      }
+    },
+    {
+      "name": "list_snapshots",
+      "description": "List zone snapshots (backups taken before changes).",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}/snapshots",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "automatic": {
+            "type": "boolean",
+            "description": "Only list automatic/non-automatic snapshots"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Which result page to retrieve. If the number is greater than the last page, an empty list is returned."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many items to display per page."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "date_created",
+              "-date_created"
+            ],
+            "default": "date_created",
+            "description": "Allow sorting result by creation date or reverse creation date"
+          }
+        },
+        "required": [
+          "fqdn"
+        ]
+      }
+    },
+    {
+      "name": "create_snapshot",
+      "description": "Take a snapshot of the zone before making changes.",
+      "method": "POST",
+      "path": "/v5/livedns/domains/{fqdn}/snapshots",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional name for the snapshot. When not specified, the name will be today's date with an incremental number added to it"
+          }
+        },
+        "required": [
+          "fqdn"
+        ]
+      }
+    },
+    {
+      "name": "get_snapshot",
+      "description": "Snapshot details",
+      "method": "GET",
+      "path": "/v5/livedns/domains/{fqdn}/snapshots/{id}",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fqdn": {
+            "type": "string",
+            "description": "Domain name."
+          },
+          "id": {
+            "type": "string",
+            "description": "Snapshot identifier"
+          }
+        },
+        "required": [
+          "fqdn",
+          "id"
+        ]
+      }
+    }
+  ]
+}
