@@ -49,3 +49,10 @@ test("configured CSV rejects nested values and unsupported modes before dispatch
   }
   expect(requests).toBe(0);
 });
+test("JSON query serialization encodes arrays and objects and passes strings through", async () => {
+  let query: URLSearchParams;
+  globalThis.fetch = (async url => { query = new URL(String(url)).searchParams; return Response.json({}); }) as typeof fetch;
+  const tool = { name: "test", method: "GET", path: "/test", query_param_serialization: { fields: "json", filtering: "json", ids: "json", page: "json" }, input_schema: { type: "object", properties: {} } } as AppToolTemplate;
+  await executeTool({ app, tool, credentials: {}, input: { fields: ["a", "b"], filtering: { status: "ENABLE" }, ids: '["x"]', page: 2, ranges: ["a", "b"] } });
+  expect(query!.get("fields")).toBe('["a","b"]'); expect(query!.get("filtering")).toBe('{"status":"ENABLE"}'); expect(query!.get("ids")).toBe('["x"]'); expect(query!.get("page")).toBe("2"); expect(query!.getAll("ranges")).toEqual(["a", "b"]);
+});

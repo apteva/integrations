@@ -23,24 +23,13 @@
       {
         "name": "token",
         "label": "access_token",
-        "description": "TikTok Marketing API access_token (long-lived)",
+        "description": "TikTok Marketing API access_token (long-lived). Filled in by OAuth; paste one only when connecting without OAuth.",
         "type": "password"
       },
       {
         "name": "advertiser_id",
         "label": "Advertiser ID",
         "description": "Default advertiser_id used when a tool input omits one. Find via list_advertisers."
-      },
-      {
-        "name": "app_id",
-        "label": "App ID",
-        "description": "TikTok Business app_id (required for OAuth token exchange)"
-      },
-      {
-        "name": "secret",
-        "label": "App Secret",
-        "description": "TikTok Business app secret (required for OAuth token exchange)",
-        "type": "password"
       }
     ],
     "oauth2": {
@@ -48,30 +37,55 @@
       "token_url": "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/",
       "scopes": [],
       "client_id_required": true,
+      "client_secret_required": true,
       "pkce": false,
-      "extra_authorize_params": {
-        "rid": "ads"
+      "client_id_param_name": "app_id",
+      "token_request": {
+        "body_format": "json",
+        "fields": {
+          "app_id": "{{client_id}}",
+          "secret": "{{client_secret}}",
+          "auth_code": "{{code}}"
+        }
+      },
+      "token_response_path": "data",
+      "token_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
       }
     }
   },
   "tools": [
     {
       "name": "list_advertisers",
-      "description": "List advertiser accounts the authorized user has access to. Returns advertiser_id values needed for every other tool. Required query params (app_id, secret) are read from credentials.",
+      "description": "List advertiser accounts the authorized user has access to. Returns advertiser_id values needed for every other tool. Sends the connection's TikTok app_id and secret, so it needs an OAuth connection.",
       "method": "GET",
-      "path": "/oauth2/advertiser/get/",
+      "path": "/oauth2/advertiser/get/?app_id={{credential.client_id}}&secret={{credential.client_secret}}",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
-        "properties": {
-          "app_id": {
-            "type": "string",
-            "description": "TikTok Business app_id (defaults to credential)"
-          },
-          "secret": {
-            "type": "string",
-            "description": "TikTok Business app secret (defaults to credential)"
-          }
-        }
+        "properties": {}
       }
     },
     {
@@ -79,6 +93,28 @@
       "description": "Get advertiser account details — timezone, currency, balance, status, industry.",
       "method": "GET",
       "path": "/advertiser/info/",
+      "query_param_serialization": {
+        "advertiser_ids": "json",
+        "fields": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -87,7 +123,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Array of advertiser_id strings (max 100). Pass as JSON-encoded array string in the URL."
+            "description": "Array of advertiser_id strings (max 100)."
           },
           "fields": {
             "type": "array",
@@ -107,6 +143,28 @@
       "description": "List campaigns for an advertiser. Filtering supports status, objective_type, campaign_ids, date range. Use page/page_size for pagination.",
       "method": "GET",
       "path": "/campaign/get/",
+      "query_param_serialization": {
+        "filtering": "json",
+        "fields": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -145,6 +203,24 @@
       "description": "Create a campaign. Common objective_type values: TRAFFIC, CONVERSIONS, APP_PROMOTION, REACH, VIDEO_VIEWS, LEAD_GENERATION, ENGAGEMENT, PRODUCT_SALES. budget_mode: BUDGET_MODE_DAY, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE. Use BUDGET_MODE_INFINITE to defer budget to ad-group level.",
       "method": "POST",
       "path": "/campaign/create/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -206,9 +282,27 @@
     },
     {
       "name": "campaign_update",
-      "description": "Update a campaign — name, status, budget, or special_industries.",
+      "description": "Update a campaign's name or budget. To enable, disable or delete it, use campaign_update_status.",
       "method": "POST",
       "path": "/campaign/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -223,14 +317,6 @@
           },
           "budget": {
             "type": "number"
-          },
-          "operation_status": {
-            "type": "string",
-            "enum": [
-              "ENABLE",
-              "DISABLE",
-              "DELETE"
-            ]
           }
         },
         "required": [
@@ -244,6 +330,28 @@
       "description": "List ad groups for an advertiser, optionally filtered by campaign_id.",
       "method": "GET",
       "path": "/adgroup/get/",
+      "query_param_serialization": {
+        "filtering": "json",
+        "fields": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -279,6 +387,24 @@
       "description": "Create an ad group (placement, targeting, budget, schedule, optimization goal). Required: advertiser_id, campaign_id, adgroup_name, placement_type, billing_event, optimization_goal, budget_mode, budget, schedule_type, pacing.",
       "method": "POST",
       "path": "/adgroup/create/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -418,6 +544,28 @@
       "description": "List ads for an advertiser, optionally filtered by campaign_id or adgroup_id.",
       "method": "GET",
       "path": "/ad/get/",
+      "query_param_serialization": {
+        "filtering": "json",
+        "fields": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -452,6 +600,24 @@
       "description": "Create one or more ads inside an ad group. creatives is an array of ad creative objects — each carries ad_format (SINGLE_VIDEO, SINGLE_IMAGE, CAROUSEL_ADS), ad_text, call_to_action, video_id or image_ids, identity_type, identity_id, landing_page_url.",
       "method": "POST",
       "path": "/ad/create/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -481,6 +647,24 @@
       "description": "Enable, disable, or delete one or more ads.",
       "method": "POST",
       "path": "/ad/status/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -514,6 +698,29 @@
       "description": "Pull performance metrics. report_type: BASIC (campaign/adgroup/ad performance), AUDIENCE (demographic breakdowns), PLAYABLE_MATERIAL, RESERVATION. data_level: AUCTION_ADVERTISER, AUCTION_CAMPAIGN, AUCTION_ADGROUP, AUCTION_AD. Pass dimensions like [\"campaign_id\"] and metrics like [\"spend\",\"impressions\",\"clicks\",\"ctr\",\"cpc\",\"conversion\",\"cost_per_conversion\"].",
       "method": "GET",
       "path": "/report/integrated/get/",
+      "query_param_serialization": {
+        "dimensions": "json",
+        "metrics": "json",
+        "filters": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -595,9 +802,27 @@
     },
     {
       "name": "adgroup_update",
-      "description": "Update an ad group: name, budget, bid, schedule, targeting, optimization, or status fields supported by TikTok.",
+      "description": "Update an ad group. Pass the /adgroup/update/ fields to change at the top level, e.g. adgroup_name, budget, bid_price, schedule_end_time, location_ids.",
       "method": "POST",
       "path": "/adgroup/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -607,16 +832,41 @@
           "adgroup_id": {
             "type": "string"
           },
-          "data": {
-            "type": "object",
-            "description": "Fields to update. You may pass platform-native fields directly in data."
+          "adgroup_name": {
+            "type": "string"
+          },
+          "budget": {
+            "type": "number"
+          },
+          "bid_price": {
+            "type": "number"
+          },
+          "schedule_start_time": {
+            "type": "string",
+            "description": "YYYY-MM-DD HH:MM:SS (UTC+0)"
+          },
+          "schedule_end_time": {
+            "type": "string",
+            "description": "YYYY-MM-DD HH:MM:SS (UTC+0)"
+          },
+          "location_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "age_groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "advertiser_id",
-          "adgroup_id",
-          "data"
-        ]
+          "adgroup_id"
+        ],
+        "additionalProperties": true
       }
     },
     {
@@ -624,6 +874,24 @@
       "description": "Enable, disable, or delete one or more ad groups.",
       "method": "POST",
       "path": "/adgroup/status/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -657,6 +925,24 @@
       "description": "Upload an ad image asset. Use multipart/file payload support when available, or pass image_url/material_id fields supported by TikTok.",
       "method": "POST",
       "path": "/file/image/ad/upload/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -683,6 +969,24 @@
       "description": "Upload an ad video asset. Use multipart/file payload support when available, or pass video_url/material_id fields supported by TikTok.",
       "method": "POST",
       "path": "/file/video/ad/upload/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
@@ -709,15 +1013,372 @@
       "description": "List custom audiences for an advertiser.",
       "method": "GET",
       "path": "/dmp/custom_audience/list/",
+      "query_param_serialization": {
+        "custom_audience_ids": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
           "advertiser_id": {
             "type": "string"
           },
-          "filtering": {
-            "type": "object",
-            "description": "Optional filters such as custom_audience_ids, audience_type, status."
+          "custom_audience_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Only these audiences (1-100 IDs). Omit to list all."
+          },
+          "page": {
+            "type": "integer",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "default": 10,
+            "description": "1-100"
+          }
+        },
+        "required": [
+          "advertiser_id"
+        ]
+      }
+    },
+    {
+      "name": "custom_audience_create",
+      "description": "Create a customer file audience from files uploaded with custom_audience_file_upload. Every file must use the same calculate_type.",
+      "method": "POST",
+      "path": "/dmp/custom_audience/create/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "custom_audience_name": {
+            "type": "string",
+            "description": "Up to 128 characters."
+          },
+          "file_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "file_path values returned by custom_audience_file_upload (fewer than 50 per request)."
+          },
+          "calculate_type": {
+            "type": "string",
+            "description": "Encryption type shared by every file, e.g. EMAIL_SHA256 or PHONE_SHA256."
+          },
+          "retention_in_days": {
+            "type": "integer",
+            "description": "1-365."
+          },
+          "audience_sub_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "REACH_FREQUENCY"
+            ]
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "custom_audience_name",
+          "file_paths",
+          "calculate_type"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "custom_audience_update",
+      "description": "Rename a customer file audience or change its members with uploaded files. With file_paths, action APPEND adds members, REMOVE removes them and REPLACE (TikTok's default) replaces them all.",
+      "method": "POST",
+      "path": "/dmp/custom_audience/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "custom_audience_id": {
+            "type": "string"
+          },
+          "custom_audience_name": {
+            "type": "string"
+          },
+          "file_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "APPEND",
+              "REMOVE",
+              "REPLACE"
+            ]
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "custom_audience_id"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "ad_delete",
+      "description": "Delete one or more ads. Sends operation_status DELETE to /ad/status/update/, which is how TikTok deletes ads.",
+      "method": "POST",
+      "path": "/ad/status/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "ad_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "ad_ids"
+        ]
+      },
+      "request_transform": {
+        "type": "json_wrap",
+        "fields": [
+          "advertiser_id",
+          "ad_ids"
+        ],
+        "constants": {
+          "operation_status": "DELETE"
+        }
+      }
+    },
+    {
+      "name": "campaign_update_status",
+      "description": "Enable, disable or delete one or more campaigns.",
+      "method": "POST",
+      "path": "/campaign/status/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "campaign_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operation_status": {
+            "type": "string",
+            "enum": [
+              "ENABLE",
+              "DISABLE",
+              "DELETE"
+            ]
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "campaign_ids",
+          "operation_status"
+        ]
+      }
+    },
+    {
+      "name": "ad_update",
+      "description": "Edit ads in an ad group: creative, ad_text, call_to_action, landing_page_url and so on. Each creatives entry carries the ad_id it updates. Without patch_update, fields left out of a creative are reset.",
+      "method": "POST",
+      "path": "/ad/update/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "adgroup_id": {
+            "type": "string"
+          },
+          "creatives": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Creative objects, each with ad_id plus the fields to set."
+          },
+          "patch_update": {
+            "type": "boolean",
+            "description": "Only change the fields passed."
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "adgroup_id",
+          "creatives"
+        ]
+      }
+    },
+    {
+      "name": "identity_list",
+      "description": "List the identities (who an ad posts as) under an advertiser. Every ad needs an identity_id and identity_type.",
+      "method": "GET",
+      "path": "/identity/get/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "identity_type": {
+            "type": "string",
+            "enum": [
+              "CUSTOMIZED_USER",
+              "AUTH_CODE",
+              "TT_USER",
+              "BC_AUTH_TT"
+            ]
+          },
+          "identity_authorized_bc_id": {
+            "type": "string",
+            "description": "Required when identity_type is BC_AUTH_TT."
           },
           "page": {
             "type": "integer"
@@ -732,81 +1393,278 @@
       }
     },
     {
-      "name": "custom_audience_create",
-      "description": "Create a custom audience. Body varies by audience type: customer file, engagement, app activity, pixel, or lookalike.",
-      "method": "POST",
-      "path": "/dmp/custom_audience/create/",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "advertiser_id": {
-            "type": "string"
-          },
-          "data": {
-            "type": "object",
-            "description": "Raw TikTok custom audience creation payload."
-          }
-        },
-        "required": [
-          "advertiser_id",
-          "data"
+      "name": "image_info",
+      "description": "Get uploaded ad images' details (size, format, URL) by image_id.",
+      "method": "GET",
+      "path": "/file/image/ad/info/",
+      "query_param_serialization": {
+        "image_ids": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
         ]
-      }
-    },
-    {
-      "name": "custom_audience_update",
-      "description": "Update a custom audience.",
-      "method": "POST",
-      "path": "/dmp/custom_audience/update/",
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
       "input_schema": {
         "type": "object",
         "properties": {
           "advertiser_id": {
             "type": "string"
           },
-          "custom_audience_id": {
-            "type": "string"
-          },
-          "data": {
-            "type": "object",
-            "description": "Raw TikTok custom audience update payload."
-          }
-        },
-        "required": [
-          "advertiser_id",
-          "custom_audience_id",
-          "data"
-        ]
-      }
-    },
-    {
-      "name": "ad_delete",
-      "description": "Generic delete alias for TikTok ads via status update operation_status=DELETE.",
-      "method": "POST",
-      "path": "/ad/status/update/",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "advertiser_id": {
-            "type": "string"
-          },
-          "ad_ids": {
+          "image_ids": {
             "type": "array",
             "items": {
               "type": "string"
             }
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "image_ids"
+        ]
+      }
+    },
+    {
+      "name": "video_info",
+      "description": "Get uploaded ad videos' details and processing state by video_id (up to 60 per request).",
+      "method": "GET",
+      "path": "/file/video/ad/info/",
+      "query_param_serialization": {
+        "video_ids": "json"
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
           },
-          "operation_status": {
+          "video_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "video_ids"
+        ]
+      }
+    },
+    {
+      "name": "custom_audience_file_upload",
+      "description": "Upload a customer file (one hashed identifier per line) for a custom audience. Returns a file_path for custom_audience_create or custom_audience_update.",
+      "method": "POST",
+      "path": "/dmp/custom_audience/file/upload/",
+      "multipart_form": {
+        "file_fields": {
+          "file": "file"
+        },
+        "field_names": [
+          "advertiser_id",
+          "file_name",
+          "file_signature",
+          "calculate_type"
+        ]
+      },
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "file": {
             "type": "string",
-            "enum": [
-              "DELETE"
+            "description": "The file as a blobref:// handle, base64, or data URL."
+          },
+          "file_name": {
+            "type": "string",
+            "description": "e.g. audience.csv"
+          },
+          "file_signature": {
+            "type": "string",
+            "description": "MD5 hex digest of the file."
+          },
+          "calculate_type": {
+            "type": "string",
+            "description": "Encryption type of the file's identifiers, e.g. EMAIL_SHA256 or PHONE_SHA256."
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "file",
+          "file_signature",
+          "calculate_type"
+        ]
+      }
+    },
+    {
+      "name": "custom_audience_delete",
+      "description": "Delete custom audiences (1-100 IDs).",
+      "method": "POST",
+      "path": "/dmp/custom_audience/delete/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "custom_audience_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "advertiser_id",
+          "custom_audience_ids"
+        ]
+      }
+    },
+    {
+      "name": "lookalike_create",
+      "description": "Create a lookalike audience from a source audience of at least 100 people.",
+      "method": "POST",
+      "path": "/dmp/custom_audience/lookalike/create/",
+      "rate_limit": {
+        "min_interval_ms": 100,
+        "max_retries": 2,
+        "retry_statuses": [
+          429
+        ],
+        "retry_error_codes": [
+          40100
+        ]
+      },
+      "response_error": {
+        "type": "json_status",
+        "code_path": "code",
+        "success_codes": [
+          0
+        ],
+        "message_path": "message"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "type": "string"
+          },
+          "custom_audience_name": {
+            "type": "string",
+            "description": "Up to 128 characters."
+          },
+          "lookalike_spec": {
+            "type": "object",
+            "description": "source_audience_id (required; not itself a lookalike), location_ids, audience_size (NARROW, BALANCED or BROAD), include_source, mobile_os, placements.",
+            "properties": {
+              "source_audience_id": {
+                "type": "string"
+              },
+              "location_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "audience_size": {
+                "type": "string",
+                "enum": [
+                  "NARROW",
+                  "BALANCED",
+                  "BROAD"
+                ]
+              },
+              "include_source": {
+                "type": "boolean"
+              },
+              "mobile_os": {
+                "type": "string"
+              },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "source_audience_id"
             ]
           }
         },
         "required": [
           "advertiser_id",
-          "ad_ids",
-          "operation_status"
+          "custom_audience_name",
+          "lookalike_spec"
         ]
       }
     }

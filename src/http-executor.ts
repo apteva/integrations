@@ -369,9 +369,9 @@ export async function executeTool(
   // Append query params to URL. For GET/DELETE this includes everything;
   // for POST/PUT/PATCH it includes only auth + tool-declared query params
   // (the body bucket is sent as a JSON body separately above).
-  const serialization: Record<string, "csv" | "repeat"> = {};
+  const serialization: Record<string, "csv" | "repeat" | "json"> = {};
   for (const [name, mode] of Object.entries(tool.query_param_serialization || {})) {
-    if (mode !== "csv" && mode !== "repeat") throw new Error(`Unsupported query serialization for ${name}`);
+    if (mode !== "csv" && mode !== "repeat" && mode !== "json") throw new Error(`Unsupported query serialization for ${name}`);
     serialization[queryParamAliases[name] || name] = mode;
   }
   const qs = buildQueryString(allQueryParams, serialization);
@@ -1619,10 +1619,16 @@ function normalizePastedPrivateKey(raw: string): string {
   return normalized;
 }
 
-function buildQueryString(params: Record<string, unknown>, serialization: Record<string, "csv" | "repeat"> = {}): string {
+function buildQueryString(params: Record<string, unknown>, serialization: Record<string, "csv" | "repeat" | "json"> = {}): string {
   const parts: string[] = [];
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) continue;
+    // TikTok's Marketing API reads GET arrays and objects as JSON text.
+    // A string is taken as already encoded.
+    if (serialization[key] === "json" && typeof value === "object") {
+      parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(value))}`);
+      continue;
+    }
     if (Array.isArray(value)) {
       if (serialization[key] === "csv") {
         const values = value.filter(item => item !== undefined && item !== null);
