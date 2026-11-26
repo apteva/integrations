@@ -779,6 +779,28 @@ export interface OAuthConfig {
   /** Replaces the standard refresh_token grant for providers that renew
    *  using the access token itself and never issue a refresh_token. */
   refresh?: OAuthTokenCall;
+  /** Replaces the standard authorization_code form POST. TikTok's
+   *  advertiser login takes a JSON body of exactly {app_id, secret,
+   *  auth_code}, with no grant_type, redirect_uri or Basic auth. See
+   *  tiktok-ads.json. */
+  token_request?: OAuthTokenRequest;
+  /** Detects a failed token request that arrives as HTTP 2xx, using the
+   *  same contract as a tool's response_error. TikTok answers a bad
+   *  auth_code with HTTP 200 and a non-zero `code`. */
+  token_error?: JsonStatusResponseError;
+}
+
+/** A code exchange that isn't the standard form POST. */
+export interface OAuthTokenRequest {
+  /** Defaults to "form". */
+  body_format?: "json" | "form";
+  /** The complete request body; nothing standard is added. Values are
+   *  templates over {{client_id}}, {{client_secret}}, {{code}},
+   *  {{redirect_uri}}, {{code_verifier}} and the connection's
+   *  credentials. A template with no value fails the exchange. */
+  fields: Record<string, string>;
+  /** Also send client_id:client_secret as HTTP Basic auth. */
+  basic_auth?: boolean;
 }
 
 /** A token call that isn't an RFC 6749 form-POST: different host, a GET,
@@ -835,8 +857,8 @@ export interface AppToolTemplate {
   // Example: Bunny Stream list_videos exposes collectionId to agents but
   // Bunny's HTTP API expects the query key collection.
   query_param_aliases?: Record<string, string>;
-  /** Per input query field: comma-separated values or the default repeated keys. */
-  query_param_serialization?: Record<string, "csv" | "repeat">;
+  /** Per input query field: comma-separated values, JSON text (TikTok) or the default repeated keys. */
+  query_param_serialization?: Record<string, "csv" | "repeat" | "json">;
   /** Optional per-credential request pacing and bounded retry policy for
    * providers with strict QPS limits. Retries are limited to the declared
    * HTTP statuses or provider-level numeric/string error codes. */
@@ -1163,8 +1185,8 @@ export interface GeneratedMcpTool {
     body_binary_param?: string;
     query_params?: string[];
     query_param_aliases?: Record<string, string>;
-    /** Per input query field: comma-separated values or the default repeated keys. */
-    query_param_serialization?: Record<string, "csv" | "repeat">;
+    /** Per input query field: comma-separated values, JSON text (TikTok) or the default repeated keys. */
+    query_param_serialization?: Record<string, "csv" | "repeat" | "json">;
   };
 }
 
